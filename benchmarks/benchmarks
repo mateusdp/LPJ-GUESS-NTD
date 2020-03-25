@@ -190,7 +190,7 @@ function setup_workspace {
     mkdir $workspace
 
     # Get the submit script
-	cp $build_path/output/submit.sh $workspace
+    cp $build_path/output/submit.sh $workspace
 
     # Copy the config files to the workspace.
     # The ins file is excluded to avoid confusion. It's the ins

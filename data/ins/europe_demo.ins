@@ -16,7 +16,8 @@ import "europe.ins"
 ! over and over we need to specify how many years we wish to run.
 nyear 100
 
-!///////////////////////////////////////////////////////////////////////////////////////
+
+!///////////////////////////////////////////////////////////////////////
 ! Forcing Data & gridlists
 !
 
@@ -35,3 +36,11 @@ param "file_prec" (str "prc30_21.grd")  ! precipitation
 param "file_sun"  (str "clo30_21.grd")  ! sunshine
 
 param "file_soil" (str "soils_lpj.dat") ! Path to LPJ soil code file
+
+
+!///////////////////////////////////////////////////////////////////////
+! Demo input currently only works with the INTERP weather generator and 
+! the fire model GLOBFIRM (or no fire with NOFIRE). 
+
+firemodel "GLOBFIRM"
+weathergenerator "INTERP"

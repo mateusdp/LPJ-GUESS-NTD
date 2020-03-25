@@ -3,7 +3,7 @@
 /// \brief Implementation of OutputModule and its container class
 ///
 /// \author Joe Siltberg
-/// $Date: 2015-12-14 16:08:55 +0100 (Mo, 14. Dez 2015) $
+/// $Date: 2019-07-13 18:38:50 +0200 (Sa, 13. Jul 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +75,18 @@ void OutputModuleContainer::outannual(Gridcell& gridcell) {
 void OutputModuleContainer::outdaily(Gridcell& gridcell) {
 	for (size_t i = 0; i < modules.size(); ++i) {
 		modules[i]->outdaily(gridcell);
+	}
+}
+
+void OutputModuleContainer::openlocalfiles(Gridcell& gridcell) {
+	for (size_t i = 0; i < modules.size(); ++i) {
+		modules[i]->openlocalfiles(gridcell);
+	}
+}
+
+void OutputModuleContainer::closelocalfiles(Gridcell& gridcell) {
+	for (size_t i = 0; i < modules.size(); ++i) {
+		modules[i]->closelocalfiles(gridcell);
 	}
 }
 

@@ -2,7 +2,7 @@
 /// \file spinupdata.cpp
 /// \brief Management of climate data for spinup
 ///
-/// $Date: 2016-12-08 18:24:04 +0100 (Do, 08. Dez 2016) $
+/// $Date: 2019-02-08 15:55:08 +0100 (Fr, 08. Feb 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -66,7 +66,7 @@ void GenericSpinupData::detrend_data() {
 			annual_mean[y] += data[y][d];
 		}
 		annual_mean[y] /= data[y].size();
-		year_number[y] = y;
+		year_number[y] = (double)y;
 	}
 
 	double a, b;

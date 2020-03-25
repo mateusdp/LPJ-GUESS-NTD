@@ -7,7 +7,7 @@
 /// function plib_callback).
 ///
 /// \author Joe Siltberg
-/// $Date: 2017-09-20 16:00:36 +0200 (Mi, 20. Sep 2017) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,6 +22,9 @@
 
 xtring title;
 vegmodetype vegmode;
+firemodeltype firemodel;
+weathergeneratortype weathergenerator;
+
 int npatch;
 int npatch_secondarystand;
 bool reduce_all_stands;
@@ -31,7 +34,6 @@ bool ifbgestab;
 bool ifsme;
 bool ifstochestab;
 bool ifstochmort;
-bool iffire;
 bool ifdisturb;
 bool ifcalcsla;
 bool ifcalccton;
@@ -46,13 +48,39 @@ double nrelocfrac;
 double nfix_a;
 double nfix_b;
 
+bool ifntransform;
+double frac_labile_carbon = 1.0;
+double pH_soil;
+
+//Maximum amount of NH4 nitrified
+double f_nitri_max;
+//Maximum gaseus losses in nitrification
+double f_nitri_gas_max;
+//Maximum fraction of NO3 converted to NO2
+double f_denitri_max;
+//Maximum fraction of NO2 converted to gaseus N
+double f_denitri_gas_max;
+double k_N;
+double k_C;
+
 bool ifsmoothgreffmort;
 bool ifdroughtlimitedestab;
 bool ifrainonwetdaysonly;
 
 bool ifbvoc;
 
+// Arctic and wetland options
+bool iftwolayersoil;				// Use the original LPJ-GUESS v4 soil scheme, or not. If true, override many of the switches below. 
+bool ifmultilayersnow;				// Whether to use the simple multilayer snow scheme (1), or not (0)
+bool ifinundationstress;			// Whether to reduce GPP if there's inundation (1), or not (0)
+bool ifcarbonfreeze;				// Whether to limit soilC decomposition below 0degC in upland soils (1), or not (0)	
+double wetland_runon;				// Extra daily water input or output, in mm, to wetlands. Positive values are run ON, negative run OFF.
+bool ifmethane;						// Whether to run the methane model (for peatland only)
+bool iforganicsoilproperties;		// Whether soil C pool input is used to update soil properties
+bool ifsaturatewetlands;			// Whether to take water from runoff to saturate low latitide wetlands
+
 wateruptaketype wateruptake;
+rootdisttype rootdistribution;
 
 bool run_landcover;
 bool run[NLANDCOVERTYPES];
@@ -63,6 +91,7 @@ bool ifslowharvestpool;
 bool ifintercropgrass;
 bool ifcalcdynamic_phu;
 int gross_land_transfer;
+bool gross_input_present = false;
 bool ifprimary_lc_transfer;
 bool ifprimary_to_secondary_transfer;
 int transfer_level;
@@ -78,10 +107,12 @@ xtring state_path;
 bool restart;
 bool save_state;
 int state_year;
-	
+int verbosity;
+
 bool readsowingdates = false;
 bool readharvestdates = false;
 bool readNfert = false;
+bool readNman = false;
 bool readNfert_st = false;
 bool printseparatestands = false;
 bool iftillage = false;
@@ -146,7 +177,8 @@ enum {CB_NONE,CB_VEGMODE,CB_CHECKGLOBAL,CB_LIFEFORM,CB_LANDCOVER,CB_PHENOLOGY,CB
 	CB_STLANDCOVER, CB_STINTERCROP, CB_STNATURALVEG, CB_CHECKST, CB_CHECKMT,
 	CB_MTPLANTINGSYSTEM, CB_MTHARVESTSYSTEM, CB_MTPFT, CB_STREESTAB, CB_MTSELECTION, CB_MTHYDROLOGY,
 	CB_PLANTINGSYSTEM, CB_HARVESTSYSTEM, CB_PFT, CB_STSELECTION, CB_STHYDROLOGY, CB_MANAGEMENT1, CB_MANAGEMENT2, CB_MANAGEMENT3,
-	CB_PATHWAY,CB_ROOTDIST,CB_EST,CB_CHECKPFT,CB_STRPARAM,CB_NUMPARAM,CB_WATERUPTAKE,CB_MTCOMPOUND};
+	CB_PATHWAY, CB_ROOTDISTRIBUTION, CB_ROOTFRAC, CB_EST, CB_CHECKPFT, CB_STRPARAM, CB_NUMPARAM, CB_WATERUPTAKE, CB_MTCOMPOUND,
+	CB_FIREMODEL,CB_WEATHERGENERATOR};
 
 // File local variables
 namespace {
@@ -187,7 +219,8 @@ void initsettings() {
 	// Initialises global settings
 	// Parameters not initialised here must be set in instruction script
 
-	iffire=true;
+	firemodel=BLAZE;
+	weathergenerator=GWGEN;
 	ifcalcsla=true;
 	ifdisturb=false;
 	ifcalcsla=false;
@@ -200,6 +233,7 @@ void initsettings() {
 	printseparatestands = false;
 	save_state = false;
 	restart = false;
+	verbosity=WARNING;
 	lcfrac_fixed = true;
 	for(int lc=0; lc<NLANDCOVERTYPES; lc++)
 		frac_fixed[lc] = true;
@@ -232,6 +266,14 @@ void initpft(Pft& pft,xtring& setname) {
 	pft.k_chilla=0.0;
 	pft.k_chillb=0.0;
 	pft.k_chillk=0.0;
+
+	pft.inund_duration = 0;
+	pft.wtp_max = -300.0;
+	pft.min_snow = 0.0;
+	pft.max_snow = 100000.0;
+	pft.gdd0_min = 0.0;
+	pft.gdd0_max = 100000.0;
+	pft.has_aerenchyma = false;
 }
 
 void initst(StandType& st,xtring& setname) {
@@ -400,8 +442,8 @@ void plib_declarations(int id,xtring setname) {
 			"Interval for establishment of new cohorts (years)");
 		declareitem("distinterval",&distinterval,1.0,1.0e10,1,CB_NONE,
 			"Generic patch-destroying disturbance interval (years)");
-		declareitem("iffire",&iffire,1,CB_NONE,
-			"Whether fire enabled (0,1)");
+		declareitem("firemodel",&strparam,12,CB_FIREMODEL,
+			"Fire model mode (\"BLAZE\", \"GLOBFIRM\", \"NOFIRE\" , \"\")" );
 		declareitem("ifdisturb",&ifdisturb,1,CB_NONE,
 			"Whether generic patch-destroying disturbance enabled (0,1)");
 		declareitem("ifcalcsla",&ifcalcsla,1,CB_NONE,
@@ -422,6 +464,11 @@ void plib_declarations(int id,xtring setname) {
 			"Patch area (m2)");
 		declareitem("wateruptake", &strparam, 20, CB_WATERUPTAKE,
 			"Water uptake mode (\"WCONT\", \"ROOTDIST\", \"SMART\", \"SPECIESSPECIFIC\")");
+		declareitem("rootdistribution", &strparam, 20, CB_ROOTDISTRIBUTION,
+			"Parameterisation of root distribution (\"FIXED\", \"JACKSON\")");
+			
+		declareitem("weathergenerator", &strparam, 20, CB_WEATHERGENERATOR,
+				"Weather Generator (\"INTERP\", \"GWGEN\")");
 
 		declareitem("nrelocfrac",&nrelocfrac,0.0,0.99,1,CB_NONE,
 			"Fractional nitrogen relocation from shed leaves & roots");
@@ -436,6 +483,19 @@ void plib_declarations(int id,xtring setname) {
 			"Whether plant growth limited by available nitrogen");
 		declareitem("freenyears",&freenyears,0,1000,1,CB_NONE,
 			"Number of years to spinup without nitrogen limitation");
+		declareitem("ifntransform",&ifntransform,1,CB_NONE,
+			"Whether to calculate nitrification/denitrification (only if CENTURY SOM dynamics is on)");
+		declareitem("frac_labile_carbon",&frac_labile_carbon,0.0,1.0,1,CB_NONE,
+			"Fraction of microbial respiration assumed to produce labile carbon");
+		declareitem("pH_soil",&pH_soil,3.5,8.5,1,CB_NONE, "Soil pH");
+		declareitem("f_nitri_max",  &f_nitri_max,  0.01,   1.0, 1,CB_NONE, "Maximum amount of NH4 nitrified");
+
+		declareitem("k_N",    &k_N,    0.0001, 1.0, 1,CB_NONE, "Constant in denitrification");
+		declareitem("k_C",    &k_C,    0.00001, 1.0, 1,CB_NONE, "Constant in denitrification");
+
+		declareitem("f_denitri_max",    &f_denitri_max,    0.0001, 1.0, 1,CB_NONE, "Maximum amount of NO3 conv. to NO2");
+		declareitem("f_denitri_gas_max",    &f_denitri_gas_max,    0.00001, 1.0, 1,CB_NONE, "Maximum gaseus losses in denitrification");
+		declareitem("f_nitri_gas_max",    &f_nitri_gas_max,    0.0001, 1.0, 1,CB_NONE, "Maximum gaseus losses in nitrification");
 
 		declareitem("ifsmoothgreffmort",&ifsmoothgreffmort,1,CB_NONE,
 			"Whether to vary mort_greff smoothly with growth efficiency (0,1)");
@@ -446,6 +506,24 @@ void plib_declarations(int id,xtring setname) {
 
 		declareitem("ifbvoc",&ifbvoc,1,CB_NONE,
 			"Whether or not BVOC calculations are performed (0,1)");
+
+		declareitem("iftwolayersoil", &iftwolayersoil, 1, CB_NONE,
+			"Use the original LPJ-GUESS v4 soil scheme, or not (0,1)"); //COMMENT STEFAN, same here, better to define "not"
+		declareitem("ifmultilayersnow", &ifmultilayersnow, 1, CB_NONE,
+			"Whether or not multilayer snow calculations are performed (0,1)");
+		declareitem("ifinundationstress",&ifinundationstress,1,CB_NONE,
+			"Whether to reduce NPP if there's inundation (1), or not (0)");
+		declareitem("ifcarbonfreeze",&ifcarbonfreeze,1,CB_NONE,
+			"Whether to limit soilC decomposition below 0degC in upland soils (1), or not (0)");
+		declareitem("wetland_runon",&wetland_runon,-10.0,10.0,1,CB_NONE,
+			"Optional additional wetland run-on (mm/day)");
+		declareitem("ifmethane",&ifmethane,1,CB_NONE,
+			"Whether to run the methane model (1), or not (0)");
+		declareitem("iforganicsoilproperties", &iforganicsoilproperties, 1, CB_NONE,
+			"Whether soil C pool input is used to update soil properties (1), or not (0)");
+		declareitem("ifsaturatewetlands", &ifsaturatewetlands, 1, CB_NONE,
+			"Whether to take water from runoff to saturate low latitide wetlands (1), or not (0)");
+
 		declareitem("run_landcover",&run_landcover,1,CB_NONE,"Landcover version");
 		declareitem("run_urban",&run[URBAN],1,CB_NONE,"Whether urban land is to be simulated");
 		declareitem("run_crop",&run[CROPLAND],1,CB_NONE,"Whether crop-land is to be simulated");
@@ -454,6 +532,7 @@ void plib_declarations(int id,xtring setname) {
 		declareitem("run_natural",&run[NATURAL],1,CB_NONE,"Whether natural vegetation is to be simulated");
 		declareitem("run_peatland",&run[PEATLAND],1,CB_NONE,"Whether peatland is to be simulated");
 		declareitem("run_barren",&run[BARREN],1,CB_NONE,"Whether barren land is to be simulated");
+
 		declareitem("ifslowharvestpool",&ifslowharvestpool,1,CB_NONE,"If a slow harvested product pool is included in patchpft.");
 		declareitem("ifintercropgrass",&ifintercropgrass,1,CB_NONE,"Whether intercrop growth is allowed");
 		declareitem("ifcalcdynamic_phu",&ifcalcdynamic_phu,1,CB_NONE,"Whether to calculate dynamic potential heat units");
@@ -477,6 +556,7 @@ void plib_declarations(int id,xtring setname) {
 		declareitem("restart", &restart, 1, CB_NONE, "Whether to restart from state files");
 		declareitem("save_state", &save_state, 1, CB_NONE, "Whether to save new state files");
 		declareitem("state_year", &state_year, 1, 20000, 1, CB_NONE, "Save/restart year. Unspecified means just after spinup");
+		declareitem("verbosity", &verbosity, 0, 4, 1, CB_NONE, "Determines the amount of information that is printed to the logfile. 0 = suppress all output (even errors) 4 = print all information");
 
 		declareitem("pft",BLOCK_PFT,CB_NONE,"Header for block defining PFT");
 		declareitem("param",BLOCK_PARAM,CB_NONE,"Header for custom parameter block");
@@ -537,7 +617,7 @@ void plib_declarations(int id,xtring setname) {
 
 		declareitem("include",&includepft,1,CB_NONE,"Include PFT in analysis");
 		declareitem("lifeform",&strparam,16,CB_LIFEFORM,
-			"Lifeform (\"TREE\" or \"GRASS\")");
+			"Lifeform (\"TREE\" or \"GRASS\" or \"MOSS\")");
 		declareitem("landcover",&strparam,16,CB_LANDCOVER,
 			"Landcovertype (\"URBAN\", \"CROP\", \"PASTURE\", \"FOREST\", \"NATURAL\", \"PEATLAND\" or \"BARREN\")");
 		declareitem("selection",&strparam,16,CB_SELECTION	,"Name of pft selection");
@@ -561,7 +641,9 @@ void plib_declarations(int id,xtring setname) {
 			"Maximum temperature limit for photosynthesis (deg C)");
 		declareitem("lambda_max",&ppft->lambda_max,0.1,0.99,1,CB_NONE,
 			"Non-water-stressed ratio of intercellular to ambient CO2 pp");
-		declareitem("rootdist",ppft->rootdist,0.0,1.0,NSOILLAYER,CB_ROOTDIST,
+		declareitem("root_beta", &ppft->root_beta, 0.0,1.0,1,CB_ROOTFRAC,
+			"Shape parameter to determine fraction of roots in each soil layer");
+ 		declareitem("rootdist",ppft->rootdist,0.0,1.0,NSOILLAYER,CB_ROOTFRAC,
 			"Fraction of roots in each soil layer (first value=upper layer)");
 		declareitem("gmin",&ppft->gmin,0.0,1.0,1,CB_NONE,
 			"Canopy conductance not assoc with photosynthesis (mm/s)");
@@ -665,7 +747,7 @@ void plib_declarations(int id,xtring setname) {
 			"isoprene emission capacity (ug C g-1 h-1)");
 		declareitem("seas_iso",&ppft->seas_iso,1,CB_NONE,
 			"whether (1) or not (0) isoprene emissions show seasonality");
-		declareitem("eps_mon",ppft->eps_mon,0.,100.,NMTCOMPOUNDS,CB_MTCOMPOUND,
+		declareitem("eps_mon",ppft->eps_mon,0.,500.,NMTCOMPOUNDS,CB_MTCOMPOUND,
 			"monoterpene emission capacity (ug C g-1 h-1)");
 		declareitem("storfrac_mon",ppft->storfrac_mon,0.0,1.0,NMTCOMPOUNDS,CB_MTCOMPOUND,
 			"fraction of monoterpene production that goes into storage pool (-)");
@@ -772,7 +854,21 @@ void plib_declarations(int id,xtring setname) {
 			"c3 parameter for allocation with N stress");
 		declareitem("d3",&ppft->d3,-1000.0,1000.0,1,CB_NONE,
 			"d3 parameter for allocation with N stress");
+		declareitem("inund_duration", &ppft->inund_duration, 0, 180, 1, CB_NONE,
+			"Growing season inundation days tolerated (days)");
+		declareitem("wtp_max", &ppft->wtp_max, -500.0, 500.0, 1, CB_NONE,
+			"Maximum water table position (mm)");
+		declareitem("has_aerenchyma",&ppft->has_aerenchyma,1,CB_NONE,
+			"whether (1) or not (0) this PFT has aerenchyma for gas transport to and from the roots");
 
+		declareitem("min_snow", &ppft->min_snow, 0.0, 10000.0, 1, CB_NONE,
+			"Min snowdepth for survival (mm)");
+		declareitem("max_snow", &ppft->max_snow, 0.0, 100000.0, 1, CB_NONE,
+			"Max snowdepth for survival (mm)");
+		declareitem("gdd0_min", &ppft->gdd0_min, 0.0, 100000.0, 1, CB_NONE,
+			"min GDD0 for survival/establishment");
+		declareitem("gdd0_max", &ppft->gdd0_max, 0.0, 100000.0, 1, CB_NONE,
+			"max GDD0 for survival/establishment");
 		callwhendone(CB_CHECKPFT);
 
 		break;
@@ -925,14 +1021,44 @@ void plib_callback(int callback) {
 		else {
 			sendmessage("Error",
 				"Unknown water uptake mode (valid types: \"WCONT\", \"ROOTDIST\", \"SMART\", \"SPECIESSPECIFIC\")");
+				plibabort();
 		}
 		break;
-	case CB_LIFEFORM:
-		if (strparam.upper()=="TREE") ppft->lifeform=TREE;
-		else if (strparam.upper()=="GRASS") ppft->lifeform=GRASS;
+	case CB_WEATHERGENERATOR:
+		if (strparam.upper() == "GWGEN") weathergenerator = GWGEN;
+		else if (strparam.upper() == "INTERP") weathergenerator = INTERP;
 		else {
 			sendmessage("Error",
-				"Unknown lifeform type (valid types: \"TREE\", \"GRASS\")");
+				"Unknown weathergenerator (valid types: \"GWGEN\", \"INTERP\")");
+			plibabort();
+		}
+		break;		
+	case CB_FIREMODEL:
+		if (strparam.upper()=="BLAZE") firemodel=BLAZE;
+		else if (strparam.upper()=="GLOBFIRM") firemodel=GLOBFIRM;
+		else if (strparam.upper()=="NOFIRE" || strparam=="") firemodel=NOFIRE;
+		else {
+			sendmessage("Error",
+				"Unknown fire model setting (valid types: \"BLAZE\", \"GLOBFIRM\", \"NOFIRE\", \"nil\" , \"\")" );
+			plibabort();
+		}
+		break;
+		case CB_ROOTDISTRIBUTION:
+		if (strparam.upper() == "FIXED") rootdistribution = ROOTDIST_FIXED;
+		else if (strparam.upper() == "JACKSON") rootdistribution = ROOTDIST_JACKSON;
+		else {
+			sendmessage("Error",
+				"Unknown mode for root parameterisation (valid types: (\"FIXED\", \"JACKSON\")");
+			plibabort();
+		}
+			break;
+	case CB_LIFEFORM:
+		if (strparam.upper()=="TREE") ppft->lifeform=TREE;
+		else if (strparam.upper() == "GRASS") ppft->lifeform = GRASS;
+		else if (strparam.upper() == "MOSS") ppft->lifeform = MOSS;
+		else {
+			sendmessage("Error",
+				"Unknown lifeform type (valid types: \"TREE\", \"GRASS\", \"MOSS\")");
 			plibabort();
 		}
 		break;
@@ -1065,8 +1191,10 @@ void plib_callback(int callback) {
 			plibabort();
 		}
 		break;
-	case CB_ROOTDIST:
-		numval=0.0;
+	case CB_ROOTFRAC:
+		numval = 0.0;
+		if (rootdistribution == ROOTDIST_JACKSON) ppft->init_rootdist();
+	
 		for (i=0;i<NSOILLAYER;i++) numval+=ppft->rootdist[i];
 		if (numval<0.99 || numval>1.01) {
 			sendmessage("Error","Specified root fractions do not sum to 1.0");
@@ -1075,7 +1203,7 @@ void plib_callback(int callback) {
 		ppft->rootdist[NSOILLAYER-1]+=1.0-numval;
 		break;
 	case CB_MTCOMPOUND:
-          // bvoc. Can include some checks for the monoterpene parameters given per compound
+		  // bvoc. Can include some checks for the monoterpene parameters given per compound
 	break;
 	case CB_STRPARAM:
 		param.addparam(paramname,strparam);
@@ -1087,11 +1215,18 @@ void plib_callback(int callback) {
 		if (!itemparsed("title")) badins("title");
 		if (!itemparsed("nyear_spinup")) badins("nyear_spinup");
 		if (!itemparsed("vegmode")) badins("vegmode");
-		if (!itemparsed("iffire")) badins("iffire");
+
+		if (!itemparsed("weathergenerator")) badins("weathergenerator");
+		if (!itemparsed("firemodel")) badins("firemodel");
+		if (firemodel==BLAZE && weathergenerator!=GWGEN) {
+			sendmessage("Error", "Weathergenerator must be GWGEN for BLAZE!");
+			plibabort();
+		}
 		if (!itemparsed("ifcalcsla")) badins("ifcalcsla");
 		if (!itemparsed("ifcalccton")) badins("ifcalccton");
 		if (!itemparsed("ifcdebt")) badins("ifcdebt");
 		if (!itemparsed("wateruptake")) badins("wateruptake");
+		if (!itemparsed("rootdistribution")) badins("rootdistribution");
 
 		if (!itemparsed("nrelocfrac")) badins("nrelocfrac");
 		if (!itemparsed("nfix_a")) badins("nfix_a");
@@ -1106,19 +1241,44 @@ void plib_callback(int callback) {
 			plibabort();
 		}
 
+		if (!itemparsed("ifntransform")) badins("ifntransform");
+		if (ifntransform && !ifnlim) {
+			sendmessage("Error", "ifnlim have to be true for N transformation to work");
+			plibabort();
+		}
+		if (ifntransform && !ifcentury) {
+			sendmessage("Error", "ifcentury have to be true for N transformation to work");
+			plibabort();
+		}
+		if (!itemparsed("f_denitri_max")) badins ("f_denitri_max");
+		if (!itemparsed("f_denitri_gas_max")) badins ("f_denitri_gas_max");
+		if (!itemparsed("f_nitri_max")) badins ("f_nitri_max");
+		if (!itemparsed("f_nitri_gas_max")) badins ("f_nitri_gas_max");
+		if (!itemparsed("k_N")) badins ("k_N");
+		if (!itemparsed("k_C")) badins ("k_C");
+
 		if (!itemparsed("outputdirectory")) badins("outputdirectory");
 		if (!itemparsed("ifsmoothgreffmort")) badins("ifsmoothgreffmort");
 		if (!itemparsed("ifdroughtlimitedestab")) badins("ifdroughtlimitedestab");
 		if (!itemparsed("ifrainonwetdaysonly")) badins("ifrainonwetdaysonly");
 		
 		if (!itemparsed("ifbvoc")) badins("ifbvoc");
+		
+
+		if (!itemparsed("iftwolayersoil")) badins("iftwolayersoil");
+		if (!itemparsed("ifmultilayersnow")) badins("ifmultilayersnow");
+		if (!itemparsed("ifinundationstress")) badins("ifinundationstress");
+		if (!itemparsed("ifcarbonfreeze")) badins("ifcarbonfreeze");
+		if (!itemparsed("wetland_runon")) badins("wetland_runon");
+		if (!itemparsed("ifmethane")) badins("ifmethane");
+		if (!itemparsed("iforganicsoilproperties")) badins("iforganicsoilproperties");
+		if (!itemparsed("ifsaturatewetlands")) badins("ifsaturatewetlands");
 
 		if (!itemparsed("run_landcover")) badins("run_landcover");
 		if (run_landcover) {
 			if (!itemparsed("npatch_secondarystand")) badins("npatch_secondarystand");
 			if (!itemparsed("reduce_all_stands")) badins("reduce_all_stands");
 			if (!itemparsed("age_limit_reduce")) badins("age_limit_reduce");
-			if (!itemparsed("minimizecftlist")) badins("minimizecftlist");
 			if (!itemparsed("run_natural")) badins("run_natural");
 			if (!itemparsed("run_crop")) badins("run_crop");
 			if (!itemparsed("run_forest")) badins("run_forest");
@@ -1126,17 +1286,20 @@ void plib_callback(int callback) {
 			if (!itemparsed("run_pasture")) badins("run_pasture");
 			if (!itemparsed("run_barren")) badins("run_barren");
 			if (!itemparsed("ifslowharvestpool")) badins("ifslowharvestpool");
-			if (!itemparsed("ifintercropgrass")) badins("ifintercropgrass");
-			if (!itemparsed("ifcalcdynamic_phu")) badins("ifcalcdynamic_phu");
 			if (!itemparsed("gross_land_transfer")) badins("gross_land_transfer");
 			if (!itemparsed("ifprimary_lc_transfer")) badins("ifprimary_lc_transfer");
 			if (!itemparsed("ifprimary_to_secondary_transfer")) badins("ifprimary_to_secondary_transfer");
 			if (!itemparsed("transfer_level")) badins("transfer_level");
-			if (!itemparsed("ifdyn_phu_limit")) badins("ifdyn_phu_limit");
 			if (!itemparsed("iftransfer_to_new_stand")) badins("iftransfer_to_new_stand");
 			if (!itemparsed("nyear_dyn_phu")) badins("nyear_dyn_phu");
 			if (!itemparsed("printseparatestands")) badins("printseparatestands");
-			if (!itemparsed("iftillage")) badins("iftillage");
+			if(run[CROPLAND]) {
+				if (!itemparsed("minimizecftlist")) badins("minimizecftlist");
+				if (!itemparsed("iftillage")) badins("iftillage");
+				if (!itemparsed("ifintercropgrass")) badins("ifintercropgrass");
+				if (!itemparsed("ifcalcdynamic_phu")) badins("ifcalcdynamic_phu");
+				if (!itemparsed("ifdyn_phu_limit")) badins("ifdyn_phu_limit");
+			}
 		}
 
 		if (!itemparsed("pft")) badins("pft");
@@ -1159,7 +1322,7 @@ void plib_callback(int callback) {
 
 		if (save_state && restart) {
 			sendmessage("Error",
-			            "Can't save state and restart at the same time");
+				"Can't save state and restart at the same time");
 			plibabort();
 		}
 
@@ -1445,7 +1608,12 @@ void plib_callback(int callback) {
 			if (!itemparsed("pstemp_high")) badins("pstemp_high");
 			if (!itemparsed("pstemp_max")) badins("pstemp_max");
 			if (!itemparsed("lambda_max")) badins("lambda_max");
-			if (!itemparsed("rootdist")) badins("rootdist");
+			if (rootdistribution == ROOTDIST_FIXED) {
+				if (!itemparsed("rootdist")) badins("rootdist");
+			}
+			if (rootdistribution == ROOTDIST_JACKSON) {
+				if (!itemparsed("root_beta")) badins("root_beta");
+			}
 			if (!itemparsed("gmin")) badins("gmin");
 			if (!itemparsed("emax")) badins("emax");
 			if (!itemparsed("respcoeff")) badins("respcoeff");
@@ -1594,19 +1762,19 @@ void plib_callback(int callback) {
 					if (!itemparsed("est_max")) badins("est_max");
 				}
 			}
-			if (iffire) {
+			if (firemodel==GLOBFIRM) {
 				if (!itemparsed("litterme")) badins("litterme");
 				if (!itemparsed("fireresist")) badins("fireresist");
 			}
 			if (ifcalcsla) {
 				if (!itemparsed("leaflong")) {
 					sendmessage("Error",
-					            "Value required for leaflong when ifcalcsla enabled");
+								"Value required for leaflong when ifcalcsla enabled");
 					plibabort();
 				}
 				if (itemparsed("sla") && !(ppft->phenology == CROPGREEN && ifnlim))
 					sendmessage("Warning",
-					            "Specified sla value not used when ifcalcsla enabled");
+								"Specified sla value not used when ifcalcsla enabled");
 			}
 			if (vegmode==COHORT || vegmode==INDIVIDUAL) {
 				if (!itemparsed("parff_min")) badins("parff_min");
@@ -1615,21 +1783,21 @@ void plib_callback(int callback) {
 			if (ifcalccton) {
 				if (!itemparsed("leaflong")) {
 					sendmessage("Error",
-					            "Value required for leaflong when ifcalccton enabled");
+								"Value required for leaflong when ifcalccton enabled");
 					plibabort();
 				}
 				if (itemparsed("cton_leaf_min") && !(ppft->phenology == CROPGREEN && ifnlim))
 					sendmessage("Warning",
-					            "Specified cton_leaf_min value not used when ifcalccton enabled");
+								"Specified cton_leaf_min value not used when ifcalccton enabled");
 			}
 		}
 		else {
 			// This PFT has already been parsed once, don't allow changing parameters
 			// which would have incurred different checks above.
 			if (itemparsed("lifeform") ||
-			    itemparsed("phenology")) {
+				itemparsed("phenology")) {
 				sendmessage("Error",
-				            "Not allowed to redefine lifeform or phenology in second PFT definition");
+							"Not allowed to redefine lifeform or phenology in second PFT definition");
 				plibabort();
 			}
 		}
@@ -1683,7 +1851,7 @@ void read_instruction_file(const char* insfilename) {
 
 	npft = 0;
 	nst = 0;
-	nmt=0;
+	nmt = 0;
 
 	checked_pft.clear();
 	includepft_map.clear();

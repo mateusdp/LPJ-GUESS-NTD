@@ -2,7 +2,7 @@
 /// \file externalinput.h
 /// \brief Input code for land cover, management and other data from text files.
 /// \author Mats Lindeskog
-/// $Date: 2017-04-24 19:33:38 +0200 (Mo, 24. Apr 2017) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef LPJ_GUESS_EXTERNALINPUT_H
@@ -14,6 +14,9 @@ using namespace InData;
 
 /// Reads gridlist in lon-lat-description format from text input file
 void read_gridlist(ListArray_id<Coord>& gridlist, const char* file_gridlist);
+
+/// Help function for get_lc_transfer() to adjust inconsistencies between net land cover inout and gross land cover transitions.
+void adjust_gross_transfers(Gridcell& gridcell, double landcoverfrac_change[], double lc_frac_transfer[][NLANDCOVERTYPES], double primary_lc_frac_transfer[][NLANDCOVERTYPES], double& tot_frac_ch);
 
 /// Class that deals with all land cover input from text files
 class LandcoverInput {
@@ -36,7 +39,7 @@ public:
 	void getlandcover(Gridcell& gridcell);
 
 	/// Gets crop stand type fractions for a year, called from getlandcover() 
-	double get_crop_fractions(Gridcell& gridcell, int year, TimeDataD& CFTdata);
+	double get_crop_fractions(Gridcell& gridcell, int year, TimeDataD& CFTdata, double sum_tot);
 
 	/// Gets land cover or stand type transitions for a year
 	bool get_land_transitions(Gridcell& gridcell);
@@ -94,9 +97,10 @@ private:
 	InData::TimeDataD hdates;
 	InData::TimeDataD Nfert;
 	InData::TimeDataD Nfert_st;
+	InData::TimeDataD NfertMan;
 
 	/// Files names for management input file
-	xtring file_sdates, file_hdates, file_Nfert, file_Nfert_st;
+	xtring file_sdates, file_hdates, file_Nfert, file_Nfert_st, file_NfertMan;
 
 	/// Gets sowing date data for a year
 	void getsowingdates(Gridcell& gridcell);

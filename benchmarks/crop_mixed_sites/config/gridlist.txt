@@ -1,6 +1,6 @@
+-2.75 55.25 Scotland - temperate forest
 30.25 65.25 N_Karelia - boreal forest
 13.25 55.75 S_Sweden
--2.75 55.25 Scotland - temperate forest
 10.25 53.75 Schleswig-Holstein - temperate forest
 -0.25 52.75 England
 23.75 52.75 Bialowieza - mixed temperate forest
@@ -35,3 +35,5 @@
 48.25 -21.25 Madagascar
 31.25 -25.25 NE_South_Africa
 18.75 -33.25 SW_South_Africa
+89.25 24.25 Bangladesh
+-179.25 71.25 Chukotka, Russia

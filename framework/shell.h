@@ -3,7 +3,7 @@
 /// \brief The "shell" is the model's interface to the world
 ///
 /// \author Joe Siltberg
-/// $Date: 2016-12-08 18:24:04 +0100 (Do, 08. Dez 2016) $
+/// $Date: 2019-04-23 14:48:43 +0200 (Di, 23. Apr 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,7 @@ void fail(xtring format,...);
 void plot(xtring window_name,xtring series_name,double x,double y);
 
 
-/// 'Forgets' series and data for line graph 'window_name'.
+/// 'Frac_orgets' series and data for line graph 'window_name'.
 /**
  * Functional only when the framework is built as a DLL and linked to the 
  * LPJ-GUESS Windows Shell.
@@ -43,7 +43,7 @@ void plot(xtring window_name,xtring series_name,double x,double y);
 void resetwindow(xtring window_name);
 
 
-/// 'Forgets' series and data for all currently-defined line graphs.
+/// 'Frac_orgets' series and data for all currently-defined line graphs.
 /** 
  * Functional only when the framework is built as a DLL and linked to the 
  * LPJ-GUESS Windows Shell.
@@ -63,7 +63,17 @@ void open3d();
 * Functional only when the framework is built as a DLL and linked to the
 * LPJ-GUESS Windows Shell.
 */
-void plot3d(const char* filename);
+void plot3d();
+
+/// Opens a temporary data transfer file for 3D view in the Windows shell
+/** As plot3d(), invoked only by the WindowsShell class */
+void plot3d_fileopen();
+
+/// Closes the temporary data transfer file for 3D view in the Windows shell
+void plot3d_fileclose();
+
+/// Get the file handle for writing to the temporary data transfer file for 3D view in the Windows shell
+FILE* plot3d_getfilehandle();
 
 /// May be called by framework to respond to abort request from the user.
 /**
@@ -82,6 +92,7 @@ bool abort_request_received();
  */
 class Shell {
 public:
+	
 	virtual ~Shell() {}
 
 	/// Sends a message to the user somehow and terminates the program
@@ -96,10 +107,10 @@ public:
 	                  double x, 
 	                  double y) = 0;
 
-	/// 'Forgets' series and data for line graph 'window_name'.
+	/// 'Frac_orgets' series and data for line graph 'window_name'.
 	virtual void resetwindow(const char* window_name) = 0;
 
-	/// 'Forgets' series and data for all currently-defined line graphs.
+	/// 'Frac_orgets' series and data for all currently-defined line graphs.
 	virtual void clear_all_graphs() = 0;
 
 	/// May be called by framework to respond to abort request from the user.
@@ -109,7 +120,18 @@ public:
 	virtual void open3d() = 0;
 
 	/// Sends data on current stand structure to 3D vegetation plot in the Windows shell
-	virtual void plot3d(const char* filename) = 0;
+	virtual void plot3d() = 0;
+
+	/// Opens a temporary data transfer file for 3D view in the Windows shell
+	/** Only invoked by the WindowsShell */
+	virtual void plot3d_fileopen() = 0;
+	
+	/// Closes the temporary data transfer file for 3D view in the Windows shell
+	virtual void plot3d_fileclose() = 0;
+
+	/// The file handle for writing to the temporary data transfer file for 3D view in the Windows shell
+	virtual FILE* plot3d_getfilehandle() = 0;
+
 };
 
 
@@ -137,9 +159,15 @@ public:
 
 	void open3d();
 
-	void plot3d(const char* filename);
+	void plot3d();
 
 	void clear_all_graphs();
+
+	void plot3d_fileopen();
+
+	void plot3d_fileclose();
+	
+	FILE* plot3d_getfilehandle();
 
 	bool abort_request_received();
 

@@ -7,6 +7,8 @@ set(headers
   vegdynam.h 
   landcover.h 
   bvoc.h 
+  blaze.h
+  simfire.h
   q10.h 
   globalco2file.h
   ncompete.h
@@ -19,6 +21,11 @@ set(headers
   cropallocation.h
   cropsowing.h
   cropphenology.h
+  weathergen.h
+  soilmethane.h
+  soil.h
+  soilinput.h
+  ntransform.h
   )
 
 set(source  
@@ -31,6 +38,8 @@ set(source
   landcover.cpp 
   vegdynam.cpp 
   bvoc.cpp
+  blaze.cpp
+  simfire.cpp
   globalco2file.cpp
   ncompete.cpp
   commonoutput.cpp
@@ -41,6 +50,11 @@ set(source
   cropallocation.cpp
   cropsowing.cpp
   cropphenology.cpp
+  weathergen.cpp
+  soilmethane.cpp
+  soil.cpp
+  soilinput.cpp
+  ntransform.cpp
   )
 
 include(add_guess_sources)

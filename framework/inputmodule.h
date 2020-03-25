@@ -3,7 +3,7 @@
 /// \brief Base class for input modules
 ///
 /// \author Joe Siltberg
-/// $Date: 2016-12-08 18:24:04 +0100 (Do, 08. Dez 2016) $
+/// $Date: 2019-04-23 14:48:43 +0200 (Di, 23. Apr 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -36,19 +36,12 @@ public:
 
 	/// Obtains coordinates and soil static parameters for the next grid cell to simulate 
 	/** The function should return false if no grid cells remain to be simulated,
-	 *  otherwise true. Currently the following member variables of gridcell should be
-	 *  initialised: longitude, latitude and climate.instype; the following members of
-	 *  member soiltype: awc[0], awc[1], perc_base, perc_exp, thermdiff_0, thermdiff_15,
-	 *  thermdiff_100. The soil parameters can be set indirectly based on an lpj soil
-	 *  code (Sitch et al 2000) by a call to function soilparameters in the driver
-	 *  module (driver.cpp):
-	 *
-	 *  soilparameters(gridcell.soiltype,soilcode);
+	 *  otherwise true. 
 	 *
 	 *  If the model is to be driven by quasi-daily values of the climate variables
 	 *  derived from monthly means, this function may be the appropriate place to
-	 *  perform the required interpolations. The utility functions interp_monthly_means
-	 *  and interp_monthly_totals in driver.cpp may be called for this purpose.
+	 *  perform the required interpolations. The utility functions interp_monthly_means_conserve
+	 *  and interp_monthly_totals_conserve in driver.cpp may be called for this purpose.
 	 */
 	virtual bool getgridcell(Gridcell& gridcell) = 0;
 

@@ -4,13 +4,13 @@
 ///
 ///
 /// \author Ben Smith
-/// $Date: 2015-11-13 16:25:45 +0100 (Fr, 13. Nov 2015) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "config.h"
 #include "demoinput.h"
-
+#include "soilinput.h"
 #include "driver.h"
 #include "outputchannel.h"
 #include <stdio.h>
@@ -115,7 +115,7 @@ bool DemoInput::readenv(Coord coord, long& seed) {
 	// where <lon>      = longitude as a floating point number (-=W, +=E)
 	//       <lat>      = latitude as a floating point number (-=S, +=N)
 	//       <soilcode> = integer in the range 0 (no soil) to 9 (see function
-	//                    soilparameters in driver module)
+	//                    soil_parameters in driver module)
 	// The fields in each record are separated by spaces
 
 	double mtemp[12];		// monthly mean temperature (deg C)
@@ -154,7 +154,6 @@ bool DemoInput::readenv(Coord coord, long& seed) {
 	return gridfound;
 }
 
-
 void DemoInput::init() {
 
 	// DESCRIPTION
@@ -168,6 +167,11 @@ void DemoInput::init() {
 	double dlon,dlat;
 	bool eof=false;
 	xtring descrip;
+
+	// Demo input currently only works with the old INTERP weather generator and GLOBFIRM (or NO FIRE).
+	if (weathergenerator == GWGEN || firemodel == BLAZE) {
+		fail("Demo input currently only works with the INTERP weather generator and the fire model GLOBFIRM (or no fire with NOFIRE).\n Make sure that both of them are set correctly in global.ins.");
+	}
 
 	// Read list of grid coordinates and store in global Coord object 'gridlist'
 
@@ -281,7 +285,7 @@ bool DemoInput::getgridcell(Gridcell& gridcell) {
 		gridcell.climate.instype=SUNSHINE;
 
 		// Tell framework the soil type of this grid cell
-		soilparameters(gridcell.soiltype,soilcode);
+		soil_parameters(gridcell.soiltype,soilcode);
 
 		// For Windows shell - clear graphical output
 		// (ignored on other platforms)
@@ -312,7 +316,8 @@ bool DemoInput::getclimate(Gridcell& gridcell) {
 
 	// Send environmental values for today to framework
 
-	climate.dndep  = ndep / (365.0 * 10000.0);
+	gridcell.dNH4dep = ndep / 2.0 / 365.0 * HA_PER_M2;
+	gridcell.dNO3dep = ndep / 2.0 / 365.0 * HA_PER_M2;
 
 	climate.co2 = co2;
 

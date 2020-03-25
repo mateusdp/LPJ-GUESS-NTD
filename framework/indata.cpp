@@ -648,8 +648,8 @@ void TimeDataD::ParseNCells() {
 
 int TimeDataD::ParseNYearsLocal() {
 
-	int i = 0, count1 = 0, prevLine = 0, nyears1 = 0, nyears2 = 0, n = 0;
-	char line[MAXLINE];
+	int i = 0, count1 = 0, prevLine = 0, nyears1 = 0, nyears2 = 0, n = 0, firstyear1 = -100000, firstyear2 = -100000;
+	char line[MAXLINE], message[] = "Make sure all coordinates have the same data years !";
 	bool new_coord = false;
 	float d1 = 0,d2 = 0,d3 = 0, d1_prevLine = 0, d2_prevLine = 0;
 
@@ -663,7 +663,7 @@ int TimeDataD::ParseNYearsLocal() {
 				if(ifheader && (d1 != d1_prevLine || d2 != d2_prevLine)) {	// First line of new coordinate
 					nyears2 = i - prevLine;
 					new_coord = true;
-					firstyear = (int)d3;
+					firstyear2 = (int)d3;
 				}
 				else if(count1 == 2 && d1 <= 180.0) {
 					nyears2 = i - prevLine - 1;
@@ -672,17 +672,18 @@ int TimeDataD::ParseNYearsLocal() {
 
 				if(new_coord) {
 
-					if((nyears1 != nyears2) && n > 1) {
-						printf("FORMAT ERROR in input file %s !\n", fileName);
+					if((nyears1 != nyears2 || firstyear1 != firstyear2) && n > 1) {
+						printf("FORMAT ERROR in input file %s\n%s\n\n", fileName, message);
 						return 0;
 					}
 					nyears1 = nyears2;		//NB. not set if input file has data for only one coordinate !
+					firstyear1=firstyear2;
 					prevLine = i;
 					n++;
 					new_coord = false;
 				}
 				else if(!ifheader && i == prevLine + 1) {
-					firstyear = (int)d1;
+					firstyear2 = (int)d1;
 				}
 
 				i++;
@@ -693,17 +694,20 @@ int TimeDataD::ParseNYearsLocal() {
 	}
 
 	if(feof(ifp)) {	// Last cell
-
-		if(ifheader)
+	
+		if(ifheader) {
 			nyears2 = i - prevLine;
-		else
+		}
+		else {
 			nyears2 = i - prevLine - 1;
-		if((nyears1 != nyears2) && n > 1) {
-			printf("FORMAT ERROR in input file %s !\n", fileName);
+		}
+		if((nyears1 != nyears2 || firstyear1 != firstyear2) && n>1) {
+			printf("FORMAT ERROR in input file %s\n%s\n\n", fileName, message);
 			return 0;
 		}
 	}
 
+	firstyear = firstyear2;
 	rewind(ifp);
 	return nyears2;
 }

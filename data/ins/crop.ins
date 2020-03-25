@@ -12,7 +12,6 @@ import "landcover.ins"
 param "file_sdates" (str "")
 param "file_hdates" (str "")
 param "file_Nfert" (str "")
-param "file_Nfert_st" (str "")
 
 !///////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,17 +21,16 @@ param "file_Nfert_st" (str "")
 ! Prefined yearly output
 ! These files may be outcommented if their output is not required. 
 
-file_npool_forest "npool_forest.out"
 file_yield "yield.out"
-file_yield1 "yield1.out"
-file_yield2 "yield2.out"
-file_sdate1 "sdate1.out"
-file_sdate2 "sdate2.out"
-file_hdate1 "hdate1.out"
-file_hdate2 "hdate2.out"
+!file_yield1 "yield1.out"
+!file_yield2 "yield2.out"
+!file_sdate1 "sdate1.out"
+!file_sdate2 "sdate2.out"
+!file_hdate1 "hdate1.out"
+!file_hdate2 "hdate2.out"
 file_lgp "lgp.out"
 file_phu "phu.out"
-file_fphu "fphu.out"
+!file_fphu "fphu.out"
 file_fhi "fhi.out"
 file_irrigation "irrigation.out"
 file_seasonality "seasonality.out"
@@ -42,17 +40,17 @@ file_seasonality "seasonality.out"
 !// RUN PARAMETERS AND OPTIONS 
 !
 
-minimizecftlist 1	   ! Checks st fraction file for st:s with fractions>0.0 at any time or place; other st:s are exluded from the stlist
-frac_fixed_default_crops 0 ! whether to use all active crop stand types (0) or only stand types with suitable rainfed crops
-			   ! (based on crop pft tb and gridcell latitude) (1) when using fixed crop fractions
+minimizecftlist 0		! Checks st fraction file for st:s with fractions>0.0 at any time or place; other st:s are exluded from the stlist
+frac_fixed_default_crops 0	! Whether to use all active crop stand types (0) or only stand types with suitable rainfed crops
+				! (based on crop pft tb and gridcell latitude) (1) when using fixed crop fractions
 
-nyears_cropland_ramp 0 	  ! Number of years to increase cropland fraction linearly from 0 to first year's value
-ifintercropgrass 1	  ! Whether to grow grass as cover crop between growing periods
-iftillage 1		  ! Whether to simulate tillage by increasing soil respiration
-
-ifcalcdynamic_phu 1	  ! Whether to calculate dynamic potential heat units
-ifdyn_phu_limit 0	  ! Whether to limit dynamic phu calculation to a period specified by nyear_dyn_phu
-nyear_dyn_phu 50	  ! Number of years to calculate dynamic phu if dynamic_phu_limit is 1
+nyears_cropland_ramp 0 		! Number of years to increase cropland fraction linearly from 0 to first year's value
+ifintercropgrass 1		! Whether to grow grass as cover crop between growing periods
+iftillage 1			! Whether to simulate tillage by increasing soil respiration
+	
+ifcalcdynamic_phu 1		! Whether to calculate dynamic potential heat units
+ifdyn_phu_limit 0		! Whether to limit dynamic phu calculation to a period specified by nyear_dyn_phu
+nyear_dyn_phu 50		! Number of years to calculate dynamic phu if dynamic_phu_limit is 1
 
 !///////////////////////////////////////////////////////////////////////////////////////
 !// PARAMETERS FOR STAND TYPES
@@ -70,7 +68,8 @@ group "crop" (
 
 	include 1
 	phenology "cropgreen"
-	rootdist 0.9 0.1	! Fraction of fine roots in the upper and lower soil layers.
+	! rootdist 0.9 0.1	! Fraction of fine roots in the upper and lower soil layers.
+	rootdist 0.18 0.18 0.18 0.18 0.18 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 ! Fraction of fine roots in the 15 soil layers.
 	fireresist 0.5
 	respcoeff 1
 	gmin 0.5
@@ -153,8 +152,8 @@ group "TeW" (
 	sdatenh 330
 	sdatesh 150
 	lgp_def 230
-	tb 0		! base temperature
-	trg 12		! temperatures have a vernalizing effect until trg
+	tb 0				! base temperature
+	trg 12				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 0.5
 	pb 8
@@ -167,18 +166,18 @@ group "TeW" (
 	hlimitdatenh 269
 	hlimitdatesh 89
 
-	fphusen 0.7	! SWAT 0.9
+	fphusen 0.7			! SWAT 0.9
 
 	shapesenescencenorm 1
 	flaimaxharvest 0
-	hiopt 0.5	! FAO/IIASA AEZ				
-	himin 0.2						
+	hiopt 0.5			! FAO/IIASA AEZ	
+	himin 0.2
 
 	ifsdautumn 1
 	tempautumn 12
 	tempspring 5
 !	maxtemp_sowing 15
-	forceautumnsowing 0	! 0 No forcing, 1 Autumn, 2 Spring
+	forceautumnsowing 0		! 0 No forcing, 1 Autumn, 2 Spring
 	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
@@ -196,11 +195,11 @@ group "TrRi" (
 	pstemp_high 30	
 	pstemp_max 45	
 
-	sdatenh 120	! for initialization, otherwise calculated, possibly several growing seasons in one year
-	sdatesh 300	! idem
+	sdatenh 120			! for initialization, otherwise calculated, possibly several growing seasons in one year
+	sdatesh 300			! idem
 	lgp_def 230
-	tb 10		! base temperature
-	trg 10		! temperatures have a vernalizing effect until trg
+	tb 10				! base temperature
+	trg 10				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1
 	pb 24
@@ -209,10 +208,10 @@ group "TrRi" (
 	hlimitdatenh 60
 	hlimitdatesh 240
 
-	fphusen 0.80		! SWAT 0.9
+	fphusen 0.80			! SWAT 0.9
 
 	shapesenescencenorm 1
-	flaimaxharvest 0	
+	flaimaxharvest 0
 	hiopt 0.5
 	himin 0.25
 
@@ -230,12 +229,12 @@ group "TeCo" (
 	include 1
 	pathway "c4"
 	phengdd5ramp 500
-	pstemp_min 6						
+	pstemp_min 6
 	pstemp_low 20
 	pstemp_high 45
 	pstemp_max 55
 
-	respcoeff 0.15	! 110301
+	respcoeff 0.15			! 110301
 
 	sdatenh 140
 	sdatesh 320
@@ -244,21 +243,21 @@ group "TeCo" (
 	sd_adjust_par1 60.0
 	sd_adjust_par2 85.0
 	sd_adjust_par3 29.5
-	tb 8		! SWAT
-	trg 8		! temperatures have a vernalizing effect until trg
+	tb 8				! SWAT
+	trg 8				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1	
 	pb 0
 	ps 24	
 	phu 1400
-	hlimitdatenh 360 ! for initialization
-	hlimitdatesh 176 ! idem; changed from 175 111115
+	hlimitdatenh 360 		! for initialization
+	hlimitdatesh 176 		! idem; changed from 175 111115
 
-	fphusen 0.75	! SWAT 0.9
+	fphusen 0.75			! SWAT 0.9
 
 	shapesenescencenorm 1
 	flaimaxharvest 0
-	hiopt 0.5	! SWAT (silage 0.9)
+	hiopt 0.5			! SWAT (silage 0.9)
 	himin 0.3
 
 	tempspring 14
@@ -276,7 +275,7 @@ group "TrMi" (
 	include 1
 	pathway "c4"
 	phengdd5ramp 500
-	pstemp_min 6						
+	pstemp_min 6
 	pstemp_low 20
 	pstemp_high 45
 	pstemp_max 55
@@ -286,23 +285,23 @@ group "TrMi" (
 	sdatenh 150
 	sdatesh 330
 	lgp_def 245
-	tb 10		! base temperature
-	trg 10		! temperatures have a vernalizing effect until trg
+	tb 10				! base temperature
+	trg 10				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1	
 	pb 0
 	ps 24	
 	phu 2000
 	hlimitdatenh 50	
-	hlimitdatesh 230	
+	hlimitdatesh 230
 
-	fphusen 0.85	! SWAT 0.9
+	fphusen 0.85			! SWAT 0.9
 
 	shapesenescencenorm 1
 	flaimaxharvest 0
-	hiopt 0.25	! SWAT
+	hiopt 0.25			! SWAT
 	himin 0.1
-	tempspring 12	
+	tempspring 12
 	eps_mon 0.48 0.19 0.67 0.14 0.12 0.13 0.14 0.29 0.24
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
@@ -324,21 +323,21 @@ group "TePu" (
 	sdatenh 100
 	sdatesh 280
 	lgp_def 245
-	tb 3		! base temperature
-	trg 3		! temperatures have a vernalizing effect until trg
+	tb 3				! base temperature
+	trg 3				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1
 	pb 0
 	ps 24
 	phu 2000
-	hlimitdatenh 364	
+	hlimitdatenh 364
 	hlimitdatesh 180
 
 	fphusen 0.90
 
 	shapesenescencenorm 2
 	flaimaxharvest 0
-	hiopt 0.6	! SWAT 0.61
+	hiopt 0.6			! SWAT 0.61
 	himin 0.01
 	tempspring 10
 	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19
@@ -354,7 +353,7 @@ group "TeSb" (
 	include 1
 	pathway "c3"
 	phengdd5ramp 500
-	pstemp_min -5							
+	pstemp_min -5
 	pstemp_low 10
 	pstemp_high 30
 	pstemp_max 45
@@ -362,8 +361,8 @@ group "TeSb" (
 	sdatenh 90
 	sdatesh 270
 	lgp_def 240
-	tb 3		! base temperature
-	trg 3		! temperatures have a vernalizing effect until trg
+	tb 3				! base temperature
+	trg 3				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1
 	pb 0
@@ -376,7 +375,7 @@ group "TeSb" (
 
 	shapesenescencenorm 0
 	flaimaxharvest 0.75
-	hiopt 2.0	! SWAT (Achtung below-ground) ! 0.15 AEZ (fraction of total biomass)
+	hiopt 2.0			! SWAT (Achtung below-ground) ! 0.15 AEZ (fraction of total biomass)
 	himin 1.1
 	tempspring 8	
 	aboveground_ho 0
@@ -401,8 +400,8 @@ group "TrMa" (
 	sdatenh 100
 	sdatesh 280
 	lgp_def 230
-	tb 15		! base temperature
-	trg 15		! temperatures have a vernalizing effect until trg
+	tb 15				! base temperature
+	trg 15				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1
 	pb 0
@@ -430,19 +429,19 @@ group "TeSf" (
 
 	grass
 	crop
-	include 1		
+	include 1
 	pathway "c3"
 	phengdd5ramp 500
-	pstemp_min -5		
-	pstemp_low 10	
-	pstemp_high 30	
-	pstemp_max 45	
+	pstemp_min -5
+	pstemp_low 10
+	pstemp_high 30
+	pstemp_max 45
 
 	sdatenh 120
 	sdatesh 300
 	lgp_def 180
-	tb 6		! base temperature
-	trg 6		! temperatures have a vernalizing effect until trg
+	tb 6				! base temperature
+	trg 6				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1
 	pb 0
@@ -474,20 +473,20 @@ group "TeSo" (
 
 	grass
 	crop
-	include 1			
+	include 1
 	pathway "c3"
 	phengdd5ramp 500
-	pstemp_min -5		
-	pstemp_low 10	
-	pstemp_high 30	
-	pstemp_max 45	
+	pstemp_min -5
+	pstemp_low 10
+	pstemp_high 30
+	pstemp_max 45
 
 	sdatenh 140
 	sdatesh 320
 	lgp_def 190
-	tb 10		! base temperature
+	tb 10				! base temperature
 
-	trg 10		! temperatures have a vernalizing effect until trg
+	trg 10				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1
 	pb 0
@@ -496,11 +495,11 @@ group "TeSo" (
 	hlimitdatenh 330
 	hlimitdatesh 146
 
-	fphusen 0.6	! SWAT 0.9
+	fphusen 0.6			! SWAT 0.9
 
 	shapesenescencenorm 0
 	flaimaxharvest 0
-	hiopt 0.3	! SWAT 0.31
+	hiopt 0.3			! SWAT 0.31
 	himin 0.01
 	tempspring 13
 	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19
@@ -523,8 +522,8 @@ group "TrPe" (
 	sdatenh 140
 	sdatesh 320
 	lgp_def 190
-	tb 14		! base temperature
-	trg 14		! temperatures have a vernalizing effect until trg
+	tb 14				! base temperature
+	trg 14				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1
 	pb 0
@@ -533,13 +532,13 @@ group "TrPe" (
 	hlimitdatenh 330
 	hlimitdatesh 146 
 
-	fphusen 0.75	! SWAT 0.9
+	fphusen 0.75			! SWAT 0.9
 
 	shapesenescencenorm 0
 	flaimaxharvest 0
-	hiopt 0.4	! SWAT
+	hiopt 0.4			! SWAT
 	himin 0.3
-	tempspring 15	
+	tempspring 15
 	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
@@ -550,7 +549,7 @@ group "TeRa" (
 
 	grass
 	crop
-	include 1			
+	include 1
 	pathway "c3"
 	phengdd5ramp 500
 	pstemp_min -5	
@@ -561,8 +560,8 @@ group "TeRa" (
 	sdatenh 300
 	sdatesh 120
 	lgp_def 230
-	tb 0		! base temperature
-	trg 12		! temperatures have a vernalizing effect until trg
+	tb 0				! base temperature
+	trg 12				! temperatures have a vernalizing effect until trg
 	pvd 0
 	psens 1
 	pb 8
@@ -579,13 +578,13 @@ group "TeRa" (
 
 	shapesenescencenorm 1
 	flaimaxharvest 0
-	hiopt 0.3	! SWAT Argentina	; winter rapeseed 0.4 (Frick et al. 1994)
-	himin 0.15	! SWAT 0.01
+	hiopt 0.3			! SWAT Argentina; winter rapeseed 0.4 (Frick et al. 1994)
+	himin 0.15			! SWAT 0.01
 	ifsdautumn 1
 	tempautumn 17
 	tempspring 5
 	vern_lag 20
-	forceautumnsowing 0	! 0 No forcing, 1 Autumn, 2 Spring
+	forceautumnsowing 0		! 0 No forcing, 1 Autumn, 2 Spring
 	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )

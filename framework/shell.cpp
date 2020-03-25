@@ -3,7 +3,7 @@
 /// \brief The "shell" is the model's interface to the world
 ///
 /// \author Joe Siltberg
-/// $Date: 2016-12-08 18:24:04 +0100 (Do, 08. Dez 2016) $
+/// $Date: 2019-02-08 15:55:08 +0100 (Fr, 08. Feb 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,8 +69,8 @@ void open3d() {
 	current_shell->open3d();
 }
 
-void plot3d(const char* filename) {
-	current_shell->plot3d(filename);
+void plot3d() {
+	current_shell->plot3d();
 }
 
 bool abort_request_received() {
@@ -81,6 +81,17 @@ void set_shell(Shell* s) {
 	current_shell = std::auto_ptr<Shell>(s);
 }
 
+void plot3d_fileopen() {
+	current_shell->plot3d_fileopen();
+}
+
+void plot3d_fileclose() {
+	current_shell->plot3d_fileclose();
+}
+
+FILE* plot3d_getfilehandle() {
+	return current_shell->plot3d_getfilehandle();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Implementation of CommandLineShell
@@ -123,7 +134,7 @@ void CommandLineShell::open3d() {
 	// Can't do anything here	 
 }
 
-void CommandLineShell::plot3d(const char* filename) {
+void CommandLineShell::plot3d() {
 	// Can't do anything here	 
 }
 
@@ -139,4 +150,18 @@ bool CommandLineShell::abort_request_received() {
 	// Can't do anything here
 
 	return false;
+}
+
+void CommandLineShell::plot3d_fileopen() {
+	// Can't do anything here
+}
+
+void CommandLineShell::plot3d_fileclose() {
+	// Can't do anything here
+}
+
+FILE* CommandLineShell::plot3d_getfilehandle() { 
+	// Can't do anything here
+
+	return 0; 
 }

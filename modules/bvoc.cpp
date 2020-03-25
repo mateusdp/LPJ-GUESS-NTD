@@ -5,7 +5,7 @@
 /// Calculation of VOC production and emission by vegetation.
 ///
 /// \author Guy Schurgers (using Almut's previous attempts)
-/// $Date: 2017-09-20 16:00:36 +0200 (Mi, 20. Sep 2017) $
+/// $Date: 2019-04-23 14:48:43 +0200 (Di, 23. Apr 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,7 +39,7 @@ const double Tstand = 30;          // standard temperature, oC
 
 void initbvoc(){
 
-	// initialising the VOC calculations: calculating the fraction of electrones
+	// initialising the VOC calculations: calculating the fraction of electrons
 	// available for isoprene production from the isoprene and monoterpene
 	// emission capacities (at T = 30oC and Q = 1000 umol m-2 s-1) as given by e.g.
 	// Guenther et al. (1997) for all PFTs
@@ -52,13 +52,21 @@ void initbvoc(){
 	const double daylength = 12;
 
 	PhotosynthesisResult phot;
+
+	PhotosynthesisEnvironment ps_env;
+					
+	PhotosynthesisStresses ps_stress;
+	ps_stress.no_stress(); // No limits in the initialization of BVOC calculations
+
  	pftlist.firstobj();
  	while (pftlist.isobj) {
  		Pft& pft = pftlist.getobj();
 
 		double par = frabs_Q * Qstand * 3600 * daylength / alphaa(pft) / CQ;
 				// par for the standard condition, J m-2 d-1
-		photosynthesis(CO2, Tstand, par, daylength, 1.0, pft.lambda_max, pft, 1.0, false, phot, -1);
+
+		ps_env.set(CO2, Tstand, par, 1.0, daylength);
+		photosynthesis(ps_env, ps_stress, pft, pft.lambda_max, 1.0, -1, phot);
 
 		double coeff = 1e-3 / (phot.je + phot.rd_g/24) / pft.sla / Cfrac;
 
@@ -135,9 +143,9 @@ void iso_mono(double co2, double temp, double daylength, const Pft& pft, double 
 	dmonstor = 1. / max(min(dmonstor, tcstor_max), tcstor_min) / date.subdaily;
 
 	// convert from g C m-2 d-1 to mg C m-2 d-1
-	indiv.iso *= 1e3 / date.subdaily;
+	indiv.iso *= MG_PER_G / date.subdaily;
 	for(im=0;im<NMTCOMPOUNDS;im++){
-		indiv.mon[im] *= 1e3 / date.subdaily;
+		indiv.mon[im] *= MG_PER_G / date.subdaily;
 		rmonstor[im] = -indiv.monstor[im] * dmonstor + pft.storfrac_mon[im] * indiv.mon[im];
 		indiv.monstor[im] += rmonstor[im];
 		indiv.mon[im] -= rmonstor[im];

@@ -2,7 +2,7 @@
 /// \file lamarquendep.cpp
 /// \brief Functionality for reading the Lamarque Nitrogen deposition data set
 ///
-/// $Date: 2014-06-16 15:46:53 +0200 (Mo, 16. Jun 2014) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -241,6 +241,36 @@ void NDepData::get_one_calendar_year(int calendar_year,
 		mndrydep[m] = NHxDryDep[ndep_year][m] + NOyDryDep[ndep_year][m];
 		
 		mnwetdep[m] = NHxWetDep[ndep_year][m] + NOyWetDep[ndep_year][m];
+	}
+}
+
+void NDepData::get_one_calendar_year(int calendar_year,
+									 double mNHxdrydep[12],
+									 double mNOydrydep[12],
+									 double mNHxwetdep[12],
+									 double mNOywetdep[12]) {
+	int ndep_year = 0;
+
+	if (timeseries != FIXED && calendar_year >= Lamarque::FIRSTHISTYEARNDEP) {
+		ndep_year = (int)((calendar_year - Lamarque::FIRSTHISTYEARNDEP)/10);
+	}
+
+	if (timeseries == HISTORIC && ndep_year >= NYEAR_HISTNDEP) {
+		fail("Tried to get ndep for year %d (not included in Lamarque historic ndep data set)",
+		     calendar_year);
+	}
+	else if (timeseries != FIXED && ndep_year >= NYEAR_TOTNDEP) {
+		fail("Tried to get ndep for year %d (not included in Lamarque historic or scenario ndep data set)",
+		     calendar_year);
+	}
+
+	for (int m = 0; m < 12; m++) {
+
+		mNHxdrydep[m] = NHxDryDep[ndep_year][m];
+		mNOydrydep[m] = NOyDryDep[ndep_year][m];
+		
+		mNHxwetdep[m] = NHxWetDep[ndep_year][m];
+		mNOywetdep[m] = NOyWetDep[ndep_year][m];
 	}	
 }
 

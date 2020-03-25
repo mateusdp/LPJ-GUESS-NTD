@@ -2,7 +2,11 @@
 /// \file watch_diurnal.cpp
 /// \brief Input module for reading in WATCH diurnal data from NetCDF files
 ///
-/// $Date: 2015-12-14 16:08:55 +0100 (Mo, 14. Dez 2015) $
+/// \TODO This input module have not implemented reading in of relative humidity and 
+/// windspeed (needed) for Blaze, currently taken from cru_input. This has the implication 
+/// that the climate variables are not synced. 
+///
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -171,7 +175,15 @@ bool WATCHDiurnalInput::getgridcell(Gridcell& gridcell) {
 		load_watch_data(watch_dir, "Rainf",  cell_id, watch_rainf,  false);
 		load_watch_data(watch_dir, "Snowf",  cell_id, watch_snowf,  false);
 
-		gridcell.climate.instype=SWRAD_TS;
+		// Get nitrogen deposition data.
+		/* Since the historic data set does not reach decade 2010-2019,
+		 * we need to use the RCP data for the last decade. */
+		ndep.getndep(param["file_ndep"].str, gridcell.get_lon(), gridcell.get_lat(), Lamarque::RCP60);
+
+		// The insolation data will be sent (in function getclimate, below)
+		// as incoming shortwave radiation, averages are over 24 hours
+
+		gridcell.climate.instype = SWRAD_TS;
 
 		return true;
 	}
@@ -187,14 +199,19 @@ bool WATCHDiurnalInput::getclimate(Gridcell& gridcell) {
 
 		if (date.day == 0) {
 			double dprec[365];
-			double mndrydep[12];
-			double mnwetdep[12];
+	        double mNHxdrydep[12], mNOydrydep[12], mNHxwetdep[12], mNOywetdep[12];
+			ndep.get_one_calendar_year(date.year - nyear_spinup + FIRST_WATCH_YEAR,
+			                           mNHxdrydep, mNOydrydep,
+									   mNHxwetdep, mNOywetdep);
 
-			get_monthly_ndep(FIRST_WATCH_YEAR + date.year - nyear_spinup, mndrydep, mnwetdep);
+			//get_monthly_ndep(FIRST_WATCH_YEAR + date.year - nyear_spinup, mndrydep, mnwetdep);
 
 			// Distribute N deposition - without rain days
 			std::fill_n(dprec, 365, 0);
-			distribute_ndep(mndrydep, mnwetdep, dprec, dndep);
+			// Distribute N deposition
+			distribute_ndep(mNHxdrydep, mNOydrydep,
+							mNHxwetdep, mNOywetdep,
+							dprec,dNH4dep,dNO3dep);
 		}
 
 		int year = date.year < nyear_spinup ?
@@ -233,7 +250,8 @@ bool WATCHDiurnalInput::getclimate(Gridcell& gridcell) {
 		date.subdaily = diurnal ? SUBDAILY : 1;
 
 		// Nitrogen deposition
-		climate.dndep = dndep[date.day];
+		gridcell.dNH4dep = dNH4dep[date.day];
+		gridcell.dNO3dep = dNO3dep[date.day];
 
 		return true;
 	}

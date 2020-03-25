@@ -593,6 +593,10 @@ void update_seasonality(Climate& climate) {
 /// Monitors climate history relevant for sowing date calculation. Calculates initial sowing dates/windows.
 void crop_sowing_gridcell(Gridcell& gridcell) {
 
+	if (!run_landcover || !run[CROPLAND]) {
+		return;
+	}
+
 	Climate& climate = gridcell.climate;
 
 	if (date.year==0 && date.day == 0) {
@@ -772,6 +776,10 @@ void crop_sowing_date(Patch& patch, Pft& pft) {
 
 /// handles sowing date calculations for crop pft:s on patch level
 void crop_sowing_patch(Patch& patch) {
+
+	if (patch.stand.landcover != CROPLAND) {
+		return;
+	}
 
 	pftlist.firstobj();
 	Gridcell& gridcell = patch.stand.get_gridcell();

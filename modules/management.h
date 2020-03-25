@@ -2,7 +2,7 @@
 /// \file management.h
 /// \brief Harvest functions for cropland, managed forest and pasture			
 /// \author Mats Lindeskog
-/// $Date: 2016-12-08 18:24:04 +0100 (Do, 08. Dez 2016) $
+/// $Date: 2019-10-10 15:00:31 +0200 (Do, 10. Okt 2019) $
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef LPJ_GUESS_MANAGEMENT_H
@@ -43,6 +43,8 @@ void nfert(Patch& patch);
 void crop_rotation(Stand& stand);
 /// Determines cutting intensity before wood harvest
 double cut_fraction(Patch& patch);
+/// Sets forest management for all stands this year
+void manage_forests(Gridcell& gridcell);
 
 /// Struct for copies of carbon and nitrogen of an individual and associated litter and fluxes resulting from harvest
 /// This is needed if we want to harvest only part of a stand, as during land cover change.

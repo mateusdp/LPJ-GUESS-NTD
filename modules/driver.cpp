@@ -3,7 +3,7 @@
 /// \brief Environmental driver calculation/transformation
 ///
 /// \author Ben Smith
-/// $Date: 2017-04-24 19:33:38 +0200 (Mo, 24. Apr 2017) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +29,8 @@
 
 #include "config.h"
 #include "driver.h"
-
+#include "blaze.h"
+#include "simfire.h"
 
 /// Function for generating random numbers
 /** Returns a random floating-point number in the range 0-1.
@@ -53,90 +54,6 @@ double randfrac(long& seed) {
 	else if (seed < 0) seed += modulus;
 	return (double)seed / fmodulus;
 }
-
-///////////////////////////////////////////////////////////////////////////////////////
-// SOILPARAMETERS
-// May be called from input/output module to initialise stand Soiltype objects when
-// soil data supplied as LPJ soil code rather than soil physical parameter values
-
-
-void soilparameters(Soiltype& soiltype, int soilcode) {
-
-	// DESCRIPTION
-	// Derivation of soil physical parameters given LPJ soil code
-
-	// INPUT AND OUTPUT PARAMETER
-	// soil = patch soil
-
-	const double PERC_EXP = 2.0;
-		// exponent in percolation equation [k2; LPJF]
-		// (Eqn 31, Haxeltine & Prentice 1996)
-		// Changed from 4 to 2 (Sitch, Thonicke, pers comm 26/11/01)
-
-	double data[9][9] = {
-
-		//    0  empirical parameter in percolation equation (k1) (mm/day)
-		//    1  volumetric water holding capacity at field capacity minus vol water
-		//       holding capacity at wilting point (Hmax), as fraction of soil layer
-		//       depth
-		//    2  thermal diffusivity (mm2/s) at wilting point (0% WHC)
-		//    3  thermal diffusivity (mm2/s) at 15% WHC
-		//    4  thermal diffusivity at field capacity (100% WHC)
-		//       Thermal diffusivities follow van Duin (1963),
-		//       Jury et al (1991), Fig 5.11.
-		//    5  wilting point as fraction of depth (calculation method described in
-		//       Prentice et al 1992)
-		//    6  saturation capacity following Cosby (1984)
-		//    7  sand fraction
-		//    8  clay fraction
-
-		//    0      1      2      3      4      5      6       7       8         soilcode
-		//  ------------------------------------------------------------------
-
-		{   5.0, 0.110,   0.2, 0.800,   0.4,	0.074,	0.395,	0.90,	0.05},    // 1	Coarse
-		{   4.0, 0.150,   0.2, 0.650,   0.4,	0.184,	0.439,	0.35,	0.15},    // 2	Medium
-		{   3.0, 0.120,   0.2, 0.500,   0.4,	0.274,	0.454,	0.30,	0.45},    // 3	Fine
-		{   4.5, 0.130,   0.2, 0.725,   0.4,	0.129,	0.417,	0.60,	0.15},    // 4	Medium-coarse
-		{   4.0, 0.115,   0.2, 0.650,   0.4,	0.174,	0.425,	0.60,	0.30},    // 5	Fine-coarse
-		{   3.5, 0.135,   0.2, 0.575,   0.4,	0.229,	0.447,	0.20,	0.30},    // 6	Fine-medium
-		{   4.0, 0.127,   0.2, 0.650,   0.4,	0.177,	0.430,	0.45,	0.25},    // 7	Fine-medium-coarse
-		{   9.0, 0.300,   0.1, 0.100,   0.1,	0.200,	0.600,	0.28,	0.12},    // 8	Organic (values not know for wp), sand and clay are from Parton 2010
-		{   0.2, 0.100,   0.2, 0.500,   0.4,	0.100,	0.250,	0.10,	0.80}     // 9	Vertisols (values not know for wp)
-	};
-
-	if (soilcode<1 || soilcode>9)
-		fail("soilparameters: invalid LPJ soil code (%d)",soilcode);
-
-
-	if (textured_soil) {
-		soiltype.sand_frac = data[soilcode-1][7];
-		soiltype.clay_frac = data[soilcode-1][8];
-	} else {
-		// Using fixed values from Parton et al. (2010)
-		soiltype.sand_frac = 0.28;
-		soiltype.clay_frac = 0.12;
-	}
-
-	soiltype.silt_frac = 1 - soiltype.sand_frac - soiltype.clay_frac;
-	soiltype.perc_base = data[soilcode-1][0];
-	soiltype.perc_exp = PERC_EXP;
-	soiltype.awc[0] = SOILDEPTH_UPPER * data[soilcode-1][1];
-	soiltype.awc[1] = SOILDEPTH_LOWER * data[soilcode-1][1];
-	soiltype.thermdiff_0 = data[soilcode-1][2];
-	soiltype.thermdiff_15 = data[soilcode-1][3];
-	soiltype.thermdiff_100 = data[soilcode-1][4];
-	soiltype.wp[0] = SOILDEPTH_UPPER * data[soilcode-1][5];
-	soiltype.wp[1] = SOILDEPTH_LOWER * data[soilcode-1][5];
-	soiltype.wsats[0] = SOILDEPTH_UPPER * data[soilcode-1][6];
-	soiltype.wsats[1] = SOILDEPTH_LOWER * data[soilcode-1][6];
-	soiltype.wtot = (data[soilcode-1][1] + data[soilcode-1][5]) * (SOILDEPTH_UPPER + SOILDEPTH_LOWER);
-
-	if (!ifcentury) {
-		// override the default SOM years with 70-80% of the spin-up period
-		soiltype.updateSolveSOMvalues(nyear_spinup);
-	}
-}
-
 
 /// Generates quasi-daily values for a single month, based on monthly means
 /**
@@ -338,17 +255,20 @@ void interp_monthly_totals_conserve(const double* mvals, double* dvals,
  *
  *  \see distribute_ndep
  *
- *  \param ndry        Dry N deposition (monthly mean of daily deposition)
- *  \param nwet        Wet N deposition (monthly mean of daily deposition)
+ *  \param NH4dry      Dry NH4 deposition (monthly mean of daily deposition)
+ *  \param NO3dry      Dry NO3 deposition (monthly mean of daily deposition)
+ *  \param NH4wet      Wet NH4 deposition (monthly mean of daily deposition)
+ *  \param NO3wet      Wet NO3 deposition (monthly mean of daily deposition)
  *  \param time_steps  Number of days in the month
  *  \param dprec       Array of precipitation values
- *  \param dndep       Output, total N deposition for each day
+ *  \param dNH4dep     Output, total NH4 deposition for each day
+ *  \param dNO3dep     Output, total NO3 deposition for each day
  */
-void distribute_ndep_single_month(double ndry,
-                                  double nwet,
+void distribute_ndep_single_month(double NH4dry,double NO3dry, 
+                                  double NH4wet,double NO3wet,
                                   int time_steps,
                                   const double* dprec,
-                                  double* dndep) {
+                                  double* dNH4dep,double* dNO3dep) {
 
 	// First count number of days with precipitation
 	int raindays = 0;
@@ -363,13 +283,16 @@ void distribute_ndep_single_month(double ndry,
 	for (int i = 0; i < time_steps; i++) {
 
 		// ndry is included in all days
-		dndep[i] = ndry;
+		dNH4dep[i] = NH4dry;
+		dNO3dep[i] = NO3dry;
 
 		if (raindays == 0) {
-			dndep[i] += nwet;
+			dNH4dep[i] += NH4wet;
+			dNO3dep[i] += NO3wet;
 		}
 		else if (!negligible(dprec[i])) {
-			dndep[i] += (nwet*time_steps)/raindays;
+			dNH4dep[i] += (NH4wet*time_steps)/raindays;
+			dNO3dep[i] += (NO3wet*time_steps)/raindays;
 		}
 	}
 }
@@ -381,17 +304,22 @@ void distribute_ndep_single_month(double ndry,
  *  \param mndry Monthly means of daily dry N deposition
  *  \param mnwet Monthly means of daily wet N deposition
  *  \param dprec Daily precipitation data
- *  \param dndep Output, total N deposition for each day
+ *  \param dNH4dep Output, total NH4 deposition for each day
+ *  \param dNO3dep Output, total NO3 deposition for each day
  */
-void distribute_ndep(const double* mndry, const double* mnwet,
-                     const double* dprec, double* dndep) {
+void distribute_ndep(const double* mNH4dry,const double* mNO3dry,
+                     const double* mNH4wet,const double* mNO3wet,
+					 const double* dprec, 
+					 double* dNH4dep,double* dNO3dep) {
 
 	Date date;
 	int start_of_month = 0;
 
 	for (int m = 0; m < 12; m++) {
-		distribute_ndep_single_month(mndry[m], mnwet[m], date.ndaymonth[m],
-		                             dprec+start_of_month, dndep+start_of_month);
+		distribute_ndep_single_month(mNH4dry[m],mNO3dry[m],
+			                         mNH4wet[m],mNO3wet[m],
+									 date.ndaymonth[m],
+		 	 	 	 	 	 	 	 dprec+start_of_month,dNH4dep+start_of_month,dNO3dep+start_of_month);
 
 		start_of_month += date.ndaymonth[m];
 	}
@@ -499,114 +427,6 @@ void prdaily(double* mval_prec, double* dval_prec, double* mval_wet, long& seed,
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//  SOIL TEMPERATURES
-//  Call each simulation day following update of daily air temperature prior to canopy
-//  exchange and SOM dynamics
-
-void soiltemp(const Climate& climate, Soil& soil) {
-
-	// DESCRIPTION
-	// Calculation of soil temperature at 0.25 m depth (middle of upper soil layer).
-	// Soil temperatures are assumed to follow surface temperatures according to an
-	// annual sinusoidal cycle with damped oscillation about a common mean, and a
-	// temporal lag.
-
-	// For a sinusoidal cycle, soil temperature at depth z and time t from beginning
-	// of cycle given by (Carslaw & Jaeger 1959; Eqn 52; Jury et al 1991):
-	//
-	//   (1) t(z,t) = t_av + a*exp(-z/d)*sin(omega*t - z/d)
-	//
-	//   where
-	//     t_av      = average (base) air/soil temperature
-	//     a         = amplitude of air temp fluctuation
-	//     exp(-z/d) = fractional amplitude of temp fluctuation at soil depth z,
-	//                 relative to surface temp fluctuation
-	//     z/d       = oscillation lag in angular units at soil depth z
-	//     z         = soil depth
-	//     d         = sqrt(2*k/omega), damping depth
-	//     k         = soil thermal diffusivity
-	//     omega     = 2*PI/tau, angular frequency of oscillation (radians)
-	//     tau       = oscillation period (365 days)
-	//
-	// Here we assume a sinusoidal cycle, but estimate soil temperatures based on
-	// a lag (z/d, converted from angular units to days) relative to air temperature
-	// and damping ( exp(-z/d) ) of soil temperature amplitude relative to air
-	// temperature amplitude. A linear model for change in air temperature with time
-	// during the last 31 days is used to estimate 'lagged' air temperature. Soil
-	// temperature today is thus given by:
-	//
-	//   (2) temp_soil = atemp_mean + exp( -alag ) * ( temp_lag - temp_mean )
-	//
-	//   where
-	//     atemp_mean = mean of monthly mean temperatures for the last year (deg C)
-	//     alag       = oscillation lag in angular units at depth 0.25 m
-	//                  (corresponds to z/d in Eqn 1)
-	//     temp_lag   = air temperature 'lag' days ago (estimated from linear model)
-	//                  where 'lag' = 'alag' converted from angular units to days
-	//
-	// Soil thermal diffusivity (k) is sensitive to soil water content and is estimated
-	// monthly based on mean daily soil water content for the past month, interpolating
-	// between estimates for 0, 15% and 100% AWHC (Van Duin 1963; Jury et al 1991,
-	// Fig 5.11).
-
-	const double DIFFUS_CONV = 0.0864;
-		// conversion factor for soil thermal diffusivity from mm2/s to m2/day
-	const double HALF_OMEGA = 8.607E-3; // corresponds to omega/2 = pi/365 (Eqn 1)
-	const double DEPTH = SOILDEPTH_UPPER * 0.0005;
-		// soil depth at which to estimate temperature (m)
-	const double LAG_CONV = 58.09;
-		// conversion factor for oscillation lag from angular units to days (=365/(2*PI))
-
-	double a, b; // regression parameters
-	double k; // soil thermal diffusivity (m2/day)
-	double temp_lag; // air temperature 'lag' days ago (see above; deg C)
-	double day[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-		16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
-
-	if ((date.year == 0 || date.year == soil.patch.stand.first_year) && date.month == 0 && !date.islastday) {
-
-		// First month of simulation, use air temperature for soil temperature
-
-		soil.temp = climate.temp;
-	}
-	else {
-
-		if (date.islastday) {
-
-			// Linearly interpolate soil thermal diffusivity given mean
-			// soil water content
-
-			if (soil.mwcontupper < 0.15)
-				k = ((soil.soiltype.thermdiff_15 - soil.soiltype.thermdiff_0) / 0.15 *
-					soil.mwcontupper + soil.soiltype.thermdiff_0) * DIFFUS_CONV;
-			else
-				k = ((soil.soiltype.thermdiff_100 - soil.soiltype.thermdiff_15) / 0.85 *
-					(soil.mwcontupper - 0.15) + soil.soiltype.thermdiff_15) * DIFFUS_CONV;
-
-			// Calculate parameters alag and exp(-alag) from Eqn 2
-
-			soil.alag = DEPTH / sqrt(k / HALF_OMEGA); // from Eqn 1
-			soil.exp_alag = exp(-soil.alag);
-
-		}
-
-		// Every day, calculate linear model for trend in daily air
-		// temperatures for the last 31 days: temp_day = a + b * day
-
-		double buffer[31];
-		climate.dtemp_31.to_array(buffer);
-		regress(day, buffer, 31, a, b);
-
-		// Calculate soil temperature
-
-		temp_lag = a + b * (30.0 - soil.alag * LAG_CONV);
-		soil.temp = climate.atemp_mean + soil.exp_alag * (temp_lag - climate.atemp_mean);
-			// Eqn 2
-	}
-}
-
-
 /// Called each simulation day before any other driver or process functions
 void dailyaccounting_gridcell(Gridcell& gridcell) {
 
@@ -625,6 +445,21 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 
 	Climate& climate = gridcell.climate;
 
+	// On first day of the simulation ...
+	if (iftwolayersoil && date.day == 0 && date.year == 0) {
+		// Override some of the wetland Booleans when using the two layer soil. These have no effect in any case, as 
+		// run_peatland must be false
+		ifinundationstress = false;
+		wetland_runon = 0.0;
+		ifmethane = false;
+		ifsaturatewetlands = false;
+
+		// Fail in these cases
+		if (iforganicsoilproperties || ifcarbonfreeze || ifmultilayersnow) {
+			fail("dailyaccounting_gridcell: iforganicsoilproperties, ifcarbonfreeze and ifmultilayersnow must all be 0 if iftwolayersoil = 1");
+		}
+	}
+
 	// On first day of year ...
 
 	if (date.day == 0) {
@@ -632,7 +467,9 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 		climate.agdd5 = 0.0;
 
 		// reset annual nitrogen input variables
-		climate.andep  = 0.0;
+		gridcell.aNH4dep  = 0.0;
+		gridcell.aNO3dep  = 0.0;
+		climate.aprec = 0.0;
 
 		// reset gridcell-level harvest fluxes
 		gridcell.landcover.acflux_landuse_change=0.0;
@@ -694,6 +531,7 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 	          (climate.lat < 0.0 && date.day == COLDEST_DAY_SHEMISPHERE) ) {
 		// In midwinter, reset GDD counter for summergreen phenology
 		climate.gdd5 = 0.0;
+		climate.agdd0 = 0.0;
 		climate.ifsensechill = false;
 	}
 	else if ( (climate.lat >= 0.0 && date.day == WARMEST_DAY_NHEMISPHERE) ||
@@ -707,6 +545,9 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 	if (climate.temp < 5.0 && climate.chilldays <= Date::MAX_YEAR_LENGTH)
 		climate.chilldays++;
 
+	climate.gdd0 += max(0.0, climate.temp);
+	climate.agdd0 += max(0.0, climate.temp);
+
 	// Calculate gtemp (daily/sub-daily depending on the mode)
 	if (date.diurnal()) {
 		climate.gtemps.assign(date.subdaily, 0);
@@ -719,7 +560,8 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 	}
 
 	// Sum annual nitrogen addition to system
-	climate.andep  += climate.dndep;
+	gridcell.aNH4dep += gridcell.dNH4dep;
+	gridcell.aNO3dep += gridcell.dNO3dep;
 
 	// Save yesterday's mean temperature for the last month
 	mtemp_last = climate.mtemp;
@@ -736,6 +578,12 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 	if (mtemp_last >= 5.0 && climate.mtemp < 5.0 && climate.ifsensechill) {
 		climate.gdd5 = 0.0;
 		climate.chilldays = 0;
+	}
+
+	// Update fire related values
+	if (firemodel == BLAZE) {
+		simfire_accounting_gridcell(gridcell);
+		blaze_accounting_gridcell(gridcell.climate);
 	}
 
 	// On last day of month ...
@@ -776,6 +624,9 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 			climate.mtemp_min_20[19] = climate.mtemp_min;
 			climate.mtemp_max_20[19] = climate.mtemp_max;
 		}
+
+		climate.agdd0_20.add(climate.agdd0);
+
 		climate.hmtemp_20[date.month].add(climate.dtemp_31.periodicmean(date.ndaymonth[date.month]));
 		climate.hmprec_20[date.month].add(climate.dprec_31.periodicsum(date.ndaymonth[date.month]));
 		climate.hmeet_20[date.month].add(climate.deet_31.periodicsum(date.ndaymonth[date.month]));
@@ -844,6 +695,9 @@ void dailyaccounting_patch(Patch& patch) {
 
 	if (date.dayofmonth == 0) {
 
+		soil.mwcontupper = 0.0;
+		soil.mwcontlower = 0.0;
+
 		patch.maet[date.month] = 0.0;
 		patch.mintercep[date.month] = 0.0;
 		patch.mpet[date.month]=0.0;
@@ -853,10 +707,13 @@ void dailyaccounting_patch(Patch& patch) {
 		dailyaccounting_patch_lc(patch);
 
 	// Store daily soil water in both layers
-	soil.dwcontupper[date.day] = soil.wcont[0];
-	soil.dwcontlower[date.day] = soil.wcont[1];
+	soil.dwcontupper[date.day] = soil.get_soil_water_upper();
+	soil.dwcontlower[date.day] = soil.get_soil_water_lower();
 
-	// On last day of month, calculate mean content of upper soil layer
+	soil.mwcontupper += soil.dwcontupper[date.day];
+	soil.mwcontlower += soil.dwcontlower[date.day];
+
+	// On last day of month, calculate mean content of upper and lower soil layers
 
 	if (date.islastday) {
 
@@ -869,19 +726,73 @@ void dailyaccounting_patch(Patch& patch) {
 
 		soil.mwcont[date.month][0] = soil.mwcontupper;
 		soil.mwcont[date.month][1] = soil.mwcontlower;
-
 	}
 
-	// Calculate soil temperatures
-	soiltemp(patch.get_climate(), soil);
-	respiration_temperature_response(soil.temp, soil.gtemp);
+	// Reset monthly soil temp., litter depth, snow depth and thaw averages on Jan 1
+	if (date.day == 0) {
 
-	// On last day of month, calculate mean soil temperature for last month
+		// Save the December value for use in establishment
+		soil.dec_snowdepth = soil.msnowdepth[11];
 
-	soil.dtemp[date.dayofmonth] = soil.temp;
+		for (int mth = 0; mth < 12; mth++) {
+			soil.msnowdepth[mth] = 0.0;
+			soil.mthaw[mth] = 0.0;
+			for (int sl = 0; sl < SOILTEMPOUT; sl++)
+				soil.T_soil_monthly[mth][sl] = 0.0;
+		}
+	}
+
+	// Calculate analytic soil temperatures at 25cm depth and update dtemp_31 (trend in daily air temperatures for the last 31 days)
+	// Analytic soil temperatures can be used to test the accuracy of the numerical scheme in Soil::soil_temp_multilayer below.
+	// The soil temperature at 25cm depth calculated here is used in the rest of the model (e.g. in respiration) if iftwolayersoil is true (determined in 
+	// Soil::get_soil_temp_25() below).
+	soil.soil_temp_analytic(patch.get_climate(), 0.25);
+
+	// Calculate the soil temperature in each 10cm soil layer, the padding layers, and the snowpack. This function is called 
+	// even if iftwolayersoil is true, though the calculations are much simpler. 
+	bool validTemp = soil.soil_temp_multilayer(patch.get_climate().temp);
+	if (!validTemp) fail("Error in Soil::soil_temp_multilayer");
+
+	// Determine the soil temperature at 25cm depth
+	double soiltemp25 = soil.get_soil_temp_25();
+
+	if (iftwolayersoil) {
+		// Update monthly 25cm soil temperature - used for output only
+		soil.T_soil_monthly[date.month][2] += soiltemp25 / (double)date.ndaymonth[date.month];
+	}
+
+	respiration_temperature_response(soiltemp25, soil.gtemp);
+
+	// Possible updates to soil.gtemp used if soiltemp25 < 0degC
+	// Needed for root respiration
+	if (ifcarbonfreeze && soiltemp25 <= 0.0 && !iftwolayersoil) {
+
+		double decomp_at_freezing_point = exp(308.56*(1.0 / 56.02 - 1.0 / (0.0 + 46.02))); // soil.gtemp above when soiltemp25 = 0;
+
+		// Linear approach (Koven et al. 2011)
+		double slope = decomp_at_freezing_point / fabs(MIN_DECOMP_TEMP);
+
+		if (soiltemp25 < MIN_DECOMP_TEMP)
+			soil.gtemp = 0.0;
+		else
+			soil.gtemp = slope * soiltemp25 + decomp_at_freezing_point; // i.e. a linear decrease from decomp_at_freezing_point at 0C to 0 at MIN_DECOMP_TEMP
+	}
+
+
+	// On last day of month, calculate mean soil temperature at 25cm depth for last month
+
+	soil.dtemp[date.dayofmonth] = soil.get_soil_temp_25();
 
 	if (date.islastday)
 		soil.mtemp = mean(soil.dtemp,date.ndaymonth[date.month]);
+
+
+	double mdays = (double)date.ndaymonth[date.month];
+	soil.msnowdepth[date.month] += soil.dsnowdepth / mdays;
+	soil.mthaw[date.month] += soil.thaw / mdays;
+
+	// needed for fire
+	soil.dthaw[date.day] = soil.thaw;
 
 	patch.is_litter_day = false;
 	patch.isharvestday = false;
@@ -912,7 +823,8 @@ void respiration_temperature_response(double temp,double& gtemp) {
 
 	if (temp >= -40.0) {
 		gtemp = exp(308.56 * (1.0 / 56.02 - 1.0 / (temp + 46.02)));
-	} else {
+	} 
+	else {
 		gtemp = 0.0;
 	}
 }
@@ -934,6 +846,7 @@ void daylengthinsoleet(Climate& climate) {
 
 	const double QOO = 1360.0;
 	const double BETA = 0.17;
+
 	const double A = 107.0;
 	const double B = 0.2;
 	const double C = 0.25;
@@ -1154,7 +1067,6 @@ void daylengthinsoleet(Climate& climate) {
 	if (uu>=vv) hn = PI; // polar day
 	else if (uu<=-vv) hn = 0.0; // polar night
 	else hn=acos(-uu / vv); // Eqn 25
-
 	// Calculate total EET (equilibrium evapotranspiration) for this day, mm/day
 	climate.eet = 2.0 * (s / (s + gamma) / lambda) * (uu * hn + vv * sin(hn)) * K;	// Eqn 26;
 }
@@ -1166,9 +1078,6 @@ void daylengthinsoleet(Climate& climate) {
 //   et al 2000
 // Carslaw, HS & Jaeger JC 1959 Conduction of Heat in Solids, Oxford University
 //   Press, London
-// Cosby, B. J., Hornberger, C. M., Clapp, R. B., & Ginn, T. R. 1984 A statistical exploration
-//   of the relationships of soil moisture characteristic to the physical properties of soil.
-//   Water Resources Research, 20: 682-690.
 // Haxeltine A & Prentice IC 1996 BIOME3: an equilibrium terrestrial biosphere
 //   model based on ecophysiological constraints, resource availability, and
 //   competition among plant functional types. Global Biogeochemical Cycles 10:

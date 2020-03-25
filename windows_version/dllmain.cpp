@@ -6,7 +6,7 @@
 /// time argument(s) for GUESS and pointers to the executable's own callback functions.
 ///
 /// \author Ben Smith
-/// $Date: 2016-12-08 18:24:04 +0100 (Do, 08. Dez 2016) $
+/// $Date: 2019-04-23 14:48:43 +0200 (Di, 23. Apr 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,6 +43,9 @@ MessageResetwindow* message_resetwindow;
 MessageClearGraphs* message_clear_graphs;
 MessageOpen3d* message_open3d;
 MessagePlot3d* message_plot3d;
+
+// Name of temporary file for output of 3D vegetation structure (Windows shell only)
+const char VEG3DFILENAME[] = "xxxtemp0.bin";
 
 
 class WindowsShell : public Shell {
@@ -99,14 +102,14 @@ public:
 		message_plot(pplotargs);
 	}
 
-	/// 'Forgets' series and data for line graph 'window_name'.
+	/// 'Frac_orgets' series and data for line graph 'window_name'.
 	void resetwindow(const char* window_name) {
 		xtring* pxtring=new xtring;
 		*pxtring=window_name;
 		message_resetwindow(pxtring);
 	}
 
-	/// 'Forgets' series and data for all currently-defined line graphs.
+	/// 'Frac_orgets' series and data for all currently-defined line graphs.
 	void clear_all_graphs() {
 		waiting=true;
 		message_clear_graphs();
@@ -117,10 +120,26 @@ public:
 		message_open3d();
 	}
 
+	/// Opens a temporary data transfer file for 3D view in the Windows shell
+	void plot3d_fileopen() {
+		plot3d_out = fopen(VEG3DFILENAME, "wb");
+	}
+
+	/// Closes the temporary data transfer file for 3D view in the Windows shell
+	void plot3d_fileclose() {
+		if (plot3d_out)
+			fclose(plot3d_out);
+	}
+
+	/// The file handle for writing to the temporary data transfer file for 3D view in the Windows shell
+	FILE* plot3d_getfilehandle() {
+		return plot3d_out;
+	}
+
 	/// Sends data on current stand structure to 3D vegetation plot in the Windows shell
-	void plot3d(const char* filename) {
+	void plot3d() {
 		xtring* pxtring = new xtring;
-		*pxtring = filename;
+		*pxtring = VEG3DFILENAME;
 		message_plot3d(pxtring);
 	}
 
@@ -131,6 +150,8 @@ public:
 
 private:
 	FILE* logfile;
+	FILE* plot3d_out;		// File to transfer plot data to LPJ-GUESS Windows graphical shell
+	
 };
 
 

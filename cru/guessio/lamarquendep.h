@@ -2,7 +2,7 @@
 /// \file lamarquendep.h
 /// \brief Functionality for reading the Lamarque Nitrogen deposition data set
 ///
-/// $Date: 2017-04-05 15:04:09 +0200 (Mi, 05. Apr 2017) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -84,12 +84,17 @@ public:
 	 *  year, fail() is called and the program terminated.
 	 *
 	 *  \param calendar_year The year for which to get ndep data
-	 *  \param mndrydep      Monthly values for dry nitrogen deposition (kgN/m2/day)
-	 *  \param mnwetdep      Monthly values for wet nitrogen deposition (kgN/m2/day)
+	 *  \param mNHxdrydep: Monthly values for dry nitrogen deposition (kgN/m2/day) 
+	 *  \param mNOydrydep: Monthly values for dry nitrogen deposition (kgN/m2/day)
+	 *  \param mNHxwetdep: Monthly values for wet nitrogen deposition (kgN/m2/day) 
+	 *  \param mNOywetdep: Monthly values for wet nitrogen deposition (kgN/m2/day)
 	 */
 	void get_one_calendar_year(int calendar_year,
-		double mndrydep[12],
-		double mnwetdep[12]);
+		double mNHxdrydep[12], double mNOydrydep[12],
+		double mNHxwetdep[12], double mNOywetdep[12]);
+
+	void get_one_calendar_year(int calendar_year,
+		double mndrydep[12], double mnwetdep[12]);
 
 private:
 

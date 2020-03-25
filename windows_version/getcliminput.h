@@ -12,6 +12,7 @@
 
 #include "guess.h"
 #include "inputmodule.h"
+#include "soilinput.h"
 #include <vector>
 #include "gutil.h"
 #include "externalinput.h"

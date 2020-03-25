@@ -2,7 +2,7 @@
 /// \file spinupdata.h
 /// \brief Management of climate data for spinup
 ///
-/// $Date: 2015-11-13 16:25:45 +0100 (Fr, 13. Nov 2015) $
+/// $Date: 2019-04-23 14:48:43 +0200 (Di, 23. Apr 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -101,7 +101,8 @@ public:
 				}
 			}
 
-		} else return false;
+		} 
+		else return false;
 
 		return true;
 	}

@@ -13,7 +13,7 @@
 /// specific issues, such as non-standard conforming compilers.
 ///
 /// \author Joe Siltberg
-/// $Date: 2013-10-10 10:20:33 +0200 (Do, 10. Okt 2013) $
+/// $Date: 2019-10-10 15:00:31 +0200 (Do, 10. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 

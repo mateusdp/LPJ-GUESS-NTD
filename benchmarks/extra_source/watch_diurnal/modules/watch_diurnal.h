@@ -2,7 +2,7 @@
 /// \file watch_diurnal.h
 /// \brief Input module for reading in WATCH diurnal data from NetCDF files
 ///
-/// $Date: 2013-07-04 14:55:26 +0200 (Do, 04. Jul 2013) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -80,8 +80,12 @@ private:
 	 */
 	std::vector<double> watch_temp, watch_swdown, watch_rainf, watch_snowf;
 
-	// Daily N deposition for one year
-	double dndep[365];
+	/// Nitrogen deposition forcing for current gridcell
+	Lamarque::NDepData ndep;
+
+	/// Daily N deposition for current year
+	double dNH4dep[Date::MAX_YEAR_LENGTH];
+	double dNO3dep[Date::MAX_YEAR_LENGTH];
 };
 
 #endif // LPJ_GUESS_WATCH_DIURNAL_H

@@ -3,7 +3,7 @@
 /// \brief Environmental driver calculation/transformation
 ///
 /// \author Ben Smith
-/// $Date: 2017-04-24 19:33:38 +0200 (Mo, 24. Apr 2017) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -16,23 +16,23 @@
 
 #include "guess.h"
 #include <limits>
-
+#include <map>
 double randfrac(long& seed);
-void soilparameters(Soiltype& soiltype,int soilcode);
+
 void interp_monthly_means_conserve(const double* mvals, double* dvals,
-                                   double minimum = -std::numeric_limits<double>::max(),
-                                   double maximum = std::numeric_limits<double>::max());
+	double minimum = -std::numeric_limits<double>::max(),
+	double maximum = std::numeric_limits<double>::max());
 void interp_monthly_totals_conserve(const double* mvals, double* dvals,
-                                   double minimum = -std::numeric_limits<double>::max(),
-                                   double maximum = std::numeric_limits<double>::max());
-void distribute_ndep(const double* mndry, const double* mnwet,
-                     const double* dprec, double* dndep);
+	double minimum = -std::numeric_limits<double>::max(),
+	double maximum = std::numeric_limits<double>::max());
+void distribute_ndep(const double* mNH4dry, const double* mNO3dry, 
+	const double* mNH4wet, const double* mNO3wet,
+	const double* dprec, double* dNH4dep, double* dNO3dep);
 void prdaily(double* mval_prec, double* dval_prec, double* mval_wet, long& seed, bool truncate = true);
 void dailyaccounting_gridcell(Gridcell& gridcell);
 void dailyaccounting_stand(Stand& stand);
 void dailyaccounting_patch(Patch& patch);
 void respiration_temperature_response(double temp,double& gtemp);
 void daylengthinsoleet(Climate& climate);
-void soiltemp(Climate& climate,Soil& soil);
 
 #endif // LPJ_GUESS_DRIVER_H

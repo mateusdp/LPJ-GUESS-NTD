@@ -278,9 +278,6 @@ void clearcut(Individual& indiv, double anpp, bool& killed) {
 /// Determines whether this patch should be cut this year.
 double cut_fraction(Patch& patch) {
 
-	if(!run_landcover)
-		return 0.0;
-
 	Stand& stand = patch.stand;
 	xtring harvest_system = stlist[stand.stid].get_management(stand.current_rot).harvest_system;
 	if(harvest_system == "")
@@ -318,6 +315,50 @@ double cut_fraction(Patch& patch) {
 	}
 
 	return cut_fraction;
+}
+
+/// Set forest management intensity and harvests forests for all stands this year
+void manage_forests(Gridcell& gridcell) {
+
+	if (!run_landcover || date.day) {
+		return;
+	}
+
+	Gridcell::iterator gc_itr = gridcell.begin();
+	while (gc_itr != gridcell.end()) {
+		Stand& stand = *gc_itr;
+	
+		stand.firstobj();
+		while (stand.isobj && (stand.landcover == FOREST || stand.landcover == NATURAL)) {
+			Patch& patch = stand.getobj();
+			patch.man_strength = cut_fraction(patch);
+			stand.nextobj();
+		}
+		++gc_itr;
+	}
+
+	Gridcell::iterator gc_itr2 = gridcell.begin();
+	while (gc_itr2 != gridcell.end()) {
+		Stand& stand = *gc_itr2;
+
+		stand.firstobj();
+		while (stand.isobj && (stand.landcover == FOREST || stand.landcover == NATURAL)) {
+			Patch& patch = stand.getobj();
+			Vegetation& vegetation = patch.vegetation;
+			vegetation.firstobj();
+			while (vegetation.isobj) {
+				Individual& indiv = vegetation.getobj();
+
+				bool killed = false;
+				harvest_forest(indiv, indiv.pft, indiv.alive, 0.0, killed);
+
+				if(!killed)
+					vegetation.nextobj();
+			}
+			stand.nextobj();
+		}
+		++gc_itr2;
+	}
 }
 
 /// Determines if and how much of this (average) individual is to be cut.
@@ -1054,8 +1095,6 @@ bool harvest_year(Individual& indiv) {
 	else if (stand.landcover == PASTURE) {
 		harvest_pasture(indiv, indiv.pft, indiv.alive);
 	}
-	else if(stand.landcover == FOREST || stand.landcover == NATURAL && run_landcover)
-		harvest_forest(indiv, indiv.pft, indiv.alive, indiv.anpp, killed);
 
 	return killed;
 }
@@ -1142,20 +1181,37 @@ void nfert_crop(Patch& patch) {
 			}
 
 			double nfert = pft.N_appfert;
+			double mineral = 1.0;
 			if (gridcellpft.Nfert_read >= 0.0) {
 				nfert = gridcellpft.Nfert_read;
+				if (gridcellpft.Nfert_man_read > 0.0) {
+					mineral = 1.0 - gridcellpft.Nfert_man_read;
+				}
+
 			}
-			if (!ppftcrop.fertilised[0] && ppftcrop.dev_stage > 0.0){
+			if (!ppftcrop.fertilised[0] && ppftcrop.dev_stage > 0.0) {
 				// Fertiliser application at dev_stage = 0, sowing.
-				patch.dnfert = nfert * (1.0 - pft.fertrate[0] - pft.fertrate[1]);
+				patch.dnfert = nfert * mineral * (1.0 - pft.fertrate[0] - pft.fertrate[1]);
+				patch.fluxes.report_flux(Fluxes::NFERT,nfert * mineral * (1.0 - pft.fertrate[0] - pft.fertrate[1]));
 				ppftcrop.fertilised[0] = true;
+				if (mineral<1.0) {
+					patch.soil.sompool[SOILMETA].nmass+= nfert * (1.0 - mineral) * 0.5;
+					patch.soil.sompool[SOILMETA].cmass+=nfert * (1.0 - mineral) * 30.0 * 0.25;
+					patch.soil.sompool[SOILSTRUCT].nmass+= nfert * (1.0 - mineral) * 0.5;
+					patch.soil.sompool[SOILSTRUCT].cmass+= nfert * (1.0 - mineral) * 30.0 * 0.75;
+					patch.fluxes.report_flux(Fluxes::MANUREC,-nfert * (1.0 - mineral) * 30.0 );
+					patch.anfert += nfert * (1.0 - mineral);
+					patch.fluxes.report_flux(Fluxes::MANUREN,nfert * (1.0 - mineral));
+				}
 			}
-			else if (!ppftcrop.fertilised[1] && ppftcrop.dev_stage > pft.fert_stages[0]){
-				patch.dnfert = nfert * pft.fertrate[0];
+			else if (!ppftcrop.fertilised[1] && ppftcrop.dev_stage > pft.fert_stages[0]) {
+				patch.dnfert = nfert * mineral * pft.fertrate[0];
+				patch.fluxes.report_flux(Fluxes::NFERT,nfert * mineral * pft.fertrate[0]);
 				ppftcrop.fertilised[1] = true;
 			}
-			else if (!ppftcrop.fertilised[2] && ppftcrop.dev_stage > pft.fert_stages[1]){
-				patch.dnfert = nfert * (pft.fertrate[1]);
+			else if (!ppftcrop.fertilised[2] && ppftcrop.dev_stage > pft.fert_stages[1]) {
+				patch.dnfert = nfert * mineral * (pft.fertrate[1]);
+				patch.fluxes.report_flux(Fluxes::NFERT,nfert * mineral * pft.fertrate[1]);
 				ppftcrop.fertilised[2] = true;
 			}
 		}

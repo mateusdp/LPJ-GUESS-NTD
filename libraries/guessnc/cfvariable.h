@@ -43,7 +43,7 @@ public:
 	 *
 	 *  x and y could be coordinates in lon and lat dimensions, but could
 	 *  also represent coordinates in some other coordinate system, with
-	 *  longitude and latitude represented by an auxiliary coordinate 
+	 *  longitude and latitude represented by an auxiliary coordinate
 	 *  variable.
 	 *
 	 *  \param x The x coordinate in main variable's coordinate system
@@ -53,9 +53,9 @@ public:
 	bool load_data_for(size_t x, size_t y);
 
 	/// Loads data for all timesteps for a given land id
-	/** 
+	/**
 	 *  This version of the function is to be used for datasets
-	 *  using a reduced horizontal grid, as in the example in 
+	 *  using a reduced horizontal grid, as in the example in
 	 *  section 5.3 of the 1.6 version of the CF spec.
 	 *
 	 *  \param landid Index identifying the cell in the main variable's coordinate system
@@ -70,6 +70,9 @@ public:
 	 *  \see load_data_for
 	 */
 	bool is_reduced() const;
+
+	/// Retrieves dataset coordinates from (lon, lat)-coordinates
+	void get_index_for_coords(double lon, double lat, size_t& x, size_t& y);
 
 	/// Retrieves actual (lon, lat)-coordinates for a given location
 	void get_coords_for(size_t x, size_t y, double& lon, double& lat) const;
@@ -145,6 +148,8 @@ public:
 
 private:
 
+	void cache_lonlats();
+	
 	/** Called by constructor to figure out all we need to know about
 	 *  the time dimension and how to interpret time.
 	 *
@@ -172,8 +177,8 @@ private:
 	void unpack_data();
 
 	/// Help function for same_spatial_domain, compares either the lat coordinate variable or lon
-	bool same_spatial_coordinates(int ncid_my_coordvar, 
-		const GridcellOrderedVariable& other, 
+	bool same_spatial_coordinates(int ncid_my_coordvar,
+		const GridcellOrderedVariable& other,
 		int ncid_other_coordvar) const;
 
 	/// NC handle to NetCDF file
@@ -194,6 +199,7 @@ private:
 	 *  for overview.
 	 */
 	std::vector<double> time;
+	std::vector<double> lons, lats;
 
 	/// Reference time specification
 	/** Defines how the time offsets in the time vector are to be
@@ -221,7 +227,7 @@ private:
 	int ncid_extra_dimension;
 
 	// NC handles to variables with lon/lat values,
-	// either regular coordinate variables as in COARDS, or auxiliary 
+	// either regular coordinate variables as in COARDS, or auxiliary
 	// coordinate variables as defined by CF
 
 	int ncid_lon;

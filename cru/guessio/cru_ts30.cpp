@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 /// \file cru.cpp
-/// \brief Functions for reading the CRU-NCEP data set
+/// \brief Functions for reading the CRU-NCEP data set from binary FastArchive format.
 ///
 /// $Date: 2013-11-04 16:30:55 +0100 (Mon, 04 Nov 2013) $
 ///
@@ -11,13 +11,14 @@
 #include <stdio.h>
 #include <math.h>
 #include <vector>
+#include "parameters.h"
 
-// header files for the CRU-NCEP data archives
+// header files for the CRU-NCEP data archives in FastArchive format.
 #include "cruncep_1901_2015.h"
 #include "cruncep_1901_2015misc.h"
 
-namespace CRU_TS30 {
- 
+namespace CRU_FastArchive {
+
 bool searchcru(char* cruark,double dlon,double dlat,int& soilcode,
                double mtemp[NYEAR_HIST][12],
                double mprec[NYEAR_HIST][12],
@@ -74,10 +75,8 @@ bool searchcru(char* cruark,double dlon,double dlat,int& soilcode,
 				if (mprec[y][m] <= 1.0) mprec[y][m] = 0.0;
 				
 				msun[y][m]  = data.mswrad[y*12+m];   // shortwave radiation
-
 			}
 		}
-
 
 		// Close the archive
 		ark.close();
@@ -91,12 +90,12 @@ bool searchcru(char* cruark,double dlon,double dlat,int& soilcode,
 	}
 }
 
-
-
 bool searchcru_misc(char* cruark,double dlon,double dlat,int& elevation,
                     double mfrs[NYEAR_HIST][12],
                     double mwet[NYEAR_HIST][12],
-                    double mdtr[NYEAR_HIST][12]) {
+		    double mdtr[NYEAR_HIST][12],
+		    double mwind[NYEAR_HIST][12],
+		    double mrhum[NYEAR_HIST][12]) {
 	
 	// Please note the new function signature. 
 
@@ -141,9 +140,10 @@ bool searchcru_misc(char* cruark,double dlon,double dlat,int& elevation,
 			for (m=0;m<12;m++) {
 
 				// guess2008 - catch rounding errors 
-				mfrs[y][m] = data.mfrs[y*12+m]; // days
-				if (mfrs[y][m] < 0.1) 
-					mfrs[y][m] = 0.0; // Catches rounding errors
+
+				mfrs[y][m] = 0.0; // days
+				// if (mfrs[y][m] < 0.1) 
+				//	mfrs[y][m] = 0.0; // Catches rounding errors
 
 				mwet[y][m] = data.mwet[y*12+m]; // days
 				if (mwet[y][m] <= 0.1) 
@@ -155,6 +155,10 @@ bool searchcru_misc(char* cruark,double dlon,double dlat,int& elevation,
 				// the CRU binaries(!). Set these to zero for now.
 				mdtr[y][m] = max(0.0, mdtr[y][m]);
 
+				mwind[y][m] = data.mwind[y * 12 + m]; // m/s
+				
+				mrhum[y][m] = data.mrhum[y * 12 + m]; // fraction 0-1
+
 				/*
 				If vapour pressure is needed:
 				mvap[y][m] = data.mvap[y*12+m];
@@ -164,16 +168,15 @@ bool searchcru_misc(char* cruark,double dlon,double dlat,int& elevation,
 
 		// Close the archive
 		ark.close();
-
+		
 		return true;
-	
+
 	}
 	catch(...) {
 		// Unknown error.
 		return false;
 	}
 }
-
 
 bool findnearestCRUdata(double searchradius, char* cruark, double& lon, double& lat, 
                         int& scode, 

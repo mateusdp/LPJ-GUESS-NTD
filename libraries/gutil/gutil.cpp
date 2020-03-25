@@ -12,7 +12,7 @@
 /// All rights reserved, copyright retained by the author.
 ///
 /// \author Ben Smith, University of Lund
-/// $Date: 2014-03-13 13:07:20 +0100 (Do, 13. Mär 2014) $
+/// $Date: 2019-08-08 14:32:28 +0200 (Do, 08. Aug 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -77,7 +77,7 @@ xtring::xtring(const xtring& s) {
 	// COPY CONSTRUCTOR
 
 	init();
-	resize(strlen(s.ptext));
+	resize((unsigned long)strlen(s.ptext));
 	strcpy(ptext,s.ptext);
 }
 
@@ -94,7 +94,7 @@ xtring::xtring(char* inittext) {
 	// CONSTRUCTOR: xtring s="text";
 
 	init();
-	resize(strlen(inittext));
+	resize((unsigned long)strlen(inittext));
 	strcpy(ptext,inittext);
 }
 
@@ -103,7 +103,7 @@ xtring::xtring(const char* inittext) {
 	// CONSTRUCTOR: xtring s="text";
 
 	init();
-	resize(strlen(inittext));
+	resize((unsigned long)strlen(inittext));
 	strcpy(ptext,inittext);
 }
 
@@ -186,7 +186,7 @@ unsigned long xtring::len() {
 
 	// String length not including trailing \0
 
-	return strlen(ptext);
+	return (unsigned long)strlen(ptext);
 }
 
 xtring xtring::upper() {
@@ -322,12 +322,12 @@ long xtring::find(const char* s) {
 	// Find string s in this xtring
 	// (returns -1 if string does not occur)
 
-	long length=strlen(s);
-	long bound=len()-length;
+	long length = (long)strlen(s);
+	long bound = len() - length;
 	long i=0;
 	while (i<=bound) {
-		xtring sub=mid(i,length);
-		if (sub==s) return i;
+		xtring sub = mid(i, length);
+		if (sub == s) return i;
 		i++;
 	}
 	return -1;
@@ -350,13 +350,13 @@ long xtring::findoneof(const char* s) {
 
 	// Find one of several characters in this xtring
 
-	long i,j;
-	long bound=len();
-	long nchar=strlen(s);
+	long i, j;
+	long bound = len();
+	long nchar = (long)strlen(s);
 
-	for (i=0;i<bound;i++)
-		for (j=0;j<nchar;j++)
-			if (ptext[i]==s[j]) return i;
+	for (i=0; i<bound; i++)
+		for (j=0; j<nchar; j++)
+			if (ptext[i] == s[j]) return i;
 
 	return -1;
 }
@@ -366,8 +366,8 @@ long xtring::findnotoneof(const char* s) {
 	// Find first character NOT matching characters in s
 
 	long i,j;
-	long bound=len();
-	long nchar=strlen(s);
+	long bound = len();
+	long nchar = (long)strlen(s);
 	char found;
 
 	for (i=0;i<bound;i++) {
@@ -515,8 +515,8 @@ xtring& xtring::operator=(const char* s) {
 
 	// Assignment: s="text"
 
-	resize(strlen(s));
-	strcpy(ptext,s);
+	resize((unsigned long)strlen(s));
+	strcpy(ptext, s);
 	return *this;
 }
 
@@ -574,8 +574,8 @@ xtring& xtring::operator+=(const char* s2) {
 
 	// Concatenate s1+="text";
 
-	resize(len()+strlen(s2));
-	strcat(ptext,s2);
+	resize(len() + (unsigned long)strlen(s2));
+	strcat(ptext, s2);
 	return *this;
 }
 

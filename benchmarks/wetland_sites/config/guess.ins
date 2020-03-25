@@ -1,0 +1,85 @@
+import "../../../data/ins/arctic.ins"
+import "../../../data/ins/wetlandpfts.ins"
+import "../../paths.ins"
+
+param "file_gridlist" (str "gridlist.txt")
+
+param "file_lu"         (str "")
+param "file_lucrop"     (str "")
+param "file_lupasture"  (str "")
+param "file_lunatural"  (str "")
+param "file_luforest"   (str "")
+param "file_Nfert"      (str "")
+param "file_Nfert_st"   (str "")
+
+file_mch4 "mch4.out"
+file_mch4diff "mch4_diffusion.out"
+file_mch4plan "mch4_plant.out"
+file_mch4ebull "mch4_ebullition.out"
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// RUN PARAMETERS AND OPTIONS 
+!
+
+ifmethane 1
+npatch 25
+
+minimizecftlist 0		! Checks st fraction file for st:s with fractions>0.0 at any time or place; other st:s are exluded from the stlist
+frac_fixed_default_crops 0 ! Whether to use all active crop stand types (0) or only stand types with suitable rainfed crops
+				! (based on crop pft tb and gridcell latitude) (1) when using fixed crop fractions
+
+nyears_cropland_ramp 0 		! Number of years to increase cropland fraction linearly from 0 to first year's value
+ifintercropgrass 0		! Whether to grow grass as cover crop between growing periods
+iftillage 0			! Whether to simulate tillage by increasing soil respiration
+
+ifcalcdynamic_phu 0		! Whether to calculate dynamic potential heat units
+ifdyn_phu_limit 0		! Whether to limit dynamic phu calculation to a period specified by nyear_dyn_phu
+nyear_dyn_phu 50		! Number of years to calculate dynamic phu if dynamic_phu_limit is 1
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// RUN PARAMETERS AND OPTIONS 
+!
+
+!!!!!!!!!!!! landcover parameters !!!!!!!!!!!!!!
+
+npatch_secondarystand 1		! number of replicate patches to simulate in secondary stands
+reduce_all_stands 0		! Whether to reduce equal percentage of all stands of a stand type at land cover change
+age_limit_reduce 5		! Minimum age of stands to reduce at land cover change
+
+run_landcover 1			! Whether to use (and change) landcover fractions (1) or not (0)	
+
+run_urban 0			! Whether to simulate barren land (1) or not (0)	
+run_crop 0			! Whether to simulate crop vegetation (1) or not (0)
+run_forest 0			! Whether to simulate managed forest (1) or not (0)
+run_pasture 0			! Whether to simulate pasture (1) or not (0)
+run_natural 0			! Whether to simulate natural vegetation (1) or not (0)
+run_peatland 1			! Whether to simulate peatland (1) or not (0)
+run_barren 0			! Whether to simulate barren land (1) or not (0)
+
+ifslowharvestpool 0			! If a slow harvested product pool is included in patchpft.
+printseparatestands 0			! Whether to print multiple stands within a land cover type (except cropland) separately
+gross_land_transfer 0			! Whether to use gross land transfer: simulate gross lcc (1); read landcover transfer matrix input file (2); 
+					! read stand type transfer matrix input file (3), or not (0)
+ifprimary_lc_transfer 0			! Whether to use primary/secondary land transition info in landcover transfer input file (1). or not (0)
+ifprimary_to_secondary_transfer 0 	! Whether to use primary-to-secondary land transition info (within land cover type) in landcover 
+					! transfer input file (1). or not (0)
+transfer_level 2			! Pooling level of land cover transitions; 0: one big pool; 1: land cover-level; 2: stand type-level
+iftransfer_to_new_stand 0		! Whether to create new stands in transfer_to_new_stand() according to the rules in copy_stand_type()
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR STAND TYPES
+
+st "Peatland" (
+
+	common_stand
+	stinclude 1
+	landcover "peatland"
+)
+
+st "Natural" (
+
+	common_stand
+	stinclude 1
+	landcover "natural"
+)

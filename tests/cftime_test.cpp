@@ -3,7 +3,7 @@
 /// \brief Unit tests for CF time functionality
 ///
 /// \author Joe Siltberg
-/// $Date: 2014-03-19 09:46:54 +0100 (Mi, 19. Mär 2014) $
+/// $Date: 2019-11-06 17:45:44 +0100 (Mi, 06. Nov 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -111,6 +111,7 @@ TEST_CASE("CF::DateTime/add_time", "Tests the DateTime::add_time function") {
 	start_tm.tm_mday = 2;
 	start_tm.tm_mon = 2;
 	start_tm.tm_year = 82;
+	start_tm.tm_isdst = 0;
 
 	time_t end_t = mktime(&start_tm)+25*365*24*3600;
 	tm* end_tm = localtime(&end_t);

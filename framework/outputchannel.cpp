@@ -3,7 +3,7 @@
 /// \brief Classes for formatting and printing output from the model
 ///
 /// \author Joe Siltberg
-/// $Date: 2017-04-05 15:04:09 +0200 (Mi, 05. Apr 2017) $
+/// $Date: 2019-02-08 15:55:08 +0100 (Fr, 08. Feb 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -318,10 +318,10 @@ OutputRows::~OutputRows() {
 	 for (size_t i = 0; i < used_tables.size(); i++) {
 		  if (used_tables[i]) {
 				if (d == -1) {
-					 out->finish_row(Table(i), lon, lat, y);
+					 out->finish_row(Table((int)i), lon, lat, y);
 				}
 				else {
-					 out->finish_row(Table(i), lon, lat, y, d);
+					 out->finish_row(Table((int)i), lon, lat, y, d);
 				}
 		  }
 	 }

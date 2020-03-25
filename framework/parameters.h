@@ -21,7 +21,7 @@
 /// functions.
 ///
 /// \author Joe Siltberg
-/// $Date: 2017-09-20 16:00:36 +0200 (Mi, 20. Sep 2017) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -57,6 +57,27 @@ typedef enum {WR_WCONT, WR_ROOTDIST, WR_SMART, WR_SPECIESSPECIFIC} wateruptakety
 
 ///bvoc: define monoterpene species used
 typedef enum {APIN, BPIN, LIMO, MYRC, SABI, CAMP, TRIC, TBOC, OTHR, NMTCOMPOUNDTYPES} monoterpenecompoundtype;
+
+/// Fire model setting. Either use 
+/**	One of
+ *	BLAZE 		Use the BLAZE model to generate fire fluxes 
+ *                      (must be accompanied by ignitionmode; DEFAULT)
+ *	GLOBFIRM	fire parameterization following Thonicke et al. 2001
+ *	NOFIRE		no fire model	
+ */
+typedef enum {BLAZE, GLOBFIRM, NOFIRE} firemodeltype;
+
+/// Type of weathergenerator used 
+/**     One of:
+ *      GWGEN           Global Weather GENerator (needed by BLAZE, due to 
+ *                      additional rel. humidity and wind; DEFAULT)
+ *      INTERP          use standard interpolation scheme
+ *      NONE            Should be set if daily input is used (e.g. in cfinput) 
+ */
+typedef enum {GWGEN, INTERP, NONE} weathergeneratortype;
+
+///How to determine root distribution in soil layers
+typedef enum {ROOTDIST_FIXED, ROOTDIST_JACKSON} rootdisttype;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // Global instruction file parameters
@@ -99,8 +120,11 @@ extern bool ifstochestab;
 /// Whether mortality stochastic (individual, cohort mode)
 extern bool ifstochmort;
 
-/// Whether fire enabled
-extern bool iffire;
+/// Fire-model switch
+extern firemodeltype firemodel;
+
+/// Weather Generator switch
+extern weathergeneratortype weathergenerator;
 
 /// Whether "generic" patch-destroying disturbance enabled (individual, cohort mode)
 extern bool ifdisturb;
@@ -123,19 +147,50 @@ extern bool ifcdebt;
 /// Water uptake parameterisation
 extern wateruptaketype wateruptake;
 
+/// Parameterisation of root distribution
+extern rootdisttype rootdistribution;
+
 /// whether CENTURY SOM dynamics (otherwise uses standard LPJ formalism)
 extern bool ifcentury;
+
 /// whether plant growth limited by available N
 extern bool ifnlim;
 
 /// number of years to allow spinup without nitrogen limitation
 extern int freenyears;
+
 /// fraction of nitrogen relocated by plants from roots and leaves
 extern double nrelocfrac;
+
 /// first term in nitrogen fixation eqn (Cleveland et al 1999)
 extern double nfix_a;
+
 /// second term in nitrogen fixation eqn (Cleveland et al 1999)
 extern double nfix_b;
+
+/// whether to use nitrification/denitrification in CENTURY SOM dynamics
+extern bool ifntransform;
+/// Fraction of microbial respiration assumed to produce DOC, 0.0,0.3
+extern double frac_labile_carbon;
+
+/// Soil pH (used for calculating N-transformation), 3.5,8.5
+extern double pH_soil;
+/// Maximum nitrification rate, 0.03,0.15
+extern double f_nitri_max;
+/// Constant in denitrification, 0.001,0.1
+extern double k_N;
+/// Constant in temperature function for denitrification, 0.005,0.05
+extern double k_C;
+/// Maximum gaseus losses in nitrification
+extern double f_nitri_gas_max;
+/// Maximum fraction of NO3 converted to NO2
+extern double f_denitri_max;
+/// Maximum fraction of NO2 converted to gaseus N
+extern double f_denitri_gas_max;
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+// Landuse and crop settings
 
 /// Whether other landcovers than natural vegetation are simulated.
 extern bool run_landcover;
@@ -163,6 +218,9 @@ extern bool ifcalcdynamic_phu;
 
 // Whether to use gross land transfer: simulate gross lcc (1); read landcover transfer matrix input file (2); read stand type transfer matrix input file (3), or not (0)
 extern int gross_land_transfer;
+
+// Whether gross land transfer input read for this gridcell
+extern bool gross_input_present;
 
 // Whether to use primary/secondary land transition info in landcover transfer input file (1). or not (0)
 extern bool ifprimary_lc_transfer;
@@ -193,6 +251,9 @@ extern bool readharvestdates;
 
 /// Whether to read N fertilization from input file
 extern bool readNfert;
+
+/// Whether to read manure N fertilization from input file
+extern bool readNman;
 
 /// Whether to read N fertilization (stand tyoe level) from input file
 extern bool readNfert_st;
@@ -227,6 +288,9 @@ extern bool save_state;
 /// Save/restart year
 extern int state_year;
 
+/// The level of verbosity
+extern int verbosity;
+
 /// whether to vary mort_greff smoothly with growth efficiency (1) or to use the standard step-function (0)
 extern bool ifsmoothgreffmort;
 
@@ -238,6 +302,33 @@ extern bool ifrainonwetdaysonly;
 
 /// whether BVOC calculations are included
 extern bool ifbvoc;
+
+///////////////////////////////////////////////////////////////////////////////////////
+// Arctic and wetland inputs
+
+/// Use the original LPJ-GUESS v4 soil scheme, or not. If true, override many of the switches below.
+extern bool iftwolayersoil; 
+
+/// Use multilayer snow scheme, or the original LPJ-GUESS v4 scheme
+extern bool ifmultilayersnow;
+
+/// whether to reduce GPP if there's inundation (1), or not (0)
+extern bool ifinundationstress;
+
+/// Whether to limit soilC decomposition below 0 degC in upland soils (1), or not (0)
+extern bool ifcarbonfreeze;
+
+/// Extra daily water input or output, in mm, to wetlands. Positive values are run ON, negative run OFF.
+extern double wetland_runon;
+
+/// Whether methane calculations are included
+extern bool ifmethane;
+
+/// Whether soil C pool input is used to update soil properties
+extern bool iforganicsoilproperties;
+
+/// Whether to take water from runoff to saturate low latitide wetlands
+extern bool ifsaturatewetlands;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -295,7 +386,6 @@ public:
 	/// Tests if param exists
 	bool isparam(xtring name);
 
-private:
 	/// Tries to find the parameter in the list
 	/** \returns 0 if it wasn't there. */
 	Paramtype* find(xtring name);

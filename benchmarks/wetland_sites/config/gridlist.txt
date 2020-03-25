@@ -1,0 +1,7 @@
+-84.25   42.25	Michigan	
+-93.25   47.75	Minnesota
+-98.25   55.75	BOREAS NSA
+30.75    62.75	Salmisuo
+19.75    64.25	Degeroe
+19.25    68.25	Abisko
+102.75   32.75	Ruoergai

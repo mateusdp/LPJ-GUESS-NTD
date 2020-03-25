@@ -7,6 +7,8 @@
 #include <string.h>
 #include <sstream>
 #include <algorithm>
+#include <functional>
+#include <math.h>
 #include <numeric>
 
 // todo:
@@ -18,7 +20,7 @@ namespace GuessNC {
 
 /// Check whether a data type is one of the NetCDF classic numeric data types
 bool classic_numeric_type(nc_type type) {
-	return 
+	return
 		type == NC_BYTE ||
 		type == NC_SHORT ||
 		type == NC_INT ||
@@ -29,7 +31,7 @@ bool classic_numeric_type(nc_type type) {
 namespace CF {
 
 GridcellOrderedVariable::
-GridcellOrderedVariable(const char* filename, 
+GridcellOrderedVariable(const char* filename,
                         const char* variable) {
 
 	// Constructor - opens the file and figures out how time works
@@ -49,10 +51,10 @@ GridcellOrderedVariable(const char* filename,
 	// a double.
 	nc_type type;
 	status = nc_inq_vartype(ncid_file, ncid_var, &type);
-	handle_error(status, 
+	handle_error(status,
 	             std::string("Failed to get type of main variable: ") +
 	             variable_name);
-	
+
 	if (!classic_numeric_type(type)) {
 		throw CFError(variable, "Main variable must be a NetCDF classic numeric type");
 	}
@@ -91,7 +93,7 @@ GridcellOrderedVariable(const char* filename,
 
 	for (size_t d = 0; d < dims.size(); ++d) {
 		int dim = dims[d];
-		
+
 		if (dim != ncid_x_dimension &&
 		    dim != ncid_y_dimension &&
 		    dim != ncid_landid_dimension &&
@@ -100,20 +102,23 @@ GridcellOrderedVariable(const char* filename,
 			throw CFError(variable, "Unsupported number of dimensions for variable");
 		}
 	}
+	if (!reduced) {
+		cache_lonlats();
+	}
 }
 
 void GridcellOrderedVariable::find_time_dimension() {
 	// Get the dimensions of the main variable
 	std::vector<int> ncid_dims;
 	get_dimensions(ncid_file, ncid_var, ncid_dims);
-	
+
 	bool foundit = false;
 	int ncid_timecoord;
 	int status;
 
 	// For each dimension, check the corresponding coordinate variable
 	for (size_t d = 0; d < ncid_dims.size(); ++d) {
-		
+
 		// Get the corresponding coordinate variable
 		int ncid_coord_var;
 		if (!get_coordinate_variable(ncid_file, ncid_dims[d], ncid_coord_var)) {
@@ -133,21 +138,21 @@ void GridcellOrderedVariable::find_time_dimension() {
 		catch (const CFError&) {
 			continue;
 		}
-		
+
 		// Verify datatype - we require one of the NetCDF classic numeric types,
 		// even though that's not a CF requirement. The 64 bit integral types in
 		// NetCDF4 would require special care since we can't represent that with
 		// a double.
 		nc_type type;
 		status = nc_inq_vartype(ncid_file, ncid_coord_var, &type);
-		handle_error(status, 
+		handle_error(status,
 		             std::string("Failed to get type of time variable: ") +
 		             GuessNC::get_variable_name(ncid_file, ncid_coord_var));
 
 		if (!classic_numeric_type(type)) {
 			throw CFError(variable_name, "Time coordinates must be a NetCDF classic numeric type");
 		}
-		
+
 		// Make sure there's only one time dimension associated with the main variable
 		if (foundit) {
 			throw CFError(variable_name, "More than one time dimension associated with main variable");
@@ -180,7 +185,7 @@ void GridcellOrderedVariable::find_time_dimension() {
 	if (!get_attribute(ncid_file, ncid_timecoord, "calendar", calendar_attribute)) {
 		throw CFError(variable_name, "Time coordinate variable didn't have a proper calendar attribute");
 	}
-	
+
 	calendar = parse_calendar(calendar_attribute.c_str());
 
 	std::string units_attribute;
@@ -199,7 +204,7 @@ void GridcellOrderedVariable::find_time_dimension() {
 }
 
 
-bool is_longitude_coordinate_variable(const std::string& units, 
+bool is_longitude_coordinate_variable(const std::string& units,
                                       const std::string& standard_name) {
 	static const char* acceptable_units[] = {
 		"degree_east",
@@ -217,12 +222,12 @@ bool is_longitude_coordinate_variable(const std::string& units,
 		}
 
 	}
-	
+
 	return false;
 }
 
 
-bool is_latitude_coordinate_variable(const std::string& units, 
+bool is_latitude_coordinate_variable(const std::string& units,
                                      const std::string& standard_name) {
 	static const char* acceptable_units[] = {
 		"degree_north",
@@ -240,7 +245,7 @@ bool is_latitude_coordinate_variable(const std::string& units,
 		}
 
 	}
-	
+
 	return false;
 }
 
@@ -253,7 +258,7 @@ void GridcellOrderedVariable::find_spatial_dimensions() {
 	ncid_x_dimension = -1;
 	ncid_y_dimension = -1;
 	ncid_landid_dimension = -1;
-	
+
 	// Loop over main variable's dimensions, try to find out
 	// which corresponds to x and y
 
@@ -276,7 +281,7 @@ void GridcellOrderedVariable::find_spatial_dimensions() {
 		std::string units, standard_name;
 		if (get_attribute(ncid_file, ncid_coord_var, "units", units) &&
 		    get_attribute(ncid_file, ncid_coord_var, "standard_name", standard_name)) {
-			
+
 			if (is_longitude_coordinate_variable(units, standard_name)) {
 				// This dimension should be the x axis, and it has a corresponding
 				// coordinate variable for getting longitudes
@@ -312,9 +317,9 @@ void GridcellOrderedVariable::find_spatial_dimensions() {
 			}
 		}
 	}
-	
-	// If we didn't find lat or lon coordinate variables by now, require that main 
-	// variable has a 'coordinates' attribute, use that to get longitude and 
+
+	// If we didn't find lat or lon coordinate variables by now, require that main
+	// variable has a 'coordinates' attribute, use that to get longitude and
 	// latitude (auxiliary) coordinate variables
 	if (ncid_lon == -1 && ncid_lat == -1) {
 
@@ -331,7 +336,7 @@ void GridcellOrderedVariable::find_spatial_dimensions() {
 
 			int ncid_coord_var;
 			int status = nc_inq_varid(ncid_file, coordinate.c_str(), &ncid_coord_var);
-			handle_error(status, "Failed getting coordinate variable specified in " + 
+			handle_error(status, "Failed getting coordinate variable specified in " +
 			             variable_name + ":coordinates");
 
 			std::string units, standard_name;
@@ -358,7 +363,7 @@ void GridcellOrderedVariable::find_spatial_dimensions() {
 		throw CFError(variable_name, "Found one spatial dimension, but not the other");
 	}
 
-	// If neither, see if main variable has a dimension which also is the one 
+	// If neither, see if main variable has a dimension which also is the one
 	// and only dimension for the lon/lat auxiliary coordinate variables
 	std::vector<int> ncid_lon_dims, ncid_lat_dims;
 	get_dimensions(ncid_file, ncid_lon, ncid_lon_dims);
@@ -368,9 +373,9 @@ void GridcellOrderedVariable::find_spatial_dimensions() {
 	    ncid_lat_dims.size() == 1 &&
 	    ncid_lon_dims.front() == ncid_lat_dims.front()) {
 
-		std::vector<int>::iterator itr = 
+		std::vector<int>::iterator itr =
 			std::find(ncid_dims.begin(), ncid_dims.end(), ncid_lon_dims.front());
-		
+
 		if (itr != ncid_dims.end()) {
 			landid_dimension_index = itr-ncid_dims.begin();
 			ncid_landid_dimension = ncid_lon_dims.front();
@@ -401,7 +406,7 @@ void GridcellOrderedVariable::find_extra_dimension() {
 		    dim != ncid_x_dimension &&
 		    dim != ncid_y_dimension &&
 		    dim != ncid_landid_dimension) {
-			
+
 			// Found an unidentified dimension
 			extra_dimension_index = d;
 			ncid_extra_dimension = dim;
@@ -444,7 +449,7 @@ bool GridcellOrderedVariable::load_data_for(size_t x, size_t y) {
 	}
 
 	int status = nc_get_varm_double(ncid_file, ncid_var, start, count, 0, imap, &data.front());
-	handle_error(status, 
+	handle_error(status,
 	             std::string("Failed to read data from variable ") + variable_name);
 
 	// Check if the data for this location contains a missing value
@@ -456,7 +461,7 @@ bool GridcellOrderedVariable::load_data_for(size_t x, size_t y) {
 	}
 
 	unpack_data();
-	
+
 	return true;
 }
 
@@ -512,7 +517,7 @@ GridcellOrderedVariable::~GridcellOrderedVariable() {
 }
 
 
-void GridcellOrderedVariable::get_coords_for(size_t x, size_t y, 
+void GridcellOrderedVariable::get_coords_for(size_t x, size_t y,
                                              double& lon, double& lat) const {
 
 	if (!location_exists(x, y)) {
@@ -526,7 +531,7 @@ void GridcellOrderedVariable::get_coords_for(size_t x, size_t y,
 	// Get the dimensions of the lon variable
 	std::vector<int> londims;
 	get_dimensions(ncid_file, ncid_lon, londims);
-	
+
 	// Loop over the dimensions to set up lon_index correctly with values x and y
 	for (size_t d = 0; d < londims.size(); ++d) {
 
@@ -551,7 +556,7 @@ void GridcellOrderedVariable::get_coords_for(size_t x, size_t y,
 	// Get the dimensions of the lat variable
 	std::vector<int> latdims;
 	get_dimensions(ncid_file, ncid_lat, latdims);
-	
+
 	// Loop over the dimensions to set up lat_index correctly with values x and y
 	for (size_t d = 0; d < latdims.size(); ++d) {
 
@@ -571,6 +576,70 @@ void GridcellOrderedVariable::get_coords_for(size_t x, size_t y,
 	handle_error(status, "Failed lat indexing");
 }
 
+void GridcellOrderedVariable::cache_lonlats() {
+	// First, make sure that the coordinate variables are of single dimension:
+	// assuming latitude has the same shape as longitude
+	int ndims;
+	int status = nc_inq_varndims(ncid_file, ncid_lon, &ndims);
+	handle_error(status, "Failed to get number of dimensions of longitude coordinate variable");
+	if (ndims != 1) {
+		return;
+	}
+
+	size_t lonlen;
+	status = nc_inq_dimlen(ncid_file, ncid_x_dimension, &lonlen);
+	handle_error(status, "Failed to get x-dimension length");
+	lons.resize(lonlen);
+	size_t latlen;
+	status = nc_inq_dimlen(ncid_file, ncid_y_dimension, &latlen);
+	handle_error(status, "Failed to get y-dimension length");
+	lats.resize(latlen);
+
+	size_t start[] = { 0 };
+	size_t count[] = { lonlen };
+	status = nc_get_vara_double(ncid_file, ncid_lon, start, count, &lons.front());
+	handle_error(status, "Failed to read values from x dimension variable");
+
+	count[0] = latlen;
+	status = nc_get_vara_double(ncid_file, ncid_lat, start, count, &lats.front());
+	handle_error(status, "Failed to read values from y dimension variable");
+}
+
+void GridcellOrderedVariable::get_index_for_coords(double lon, double lat,
+                                                   size_t& x, size_t& y) {
+	// Due to varying order and precision simple "brut"-forcing of lons and
+	// lats is necessary
+	const double eps = 1e-5;
+	bool found = false;
+	for (size_t d = 0; d < lons.size(); ++d) {
+		if (fabs(lons[d]-lon)<=eps) {
+			x = d;
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		std::ostringstream os;
+		os << "lon is not present in the file: " << lon;
+		throw CFError(variable_name, os.str());
+	}
+
+	found = false;
+	for (size_t d = 0; d < lats.size(); ++d) {
+		if (fabs(lats[d]-lat)<=eps) {
+			y = d;
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		std::ostringstream os;
+		os << "lat is not present in the file: " << lat;
+		throw CFError(variable_name, os.str());
+	}
+}
 
 void GridcellOrderedVariable::get_coords_for(size_t landid,
                                              double& lon, double& lat) const {
@@ -590,7 +659,7 @@ void GridcellOrderedVariable::get_coords_for(size_t landid,
 }
 
 int GridcellOrderedVariable::get_timesteps() const {
-	return time.size();
+	return (int)time.size();
 }
 
 double GridcellOrderedVariable::get_value(int timestep) const {
@@ -636,7 +705,7 @@ bool GridcellOrderedVariable::location_exists(size_t landid) const {
 	}
 
 	size_t land_len;
-	
+
 	int status = nc_inq_dimlen(ncid_file, ncid_landid_dimension, &land_len);
 	handle_error(status, "Failed to get land dimension length");
 
@@ -668,7 +737,7 @@ std::string GridcellOrderedVariable::get_standard_name() const {
 		std::string result;
 		std::istringstream is(attribute);
 		is >> result;
-		
+
 		return result;
 	}
 	else {
@@ -716,8 +785,8 @@ CalendarType GridcellOrderedVariable::get_calendar_type() const {
 	return calendar;
 }
 
-bool GridcellOrderedVariable::same_spatial_coordinates(int ncid_my_coordvar, 
-	const GridcellOrderedVariable& other, 
+bool GridcellOrderedVariable::same_spatial_coordinates(int ncid_my_coordvar,
+	const GridcellOrderedVariable& other,
 	int ncid_other_coordvar) const {
 
 	// Compare dimensions
@@ -752,7 +821,7 @@ bool GridcellOrderedVariable::same_spatial_coordinates(int ncid_my_coordvar,
 	}
 
 	// Compare data for the coordinate variables
-	size_t total_size = std::accumulate(dim_sizes.begin(), dim_sizes.end(), 1, std::multiplies<size_t>());
+	size_t total_size = std::accumulate(dim_sizes.begin(), dim_sizes.end(), (size_t)1, std::multiplies<size_t>());
 
 	std::vector<double> mydata(total_size), otherdata(total_size);
 
@@ -803,7 +872,7 @@ void GridcellOrderedVariable::unpack_data() {
 
 		for (size_t i = 0; i < data.size(); ++i) {
 			data[i] += offset;
-		}		
+		}
 	}
 }
 

@@ -309,6 +309,10 @@ void development_stage(Patch& patch, Pft& pft) {
  */
 void crop_phenology(Patch& patch) {
 
+	if (patch.stand.landcover != CROPLAND) {
+		return;
+	}
+
 	patch.pft.firstobj();
 	while (patch.pft.isobj) {
 		Patchpft& patchpft = patch.pft.getobj();
@@ -484,6 +488,9 @@ void crop_phenology(Patch& patch) {
 
 		patch.pft.nextobj();
 	}
+
+	// necessary updates after changing growingperiod status
+	update_patch_fpc(patch);
 }
 
 /// Updates crop phen from yesterday's lai_daily
@@ -527,20 +534,20 @@ void leaf_phenology_crop(Pft& pft, Patch& patch) {
 			if (patch.stand.pftid != pft.id) {
 
 				if (date.day == patch.pft[patch.stand.pftid].cropphen->bicdate) {
-					patch.stand.gdd0_intercrop = climate.gdd5;
+					patch.stand.gdd5_intercrop = climate.gdd5;
 				}
 				if (date.day == patch.pft[patch.stand.pftid].cropphen->eicdate) {
-					patch.stand.gdd0_intercrop = 0.0;
+					patch.stand.gdd5_intercrop = 0.0;
 					patchpft.phen = 0.0;
 				}
 			}
 
-			// reset stand.gdd0_intercrop same day as gdd5
+			// reset stand.gdd5_intercrop same day as gdd5
 			if (climate.lat >= 0.0 && date.day == COLDEST_DAY_NHEMISPHERE
 				|| climate.lat < 0.0 && date.day == COLDEST_DAY_SHEMISPHERE
 				|| climate.gdd5 == 0.0) {
 
-				patch.stand.gdd0_intercrop = 0.0;
+				patch.stand.gdd5_intercrop = 0.0;
 			}
 
 			if (ppftcrop.growingseason) {	// includes bicdate, not eicdate
@@ -548,11 +555,11 @@ void leaf_phenology_crop(Pft& pft, Patch& patch) {
 				if (patch.stand.pftid == pft.id || gridcell.pft[patch.stand.pftid].sowing_restriction) { // Normal grass growth: gives identical result to natural stands.
 					patchpft.phen = min(1.0, climate.gdd5 / pft.phengdd5ramp);
 				}
-				else if (patch.stand.gdd0_intercrop > 0.0) {
-					patchpft.phen = min(1.0, (climate.gdd5 - patch.stand.gdd0_intercrop) / (pft.phengdd5ramp * 0.9)); // intercrop grass
+				else if (patch.stand.gdd5_intercrop > 0.0) {
+					patchpft.phen = min(1.0, (climate.gdd5 - patch.stand.gdd5_intercrop) / (pft.phengdd5ramp * 0.9)); // intercrop grass
 				}
 				else {
-					patchpft.phen = min(1.0, (climate.gdd5 - patch.stand.gdd0_intercrop) / pft.phengdd5ramp); // intercrop grass
+					patchpft.phen = min(1.0, (climate.gdd5 - patch.stand.gdd5_intercrop) / pft.phengdd5ramp); // intercrop grass
 				}
 
 				if (patchpft.phen < 0.0) {
@@ -563,7 +570,7 @@ void leaf_phenology_crop(Pft& pft, Patch& patch) {
 				if (patchpft.wscal < pft.wscal_min) {
 
 					patchpft.phen = 0.0;
-					patch.stand.gdd0_intercrop = climate.gdd5;
+					patch.stand.gdd5_intercrop = climate.gdd5;
 				}
 			}
 		}

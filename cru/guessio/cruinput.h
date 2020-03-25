@@ -3,7 +3,7 @@
 /// \brief Input module for the CRU-NCEP data set
 ///
 /// \author Joe Siltberg
-/// $Date: 2017-04-05 15:04:09 +0200 (Mi, 05. Apr 2017) $
+/// $Date: 2019-11-06 17:45:44 +0100 (Mi, 06. Nov 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,6 +15,7 @@
 #include <vector>
 #include "gutil.h"
 #include "globalco2file.h"
+#include "soilinput.h"
 #include "spinupdata.h"
 #include "cru_ts30.h"
 #include "lamarquendep.h"
@@ -54,10 +55,10 @@ public:
 	// Constants associated with historical climate data set
 
 	/// number of years of historical climate
-	static const int NYEAR_HIST = CRU_TS30::NYEAR_HIST;
+	static const int NYEAR_HIST = CRU_FastArchive::NYEAR_HIST;
 
 	/// calendar year corresponding to first year in data set
-	static const int FIRSTHISTYEAR = CRU_TS30::FIRSTHISTYEAR;
+	static const int FIRSTHISTYEAR = CRU_FastArchive::FIRSTHISTYEAR;
 
 	/// number of years to use for temperature-detrended spinup data set
 	/** (not to be confused with the number of years to spinup model for, which
@@ -80,8 +81,8 @@ protected:
 	 *  \param mnwetdep      Pointer to array holding 12 doubles
 	 */
 	void get_monthly_ndep(int calendar_year,
-	                      double* mndrydep,
-	                      double* mnwetdep);
+	                      double* mNHxdrydep, double* mNOydrydep,
+						  double* mNHxwetdep, double* mNOywetdep);
 
 	/// Gives sub-classes a chance to modify the forcing data
 	/** This function will be called just after the forcing data for the historical
@@ -111,6 +112,10 @@ private:
 		double lat;
 		xtring descrip;
 	};
+
+	std::vector<std::pair<double, double> > translate_gridlist_to_coord(ListArray_id<Coord>& gridlist);
+
+	SoilInput soilinput;
 
 	/// Land cover input module
 	LandcoverInput landcover_input;
@@ -156,6 +161,12 @@ private:
 	/// Monthly DTR (diurnal temperature range) for current grid cell and historical period
 	double hist_mdtr[NYEAR_HIST][12];
 
+	/// Monthly mean wind for current grid cell and historical period
+	double hist_mwind[NYEAR_HIST][12];
+
+	/// Monthly mean relative humidity for current grid cell and historical period
+	double hist_mrhum[NYEAR_HIST][12];
+
 	/// Nitrogen deposition forcing for current gridcell
 	Lamarque::NDepData ndep;
 
@@ -172,6 +183,10 @@ private:
 	Spinup_data spinup_mwet;
 	/// Spinup data for current grid cell - DTR (diurnal temperature range)
 	Spinup_data spinup_mdtr;
+	/// Spinup data for current grid cell - wind
+	Spinup_data spinup_mwind;
+	/// Spinup data for current grid cell - relative humidity
+	Spinup_data spinup_mrhum;
 
 	/// Daily temperature for current year
 	double dtemp[Date::MAX_YEAR_LENGTH];
@@ -181,8 +196,13 @@ private:
 	double dsun[Date::MAX_YEAR_LENGTH];
 	// Daily diurnal temperature range for current year
 	double ddtr[Date::MAX_YEAR_LENGTH];
+	// Daily mean wind 
+	double dwind[Date::MAX_YEAR_LENGTH];
+	// Daily mean relative humidity
+	double drhum[Date::MAX_YEAR_LENGTH];
 	/// Daily N deposition for current year
-	double dndep[Date::MAX_YEAR_LENGTH];
+	double dNH4dep[Date::MAX_YEAR_LENGTH];
+	double dNO3dep[Date::MAX_YEAR_LENGTH];
 };
 
 #endif // LPJ_GUESS_CRUINPUT_H

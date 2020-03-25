@@ -15,8 +15,9 @@
 #   2. In an editor, set appropriate values for the variables NPROCESS,
 #      INSFILE, GRIDLIST and OUTFILES (NB: no space after the = sign):
 
-NPROCESS=20            # NB: Should be multiple of 20 on Aurora!
+NPROCESS=20                # NB: Should be multiple of 20 on Aurora!
 WALLTIME=150:00:00
+WALLTIME_APPEND=01:30:00   # Does not need to be as long as guess walltime
 INSFILE=guess.ins
 INPUT_MODULE=cru_ncep
 GRIDLIST=gridlist.txt
@@ -167,14 +168,16 @@ do
   cd ..
 done
 
-mpirun -bind-to core BINARY -parallel -input $INPUT_MODULE $INSFILE
+mpirun --bind-to core BINARY -parallel -input $INPUT_MODULE $INSFILE
 
 EOF
 
 cat <<EOF > append.cmd
 #!/bin/bash
 #SBATCH -n 1
-#SBATCH --time=$WALLTIME
+#SBATCH --time=$WALLTIME_APPEND
+#SBATCH --mem-per-cpu=12000
+#SBATCH --exclusive
 set -e
 
 function append_files {

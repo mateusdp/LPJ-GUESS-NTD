@@ -6,7 +6,7 @@
 ///  (1) Definitions of constants and common functions used throughout LPJ-GUESS
 ///
 /// \author Michael Mischurow
-/// $Date: 2015-12-22 15:22:04 +0100 (Di, 22. Dez 2015) $
+/// $Date: 2019-10-21 13:47:29 +0200 (Mo, 21. Okt 2019) $
 ///
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,9 +27,45 @@ double const PI = M_PI;
 #endif
 const double DEGTORAD = PI / 180.;
 
+const double SECS_PER_DAY	= 24.0*60.0*60.0;
+const double M3_PER_MM3		= 1E-9;
+const double MM3_PER_M3		= 1E9;
+const double HA_PER_M2		= 1E-4;
+const double M2_PER_HA		= 1E4;
+const double CM2_PER_M2		= 1E4;
+const double MM2_PER_M2		= 1E6;
+const double SQ_M			= 1.0;		// 1 m2
+const double M_PER_MM		= 1E-3;
+const double CM_PER_M		= 1E2;
+const double CM_PER_MM		= 1E-1;
+const double MM_PER_M		= 1E3;
+const double MM_PER_CM		= 1E1;
+const double KG_PER_G		= 1E-3;
+const double G_PER_KG		= 1E3;
+const double G_PER_MG		= 1E-3;
+const double MG_PER_G		= 1E3;		// Milligrams
+const double KG_PER_MT		= 1E3;		// Metric tonnes
+const double MMOL_PER_MOL	= 1E3;
+const double J_PER_KJ		= 1E3;
+const double KMH_PER_MS         = 3.6;
+const double FRACT_TO_PERCENT   = 100.;
+const double PERCENT_TO_FRACT   = 0.01;
+const double R_EARTH            = 6371.2213; // mean earth-radius[km]
+
 inline bool negligible(double dval, int limit = 0) {
 	// Returns true if |dval| < EPSILON, otherwise false
 	return limit ? fabs(dval) < pow(10.0, limit) : fabs(dval) < 1.0e-30;
+}
+
+inline double roundoff(double dval, int limit) {
+	// Returns a double where decimals smaller than 10^(-limit) are rounded off.
+	// i.e. returns a double where the number of decimals is 'limit'.
+	bool neg = dval < 0;
+
+	int ival = int((fabs(dval) * pow(10.0, limit)) + 0.5);
+	dval = (double(ival) / pow(10.0, limit));
+
+	if (neg) return -dval; else return dval;
 }
 
 inline bool largerthanzero(double dval, int limit = 0) {
@@ -292,6 +328,18 @@ ArchiveStream& operator&(ArchiveStream& stream,
 		& data.full;
 
 	return stream;
+}
+
+
+// used in soil temperature calculation
+inline bool verysmall(double dval) {
+
+	// Returns true if dval < EPSILON, otherwise false
+
+	const double EPSILON = 1.0e-12;
+	if (dval>EPSILON) return false;
+	if (dval<0.0 && dval<-EPSILON) return false;
+	return true;
 }
 
 #endif // LPJ_GUESS_GUESSMATH_H

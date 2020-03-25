@@ -3,7 +3,7 @@
 /// \brief Input module for CF conforming NetCDF files
 ///
 /// \author Joe Siltberg
-/// $Date: 2017-04-24 19:33:38 +0200 (Mo, 24. Apr 2017) $
+/// $Date: 2020-03-03 16:31:01 +0100 (Di, 03. Mär 2020) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -12,6 +12,7 @@
 
 #ifdef HAVE_NETCDF
 
+#include "soilinput.h"
 #include "cruinput.h"
 #include "guessnc.h"
 #include <memory>
@@ -45,6 +46,7 @@ private:
 	LandcoverInput landcover_input;
 	/// Management input module
 	ManagementInput management_input;
+	SoilInput soilinput;
 
 	struct Coord {
 
@@ -52,6 +54,8 @@ private:
 
 		int rlon;
 		int rlat;
+		double lon;
+		double lat;
 		int landid;
 		std::string descrip;
 	};
@@ -63,12 +67,8 @@ private:
 	std::vector<Coord>::iterator current_gridcell;
 
 	/// Loads data from NetCDF files for current grid cell
-	/** Returns the coordinates for the current grid cell, for
-	 *  the closest CRU grid cell and the soilcode for the cell.
-	 *  \returns whether it was possible to load data and find nearby CRU cell */
-	bool load_data_from_files(double& lon, double& lat,
-	                          double& cru_lon, double& cru_lat,
-	                          int& soilcode);
+	/** Returns the coordinates for the current grid cell*/
+	bool load_data_from_files(double& lon, double& lat);
 
 	/// Gets the first few years of data from cf_var and puts it into spinup_data
 	void load_spinup_data(const GuessNC::CF::GridcellOrderedVariable* cf_var,
@@ -95,7 +95,7 @@ private:
 	void populate_daily_prec_array(long& seed);
 
 	/// Fills dtemp, dprec, etc. with forcing data for the current year
-	void populate_daily_arrays(long& seed);
+	void populate_daily_arrays(Gridcell& gridcell);
 
 	/// \returns all (used) variables
 	std::vector<GuessNC::CF::GridcellOrderedVariable*> all_variables() const;
@@ -121,6 +121,14 @@ private:
 	GuessNC::CF::GridcellOrderedVariable* cf_min_temp;
 
 	GuessNC::CF::GridcellOrderedVariable* cf_max_temp;
+	
+	GuessNC::CF::GridcellOrderedVariable* cf_pres;
+
+	GuessNC::CF::GridcellOrderedVariable* cf_specifichum;
+
+	GuessNC::CF::GridcellOrderedVariable* cf_relhum;
+
+	GuessNC::CF::GridcellOrderedVariable* cf_wind;
 
 	// Spinup data for each variable
 
@@ -136,6 +144,14 @@ private:
 
 	GenericSpinupData spinup_max_temp;
 
+	GenericSpinupData spinup_pres;
+
+	GenericSpinupData spinup_specifichum;
+
+	GenericSpinupData spinup_relhum;
+
+	GenericSpinupData spinup_wind;
+
 	/// Temperature for current gridcell and current year (deg C)
 	double dtemp[Date::MAX_YEAR_LENGTH];
 
@@ -145,14 +161,29 @@ private:
 	/// Insolation for current gridcell and current year (\see instype)
 	double dinsol[Date::MAX_YEAR_LENGTH];
 
+	/// daily pressure (Pa)
+	double dpres[Date::MAX_YEAR_LENGTH];
+
+	/// daily specifichum (kg/kg)
+	double dspecifichum[Date::MAX_YEAR_LENGTH];
+
+	/// daily wind (m/s)
+	double dwind[Date::MAX_YEAR_LENGTH];
+	
+	/// daily relative humidity (fraction)
+	double drelhum[Date::MAX_YEAR_LENGTH];
+	
 	/// Daily N deposition for one year
-	double dndep[Date::MAX_YEAR_LENGTH];
+	double dNH4dep[Date::MAX_YEAR_LENGTH],dNO3dep[Date::MAX_YEAR_LENGTH];
 
 	/// Minimum temperature for current gridcell and current year (deg C)
 	double dmin_temp[Date::MAX_YEAR_LENGTH];
 
 	/// Maximum temperature for current gridcell and current year (deg C)
 	double dmax_temp[Date::MAX_YEAR_LENGTH];
+
+	/// Daily temperature range for current gridcell and current year (deg C)
+	double ddtr[Date::MAX_YEAR_LENGTH];
 
 	/// Whether the forcing data for precipitation is an extensive quantity
 	/** If given as an amount (kg m-2) per timestep it is extensive, if it's
@@ -173,8 +204,13 @@ private:
 
 	int historic_timestep_max_temp;
 
-	/// Path to CRU binary archive
-	xtring file_cru;
+	int historic_timestep_pres;
+
+	int historic_timestep_specifichum;
+
+	int historic_timestep_relhum;
+
+	int historic_timestep_wind;
 
 	/// Nitrogen deposition forcing for current gridcell
 	Lamarque::NDepData ndep;
