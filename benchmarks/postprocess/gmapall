@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Script used for running gmap for each column in a guess output file.
+# For more information, run "gmapall -help".
+#
+
+function print_usage_and_exit {
+    echo "This script is used to run gmap for each column in a file with a table"
+    echo "like this:"
+    echo ""
+    echo "    Lon     Lat      BNE    BINE     Total"
+    echo " -43.00   83.00      0.0     0.0       0.0"
+    echo " -65.00   82.50      0.1     0.2       0.3"
+    echo "      .       .        .       .         ."
+    echo "      .       .        .       .         ."
+    echo "      .       .        .       .         ."
+    echo ""
+    echo "gmap will be run once for each column that isn't Lat, Lon or Total. The"
+    echo "generated images will have the same names as the column titles (plus"
+    echo "an optional prefix)."
+    echo ""
+    echo "Usage: $0 <filename> [-P prefix] [extra gmap options]"
+    echo ""
+    echo "Any extra options supplied will be sent to gmap (see the gmap "
+    echo "documentation). Don't send -lon, -lat, -i, -t or -o since gmapall takes"
+    echo "care of those."
+    exit 1
+}
+
+# Check arguments to the script
+if [[ $# == 0 || $1 == "-help" || $1 == "-h" || $1 == "--help" ]]; then
+    print_usage_and_exit
+fi
+
+# Get the filename
+file=$1
+# Get rid of the filename from the arguments
+shift
+
+# Was a prefix given?
+if [[ $1 == "-P" ]]; then
+    prefix=$2
+    # Get rid of the prefix from the arguments
+    shift 2
+fi
+
+# Extra parameters to gmap (passed via the GMAP_EXTRA environment variable
+extra=$@
+
+# Send the first line of input to the awk script which does the work
+head -n 1 $file | GMAP_EXTRA=$extra awk -v file=$file -v prefix=$prefix -f `dirname $0`/gmapall.awk

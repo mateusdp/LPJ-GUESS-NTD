@@ -1,0 +1,178 @@
+!///////////////////////////////////////////////////////////////////////////////////////
+!// LPJ-GUESS INSTRUCTION SCRIPT FOR COHORT/INDIVIDUAL MODE
+!// Global PFTs
+!//
+!// LPJ-GUESS 3.0
+!// 
+!///////////////////////////////////////////////////////////////////////////////////////
+! Input files
+!
+
+param "file_lu"      (str "")
+param "file_lucrop"  (str "")
+param "file_lupasture"  (str "")
+param "file_lunatural"  (str "")
+param "file_luforest"  (str "")
+
+!///////////////////////////////////////////////////////////////////////////////////////
+! Output files
+!
+
+! Prefined yearly output
+! These files may be outcommented if their output is not required. 
+
+file_cmass_cropland ""
+file_cmass_pasture ""
+file_cmass_natural "cmass_natural.out"
+file_cmass_forest "cmass_forest.out"
+file_anpp_cropland ""
+file_anpp_pasture ""
+file_anpp_natural "anpp_natural.out"
+file_anpp_forest "anpp_forest.out"
+file_dens_natural "dens_natural.out"
+file_dens_forest "dens_forest.out"
+file_cflux_cropland "cflux_cropland.out"
+file_cflux_pasture "cflux_pasture.out"
+file_cflux_natural "cflux_natural.out"
+file_cflux_forest "cflux_forest.out"
+file_cpool_cropland "cpool_cropland.out"
+file_cpool_pasture "cpool_pasture.out"
+file_cpool_natural "cpool_natural.out"
+file_cpool_forest "cpool_forest.out"
+file_nflux_cropland "nflux_cropland.out"
+file_nflux_pasture "nflux_pasture.out"
+file_nflux_natural "nflux_natural.out"
+file_nflux_forest "nflux_forest.out"
+file_npool_cropland "npool_cropland.out"
+file_npool_pasture "npool_pasture.out"
+file_npool_natural "npool_natural.out"
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// RUN PARAMETERS AND OPTIONS 
+!
+
+!!!!!!!!!!!! landcover parameters !!!!!!!!!!!!!!
+
+npatch_secondarystand 1		! number of replicate patches to simulate in secondary stands
+reduce_all_stands 0		! Whether to reduce equal percentage of all stands of a stand type at land cover change
+age_limit_reduce 5		! Minimum age of stands to reduce at land cover change
+
+run_landcover 1        ! whether to use (and change) landcover fractions (1) or not (0)	
+
+run_urban 0	      ! whether to simulate barren land (1) or not (0)	
+run_crop 1	      ! whether to simulate crop vegetation (1) or not (0)
+run_forest 0	      ! whether to simulate managed forest (1) or not (0)
+run_pasture 1	      ! whether to simulate pasture (1) or not (0)
+run_natural 1	      ! whether to simulate natural vegetation (1) or not (0)
+run_peatland 0	      ! whether to simulate peatland (1) or not (0)
+run_barren 0	      ! whether to simulate barren land (1) or not (0)
+
+ifslowharvestpool 1	! If a slow harvested product pool is included in patchpft.
+printseparatestands 0	! Whether to print multiple stands within a land cover type (except cropland) separately
+gross_land_transfer 0	! Whether to use gross land transfer: simulate gross lcc (1); read landcover transfer matrix input file (2); 
+			! read stand type transfer matrix input file (3), or not (0)
+ifprimary_lc_transfer 0	! Whether to use primary/secondary land transition info in landcover transfer input file (1). or not (0)
+ifprimary_to_secondary_transfer 0 ! Whether to use primary-to-secondary land transition info (within land cover type) in landcover 
+				  ! transfer input file (1). or not (0)
+transfer_level 2	! Pooling level of land cover transitions; 0: one big pool; 1: land cover-level; 2: stand type-level
+iftransfer_to_new_stand 0 ! Whether to create new stands in transfer_to_new_stand() according to the rules in copy_stand_type()
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR MANAGEMENT TYPES
+
+group "crop_management" (
+
+	planting_system "monoculture"
+)
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR STAND TYPES
+
+
+group "common_stand" (
+
+	intercrop "nointercrop"
+	naturalveg "none"
+	restrictpfts 0		! Use all pft:s defined for a land cover (pft parameter landcover)
+)
+
+group "crop_stand" (
+
+	landcover "cropland"
+	intercrop "naturalgrass" ! Use natural grass pft:s as covercrop
+	restrictpfts 1		! Use only pft:s specified in stand type
+	planting_system "monoculture"
+	hydrology "rainfed"
+)
+
+st "Urban" (
+
+	common_stand
+	stinclude 1
+	landcover "urban"
+)
+
+st "Peatland" (
+
+	common_stand
+	stinclude 1
+	landcover "peatland"
+)
+
+st "Natural" (
+
+	common_stand
+	stinclude 1
+	landcover "natural"
+)
+
+st "Pasture" (
+
+	common_stand
+	stinclude 1
+	landcover "pasture"
+)
+
+st "Forest" (
+
+	common_stand
+	stinclude 1
+	landcover "forest"
+	naturalveg "all"	! Use natural pft:s
+	harvest_system "continuous"
+)
+
+st "Barren" (
+
+	common_stand
+	stinclude 1
+	landcover "barren"
+)
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR PFTS
+!// Run GUESS with -help option for list of keywords and their meanings
+
+
+pft "C3G_pas" (
+	C3G
+	landcover "pasture"
+	harv_eff 0.5			! old value; intensive grazing: 90% grazed, 25-60 % returned to soil as faeces (0.36-0.675 removed, 0.5 OK average)
+	res_outtake 0.0			! not used by crop grass
+)
+
+pft "C4G_pas" (
+	C4G
+	landcover "pasture"
+	harv_eff 0.5			! old value; intensive grazing: 90% grazed, 25-60 % returned to soil as faeces (0.36-0.675 removed, 0.5 OK average)
+	res_outtake 0.0			! not used by crop grass
+)
+
+pft "C3G_pea" (
+	C3G
+	landcover "peatland"
+	harv_eff 0
+)
+

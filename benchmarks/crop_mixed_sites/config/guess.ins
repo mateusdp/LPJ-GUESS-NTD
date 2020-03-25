@@ -1,0 +1,44 @@
+import "../../../data/ins/global.ins"
+import "../../../data/ins/crop_n.ins"
+
+!Climate data and co2
+import "../../paths.ins"
+
+param "file_gridlist" (str "gridlist.txt")
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!Landcover area fraction files
+
+param "file_lu"      (str "/data/benchmark_data/2015_12_14/landuse/landuse_hurtt_1901_2006_mixed_sites_less_PNV.txt")
+param "file_lucrop"  (str "/data/benchmark_data/2015_12_14/landuse/cropland_hurtt_mirca_1901_2006_mixed_sites_covercrops.txt")
+param "file_Nfert"   (str "/data/benchmark_data/2015_12_14/landuse/n_fert_zaehle_1901_2006_mixed_sites.txt")
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// RUN PARAMETERS AND OPTIONS 
+
+npatch 20            	! number of replicate patches to simulate
+
+ifintercropgrass 1	! Whether to grow grass as cover crop between growing periods
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR STAND TYPES
+
+st "TeCoicc" (
+
+	crop_stand
+!	stinclude 1
+	pft "TeCoi"
+	hydrology "rainfed"
+	intercrop "naturalgrass" 
+)
+
+st "TeWWcc" (
+
+	crop_stand
+!	stinclude 1
+	pft "TeWW"
+	hydrology "irrigated"
+	intercrop "naturalgrass" 
+)

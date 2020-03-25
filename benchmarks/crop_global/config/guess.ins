@@ -1,0 +1,35 @@
+import "../../../data/ins/global.ins"
+import "../../../data/ins/crop_n.ins"
+
+!Climate data and co2
+import "../../paths.ins"
+
+param "file_gridlist" (str "gridlist.txt")
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!Landcover area fraction files
+
+param "file_lu"      (str "/data/benchmark_data/2015_12_14/landuse/landuse_hurtt_1901_2006_global.txt")
+param "file_lucrop"  (str "/data/benchmark_data/2015_12_14/landuse/cropland_hurtt_mirca_1901_2006_global.txt")
+param "file_Nfert"   (str "/data/benchmark_data/2015_12_14/landuse/n_fert_zaehle_1901_2006_global.txt")
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+! Output files
+
+file_aiso "aiso.out"
+file_amon "amon.out"
+
+file_miso "miso.out"
+file_mmon "mmon.out"
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// RUN PARAMETERS AND OPTIONS 
+
+ifbvoc 1
+
+ifintercropgrass 0	! Whether to grow grass as cover crop between growing periods
+
+
+!///////////////////////////////////////////////////////////////////////////////////////

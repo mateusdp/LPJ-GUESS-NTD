@@ -1,0 +1,323 @@
+#!/usr/bin/python
+
+"""Small script to convert a report in the form of an XML file,
+as generated in the post processing step of a benchmark, into HTML.
+"""
+
+from xml.dom import minidom
+from xml.dom.minidom import Element, Text
+import sys
+import subprocess
+
+# This will be set to True if invoked with -p
+printer_friendly=False
+
+class ResizeFail:
+    """This is thrown when resizing of an image fails"""
+    pass
+
+def resizeimage(path, small):
+    """Calls the ImageMagick program convert to resize the image
+    to something that isn't too big"""
+
+    print >> sys.stderr, "Resizing " + path
+
+    newpath = "resized_" + path
+    if small:
+        format = '480x360>' 
+    else:
+        format = '800x600>'
+    try:
+        subprocess.call(['convert', path, '-trim', '-bordercolor', 'White', '-border', '25x25', '-resize', format, newpath])
+    except:
+        raise ResizeFail
+
+    return newpath
+
+# Some help functions for generating HTML DOM nodes
+
+
+def htmlelement(type, parent):
+    """Creates an HTML Element with a specific parent node"""
+    element = Element(type)
+    parent.appendChild(element)
+    return element
+
+def htmltext(string, parent):
+    """Creates a text node with a specific parent node"""
+    text = Text()
+    text.data = string
+    parent.appendChild(text)
+    return text
+
+def htmlheader(type, str, parent):
+    """Creates an HTML header (e.g. <h2>blahblah</h2>)"""
+    node = htmlelement(type, parent)
+    htmltext(str, node)
+    return node
+
+
+
+# Classes for representing a report
+
+
+class Image:
+    """An image with a description"""
+
+    def __init__(self, path, description, embed):
+        
+        self.path = path
+
+        self.description = description
+        self.embed = embed
+
+    def tohtml(self, ingroup):
+        node = Element("div")
+
+        if printer_friendly:
+            self.path = resizeimage(self.path, ingroup)
+
+        if self.embed or printer_friendly:
+            image = htmlelement("image", node)
+            image.setAttribute("src", self.path)
+            htmlelement("br", node)
+            htmltext(self.description, node)
+            htmlelement("br", node)
+            htmlelement("br", node)
+
+        else:
+            link = htmlelement("a", node)
+            link.setAttribute("href", self.path)
+            htmltext(self.description, link)
+
+        return node
+
+class Textfile:
+    """A text file with a description"""
+
+    def __init__(self, path, description):
+        self.path = path
+        self.description = description
+
+    def tohtml(self, ingroup):
+        node = Element("div")
+        htmlheader("h3", self.description, node)
+
+        file = open(self.path, 'r')
+        pre = htmlelement("pre", node)
+        htmltext(file.read(), pre)
+        
+        return node
+
+class Group:
+    """A list of other parts, for instance images"""
+
+    def __init__(self, parts, description):
+        self.parts = parts
+        self.description = description
+
+    def tohtml(self, ingroup):
+        node = Element("div")
+        htmlheader("h2", self.description, node)
+        for part in self.parts:
+            node.appendChild(part.tohtml(True))
+
+        return node
+
+class Report:
+    """Represents a benchmark report, can serialize to html"""
+
+    def __init__(self):
+        self.parts = []
+        self.description = ""
+        self.title = ""
+        self.metadata = ""
+
+    def setdescription(self, description):
+        self.description = description
+
+    def settitle(self, title):
+        self.title = title;
+
+    def setmetadata(self, metadata):
+        self.metadata = metadata
+
+    def addpart(self, part):
+        self.parts.append(part)
+
+    def tohtml(self):
+        root = self._createhtmldoc()
+        body = htmlelement("body", root)
+
+        htmlheader("h1", self.title, body)
+        desc = htmlelement("p", body)
+        htmltext(self.description, desc)
+
+        table = htmlelement("table", body)
+        table.setAttribute("border", "0")
+        table.setAttribute("cellspacing", "10")
+        table.setAttribute("cellpadding", "10")
+        table.setAttribute("width", "100%")
+
+        # Background colors to cycle through for the different parts
+        colors = ['#f0f0f0', 'e4ffe4', 'fff9d3']
+        c = 0
+
+        for part in self.parts:
+            cell = self._tablecell(colors[c%len(colors)])
+            c+=1
+            cell.appendChild(part.tohtml(False))
+            table.appendChild(cell)
+
+        htmlelement("hr", body)
+
+        meta = self._metadataelement()
+        body.appendChild(meta)
+
+        return root
+
+    def _createhtmldoc(self):
+        html = Element("html")
+        head = htmlelement("head", html)
+        title = htmlelement("title", head)
+        htmltext("Benchmark report - " + self.title, title)
+        return html
+
+    def _tablecell(self, color):
+        tr = Element("tr")
+        td = htmlelement("td", tr)
+        td.setAttribute("bgcolor", color)
+        return tr
+
+    def _metadataelement(self):
+        table = Element("table")
+        tr = htmlelement("tr", table)
+        td = htmlelement("td", tr)
+        htmlheader("h3", "Meta data", td)
+        pre = htmlelement("pre", td)
+        htmltext(self.metadata, pre)
+        return table
+
+# Error handling for XML parsing
+
+class XMLError(Exception):
+    """Raised when parsing bad XML document"""
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+def xmlassert(predicate, message):
+    """Help function for checking something and raising an XMLError"""
+    if not predicate:
+        raise XMLError(message)
+
+
+
+# Functions to parse the XML format
+
+def parsebenchmark(node):
+    xmlassert(len(node.childNodes) == 1 and \
+                  hasattr(node.childNodes[0], "data"),
+              "Bas benchmark element")
+    return node.childNodes[0].data
+
+def parseimage(node):
+    xmlassert(node.hasAttribute("src") and \
+                  len(node.childNodes) == 1 and \
+                  hasattr(node.childNodes[0], "data"),
+              "Bad image element")
+
+    embed = False
+
+    if node.hasAttribute("embed") and \
+            node.getAttribute("embed") == "1":
+        embed = True
+
+    return Image(node.getAttribute("src"), node.childNodes[0].data, embed)
+
+def parsetextfile(node):
+    xmlassert(node.hasAttribute("src") and \
+                  node.hasAttribute("description"), 
+              "Bad text element")
+    return Textfile(node.getAttribute("src"),
+                    node.getAttribute("description"))
+
+def parsegroup(node):
+    xmlassert(node.hasAttribute("description"), 
+              "Bad group element")
+
+    parts = []
+    for child in node.childNodes:
+        if child.nodeType == node.ELEMENT_NODE:
+            parts.append(parsepart(child))
+
+    return Group(parts, node.getAttribute("description"))
+
+def parsepart(node):
+    tag = node.tagName
+    
+    if tag == "image":
+        return parseimage(node)
+    elif tag == "group":
+        return parsegroup(node)
+    elif tag == "textfile":
+        return parsetextfile(node)
+    else:
+        raise XMLError("Bad element (" + tag + ")")
+
+def parsexml(xml, report):
+    report.settitle(xml.getAttribute("title"))
+
+    for node in xml.childNodes:
+        if node.nodeType == xml.ELEMENT_NODE:
+            tag = node.tagName
+
+            if tag == "benchmark":
+                report.setdescription(parsebenchmark(node))
+            else:
+                report.addpart(parsepart(node))
+
+# Start the program
+
+if __name__ == "__main__":
+
+    # Check if we should do a printer friendly report
+    # (all images embedded and resized if they are too big)
+    if sys.argv.count("-p") > 0:
+        printer_friendly = True
+        sys.argv.remove("-p")
+
+    # Create the internal representation of the report
+    report = Report()
+
+    # Open and parse the XML file into a DOM tree
+    try:
+        file = open(sys.argv[1])
+        xmldoc = minidom.parse(file).documentElement
+
+        # Traverse the DOM tree and create our internal representation
+        parsexml(xmldoc, report)
+
+        try:
+            metadata = open(sys.argv[2]).read()
+        except IOError,e:
+            metadata = ""
+        report.setmetadata(metadata)
+    except XMLError,e:
+        print >> sys.stderr, e
+        sys.exit(1)
+    except IOError,e:
+        print >> sys.stderr, "I/O error: " + e.strerror
+        print >> sys.stderr, "File: " + e.filename
+        sys.exit(1)
+    except ResizeFail,e:
+        print >> sys.stderr, "Failed to resize, ImageMagick not installed?"
+        sys.exit(1)
+    except:
+        print >> sys.stderr, "Unexpected error:", sys.exc_info()[0]
+        sys.exit(1)
+
+    # Serialize to HTML
+    print report.tohtml().toxml()

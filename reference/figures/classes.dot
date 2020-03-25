@@ -1,0 +1,60 @@
+digraph G {
+	rankdir = RL
+	node[shape=box];
+
+	Day Date
+
+	subgraph cluster_pftlist {
+		label = Pftlist
+		Pftlist [shape=record, label="<f0>Pft | <f1> Pft | <f2> Pft"]
+	}
+	subgraph cluster_gridcell {
+
+		Gridcell [shape=plaintext];
+		Soil -> Soiltype
+		Climate -> Gridcell;
+		Stand2 [label="Stand"];
+		Stand3 [label="Stand"];
+		Stand2 -> Gridcell;
+		Stand3 -> Gridcell;
+
+		Gridcellpft [shape=record, label="<f0>Gridcellpft | <f1> Gridcellpft | <f2> Gridcellpft"]
+		Stand -> Gridcell;
+		subgraph cluster_stand {
+			Stand [shape=plaintext];
+			Standpft [shape=record, label="<f0>Standpft | <f1> Standpft | <f2> Standpft"]
+			Patch1 [label="Patch"]
+			Patch3 [label="Patch"]
+			Patch1 -> Stand;
+			Patch3 -> Stand;
+			Patch2 -> Stand;
+			subgraph cluster_patch {
+				Patch2 [shape=plaintext, label="Patch"]
+				Patchpft [shape=record, label="<f0>Patchpft | <f1> Patchpft | <f2> Patchpft"]
+				Fluxes ->  Patch2
+				Soil ->  Patch2
+				Vegetation -> Patch2
+				subgraph cluster_vegetation {
+					Vegetation [shape=plaintext];
+					Indivs [shape=record, label="<f0>Individual | <f1> Individual | <f2> Individual"]
+					Indivs:f0 -> Vegetation
+					Indivs:f1 -> Vegetation
+					Indivs:f2 -> Vegetation
+				}
+			}
+		}
+
+	}
+	Indivs:f0 -> Pftlist:f2
+	Indivs:f1 -> Pftlist:f1
+	Indivs:f2 -> Pftlist:f2
+	Patchpft:f0 -> Pftlist:f0 [color=lightgray];
+	Patchpft:f1 -> Pftlist:f1 [color=lightgray];
+	Patchpft:f2 -> Pftlist:f2 [color=lightgray];
+	Standpft:f0 -> Pftlist:f0 [color=lightgray];
+	Standpft:f1 -> Pftlist:f1 [color=lightgray];
+	Standpft:f2 -> Pftlist:f2 [color=lightgray];
+	Gridcellpft:f0 -> Pftlist:f0 [color=lightgray];
+	Gridcellpft:f1 -> Pftlist:f1 [color=lightgray];
+	Gridcellpft:f2 -> Pftlist:f2 [color=lightgray];
+}

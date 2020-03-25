@@ -1,0 +1,36 @@
+1 Boreal decid forest
+.5 1 1
+2 Boreal ever forest
+0 .6 .6
+3 Temp/boreal mix fo. 
+.31 .94 .65
+4 Temp conifer forest 
+.8 1 .84
+5 Temp decid forest 
+.45 1 0
+6 Temp broad ever fo. 
+.1 .49 .73
+7 Temp mixed forest 
+.55 .71 0
+8 Trop season forest 
+.05 .85 .25
+9 Trop rain forest 
+0 .55 .2
+10 Trop decid forest
+.78 .53 .14
+11 Moist savannas
+.8 1 0
+12 Dry savannas
+.85 .7 0
+13 Tall grassland
+.98 .78 0
+14 Dry grassland
+1 .88 .41
+15 Xeric wood/shrub
+1 .29 .60
+16 Arid shrub/steppe
+.94 1 .9
+17 Desert
+1 1 .7
+18 Arctic/alpine tundra
+.8 .8 1

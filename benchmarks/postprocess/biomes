@@ -1,0 +1,18 @@
+#!/bin/bash
+
+root=`dirname $0`
+
+function process {
+	dominance "$1" dom.txt
+	compute $1 -i 'Btrees=BNE+BINE+IBS+BNS' 'Trtrees=TrBE+TrIBE+TrBR' 'Ttrees=TeBS+TeBE+TeNE' 'Grass=C3G+C4G' 'Trees=Btrees+Trtrees+Ttrees' 'BNEE=BNE+BINE' 'TrBEE=TrBE+TrIBE' -o biome.txt
+	awk '{print $4}' dom.txt | paste biome.txt - > biome1.txt
+	awk -f $root/rules.awk biome1.txt > map.txt
+	echo "Lon Lat Biome" > biomes_$1
+	sed '1d' map.txt >> biomes_$1
+	#gmap full.txt -i Biome -hlslegend $root/lpj_hydraul_biome18.col -o "$(basename $1).png" -noframe -landscape -linewidth 1
+	rm biome1.txt biome.txt map.txt dom.txt
+}
+
+for file in $@; do
+	process $file
+done

@@ -1,0 +1,430 @@
+!///////////////////////////////////////////////////////////////////////////////////////
+!// CARBON-ONLY CROP ADDITIONS TO LPJ-GUESS INSTRUCTION SCRIPT
+!// Mats Lindeskog 2015-10-14
+!///////////////////////////////////////////////////////////////////////////////////////
+
+import "crop.ins"
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// RUN PARAMETERS AND OPTIONS 
+!
+
+ifnlim 0
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR MANAGEMENT TYPES
+
+! Example of managements in a crop rotation
+
+mt "TeWW_rf" (
+
+	crop_management
+	pft "TeWW"
+	hydrology "rainfed"
+	nfert 0.04		! Fixed nitrogen fertilisation
+	sdate 120		! Fixed sowing date
+	hdate 260		! Fixed (approximate) harvest date
+)
+
+mt "TeCo_irr" (
+
+	crop_management
+	pft "TeCoi"
+	hydrology "irrigated"
+	nfert 0.007
+	sdate 160
+	hdate 300
+)
+
+mt "fallow" (
+
+	crop_management
+	fallow 1	! One year of fallow with natural grass
+)
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR STAND TYPES
+
+st "CC3G" (
+
+	crop_stand
+	stinclude 1
+	intercrop "nointercrop"
+	pft "CC3G"
+)
+
+st "CC4G" (
+
+	crop_stand
+	stinclude 1
+	intercrop "nointercrop"
+	pft "CC4G"
+)
+
+
+st "TeWW" (
+	! Example of settings for crop rotation
+
+	crop_stand
+	stinclude 1
+
+	firstrotyear 1901	! First years of rotation scheme
+
+	pft "TeWW"
+	hydrology "rainfed"	! Rainfed crop
+
+	! Example of settings for crop rotation
+
+!	management1 "TeWW_rf"	! Overrides settings above
+!	management2 "TeCo_irr" 
+!	management3 "fallow" 
+)
+
+st "TrRi" (
+
+	crop_stand
+	stinclude 1
+	pft "TrRi"
+)
+
+st "TeCo" (
+
+	crop_stand
+	stinclude 1
+	pft "TeCo"
+)
+
+st "TrMi" (
+
+	crop_stand
+	stinclude 1
+	pft "TrMi"
+)
+
+st "TePu" (
+
+	crop_stand
+	stinclude 1
+	pft "TePu"
+)
+
+st "TeSb" (
+
+	crop_stand
+	stinclude 1
+	pft "TeSb"
+)
+
+
+st "TrMa" (
+
+	crop_stand
+	stinclude 1
+	pft "TrMa"
+)
+
+
+st "TeSf" (
+
+	crop_stand
+	stinclude 1
+	pft "TeSf"
+)
+
+
+st "TeSo" (
+
+	crop_stand
+	stinclude 1
+	pft "TeSo"
+)
+
+
+st "TrPe" (
+
+	crop_stand
+	stinclude 1
+	pft "TrPe"
+)
+
+
+st "TeRa" (
+
+	crop_stand
+	stinclude 1
+	pft "TeRa"
+)
+
+st "CC3Girr" (
+
+	crop_stand
+	stinclude 1
+	intercrop "nointercrop"
+	pft "CC3Girr"
+	hydrology "irrigated"
+)
+
+st "CC4Girr" (
+
+	crop_stand
+	stinclude 1
+	intercrop "nointercrop"
+	pft "CC4Girr"
+	hydrology "irrigated"
+)
+
+st "TeWWirr" (
+
+	crop_stand
+	stinclude 1
+	pft "TeWWirr"
+	hydrology "irrigated"
+)
+
+st "TrRiirr" (
+
+	crop_stand
+	stinclude 1
+
+	multicrop 0
+	firstrotyear 1901
+	pft "TrRiirr"
+	hydrology "irrigated"
+)
+
+st "TeCoirr" (
+
+	crop_stand
+	stinclude 1
+	pft "TeCoirr"
+	hydrology "irrigated"
+)
+
+st "TrMiirr" (
+
+	crop_stand
+	stinclude 1
+	pft "TrMiirr"
+	hydrology "irrigated"
+)
+
+st "TePuirr" (
+
+	crop_stand
+	stinclude 1
+	pft "TePuirr"
+	hydrology "irrigated"
+)
+
+st "TeSbirr" (
+
+	crop_stand
+	stinclude 1
+	pft "TeSbirr"
+	hydrology "irrigated"
+)
+
+
+st "TrMairr" (
+
+	crop_stand
+	stinclude 1
+	pft "TrMairr"
+	hydrology "irrigated"
+)
+
+
+st "TeSfirr" (
+
+	crop_stand
+	stinclude 1
+	pft "TeSfirr"
+	hydrology "irrigated"
+)
+
+
+st "TeSoirr" (
+
+	crop_stand
+	stinclude 1
+	pft "TeSoirr"
+	hydrology "irrigated"
+)
+
+
+st "TrPeirr" (
+
+	crop_stand
+	stinclude 1
+	pft "TrPeirr"
+	hydrology "irrigated"
+)
+
+
+st "TeRairr" (
+
+	crop_stand
+	stinclude 1
+	pft "TeRairr"
+	hydrology "irrigated"
+)
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR PFTS
+!// Run GUESS with -help option for list of keywords and their meanings
+
+pft "CC3G" (
+	CC3G
+	include 1
+)
+
+pft "CC4G" (
+	CC4G
+	include 1
+)
+
+pft "TeWW" (
+	TeW
+	include 1
+)
+
+pft "TrRi" (
+	TrRi
+	include 1
+)
+
+pft "TeCo" (
+	TeCo
+	include 1
+)
+
+pft "TrMi" (
+	TrMi
+	include 1
+)
+
+pft "TePu" (
+	TePu
+	include 1
+)
+
+pft "TeSb" (
+	TeSb
+	include 1
+)
+
+pft "TrMa" (
+	TrMa
+	include 1
+)
+
+pft "TeSf" (
+	TeSf
+	include 1	
+)
+
+pft "TeSo" (
+	TeSo
+	include 1	
+)
+
+pft "TrPe" (
+	TrPe
+	include 1
+)
+
+pft "TeRa" (
+	TeRa
+	include 1
+)
+
+
+! Irrigated pft:s are convenient in output files, but technically not necessary
+
+pft "CC3Girr" (
+	CC3G
+	include 1
+)
+
+pft "CC4Girr" (
+	CC4G
+	include 1	
+)
+
+pft "TeWWirr" (
+	TeW
+	include 1
+)
+
+pft "TrRiirr" (
+	TrRi
+	include 1
+)
+
+pft "TeCoirr" (
+	TeCo
+	include 1	
+)
+
+pft "TrMiirr" (
+	TrMi
+	include 1	
+)
+
+pft "TePuirr" (
+	TePu
+	include 1	
+)
+
+pft "TeSbirr" (
+	TeSb
+	include 1	
+)
+
+pft "TrMairr" (
+	TrMa
+	include 1	
+)
+
+pft "TeSfirr" (
+	TeSf
+	include 1	
+)
+
+pft "TeSoirr" (
+	TeSo
+	include 1
+)
+
+pft "TrPeirr" (
+	TrPe
+	include 1
+)
+
+pft "TeRairr" (
+	TeRa
+	include 1
+)
+
+pft "CC3G_ic" (
+	C3G
+	landcover "cropland"
+	laimax 4
+	isintercropgrass 1
+	harv_eff 0.0
+	harv_eff_ic 0.0
+	res_outtake 0.0		! not used by crop grass
+	leaflong 1		! as in crop
+)
+
+pft "CC4G_ic" (
+	C4G
+	landcover "cropland"
+	laimax 4
+	isintercropgrass 1
+	harv_eff 0.0
+	harv_eff_ic 0.0
+	res_outtake 0.0		! not used by crop grass
+	leaflong 1		! as in crop
+)

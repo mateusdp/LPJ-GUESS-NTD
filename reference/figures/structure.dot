@@ -1,0 +1,117 @@
+/*
+ * DOT file for describing LPJ-GUESS file structure.
+ *
+ * Was used to generate the file structure figure in guessdoc.
+ *
+ * To regenerate, run it through dot, for instance:
+ *
+ * dot -Tgif -o structure.gif structure.dot
+ *
+ * (graphviz needs to be installed)
+ * For more information, see graphviz homepage (http://www.graphviz.org).
+ */
+digraph G {
+	rankdir=LR
+
+	subgraph cluster_modules {
+	  subgraph cluster_bvoc {
+	    "bvoc.cpp" [shape=box];
+	    "bvoc.h"
+	  }
+
+	  subgraph cluster_canexch {
+	    "canexch.cpp" [shape=box];
+	    "canexch.h"
+	  }
+
+	  subgraph cluster_driver {
+	    "driver.cpp" [shape=box];
+	    "driver.h"
+	  }
+
+	  subgraph cluster_growth {
+	    "growth.cpp" [shape=box];
+	    "growth.h"
+	  }
+
+	  subgraph cluster_landcover {
+	    "landcover.cpp" [shape=box];
+	    "landcover.h"
+	  }
+
+	  subgraph cluster_soilwater {
+	    "soilwater.cpp" [shape=box];
+	    "soilwater.h"
+	  }
+
+	  subgraph cluster_somdynam {
+	    "somdynam.cpp" [shape=box];
+	    "somdynam.h"
+	  }
+
+	  subgraph cluster_vegdynam {
+	    "vegdynam.cpp" [shape=box];
+	    "vegdynam.h"
+	  }
+	}
+
+	subgraph cluster_frameworks {
+	  subgraph cluster_framework {
+	    "framework.cpp" [shape=box];
+	    "framework.h"
+	  }
+
+	  subgraph cluster_inputmodel {
+	    "inputmodule.cpp" [shape=box];
+	    "inputmodule.h"
+	  }
+	}
+
+
+	subgraph cluster_main {
+	  "main.cpp" [shape=box];
+	}
+
+	subgraph cluster_guess {
+	  "guess.cpp" [shape=box];
+	  "guess.h"
+	}
+
+
+	"bvoc.h" -> "guess.h" [color="forestgreen"];
+	"growth.h" -> "guess.h" [color="forestgreen"];
+	"vegdynam.h" -> "guess.h" [color="forestgreen"];
+	"canexch.h" -> "guess.h" [color="forestgreen"];
+	"soilwater.h" -> "guess.h" [color="forestgreen"];
+	"landcover.h" -> "guess.h" [color="forestgreen"];
+	"driver.h" -> "guess.h" [color="forestgreen"];
+	"somdynam.h" -> "guess.h" [color="forestgreen"];
+
+	"guess.cpp" -> "guess.h" [color="gray" arrowhead=none];
+
+	"driver.cpp" -> "driver.h" [color="gray" arrowhead=none];
+	"canexch.cpp" -> "canexch.h" [color="gray" arrowhead=none];
+	"inputmodule.cpp" -> "inputmodule.h" [color="gray" arrowhead=none];
+	"bvoc.cpp" -> "bvoc.h" [color="gray" arrowhead=none];
+	"landcover.cpp" -> "landcover.h" [color="gray" arrowhead=none];
+	"soilwater.cpp" -> "soilwater.h" [color="gray" arrowhead=none];
+	"vegdynam.cpp" -> "vegdynam.h" [color="gray" arrowhead=none];
+	"growth.cpp" -> "growth.h" [color="gray" arrowhead=none];
+	"somdynam.cpp" -> "somdynam.h" [color="gray" arrowhead=none];
+
+	"main.cpp" -> "framework.h" [color="orange"];
+
+	"vegdynam.cpp" -> "driver.h" [color="sienna"];
+	"somdynam.cpp" -> "driver.h" [color="sienna"];
+
+	"framework.cpp" -> "framework.h" [color="gray" arrowhead=none];
+	"framework.cpp" -> "inputmodule.h" [color="cornflowerblue"];
+	"framework.cpp" -> "driver.h" [color="cornflowerblue"];
+	"framework.cpp" -> "canexch.h" [color="cornflowerblue"];
+	"framework.cpp" -> "landcover.h" [color="cornflowerblue"];
+	"framework.cpp" -> "soilwater.h" [color="cornflowerblue"];
+	"framework.cpp" -> "somdynam.h" [color="cornflowerblue"];
+	"framework.cpp" -> "growth.h" [color="cornflowerblue"];
+	"framework.cpp" -> "vegdynam.h" [color="cornflowerblue"];
+	"framework.cpp" -> "bvoc.h" [color="cornflowerblue"];
+}

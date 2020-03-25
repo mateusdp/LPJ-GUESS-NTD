@@ -1,0 +1,10 @@
+19.75	65.25	N Karelia - boreal forest
+2.25	48.25	Melico - Fagetum
+23.75	52.75	Bialowieza - mixed temperate forest
+9.25	46.25	Scatle - alpine forest
+7.25	46.25	Derborence - alpine forest
+29.25	66.25	Oulu, Finland
+3.75	43.75	Roquet, France
+23.25	45.25	Sinaia, Romania
+14.25	60.75	Siljanfors, Sweden
+6.75	51.75	Meerdink, Netherlands

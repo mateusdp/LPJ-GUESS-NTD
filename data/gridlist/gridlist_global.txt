@@ -1,0 +1,13 @@
+-89.75	53.25	Canada - boreal forest
+-122.75	47.25	Pacific NW - temperate forest
+3.25	45.25	Central Europe - temperate forest
+27.75	43.75	E Bulgaria - forest steppe
+17.25	40.75	S Italy - mediterranean
+-109.75	35.25	US Midwest - prairie savannah
+11.25	12.25	Africa - sahel
+15.25	12.25	Africa - savannah
+-64.75	-0.75	Brazil - tropical rainforest
+20.25	-32.75	S Africa - savannah
+-71.25	-33.75	Chile - temperate/mediterranean forest
+145.25	-37.75	Australia - dry temperate forest
+-72.25	-39.75	Chile - temperate forest

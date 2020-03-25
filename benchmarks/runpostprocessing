@@ -1,0 +1,114 @@
+#!/bin/bash
+
+###############################################################################
+# This script is responsible for running a post processing script.
+# Before it starts the post processing script it sets up an environment
+# so that:
+#
+# * The common post processing scripts are in the PATH
+# * The reporting functions are defined (describe_benchmark, describe_image etc)
+#
+# The reporting functions create a report in the folder 'report'. It does this 
+# by first creating an XML representation of the report and copying necessary 
+# files, such as images, to the report folder. It also takes care of resizing 
+# images if necessary. It then runs a command to convert the XML format to 
+# HTML.
+#
+# Usage: runpostprocessing <path-to-post-processing-script> <benchmark-name>
+#
+# This script should be started in the working directory of the benchmark.
+###############################################################################
+
+# Get command line arguments
+pp_script=$1
+bm_name=$2
+
+# This is where the common post processing scripts are
+pp_common_dir=$(dirname $0)/postprocess
+
+# Prints a message to stderr
+function error {
+    echo $1 >&2
+}
+
+###############################################################################
+# Functions for reporting, creates the report.xml file
+###############################################################################
+
+# Print a string to the XML report
+function print_string {
+    echo "$1" >> report/report.xml
+}
+
+# Start the root node in the XML report
+function print_report_header {
+    print_string "<report title=\""$bm_name"\">"
+}
+
+# Finish the root node in the XML report
+function print_report_footer {
+    print_string "</report>"
+}
+
+# Function to be called from the post processing script to give a
+# description of the benchmark.
+function describe_benchmark {
+    print_string "<benchmark>$1</benchmark>"
+}
+
+# Function to be called from the post processing script to indicate
+# that an image should be a part of the report and to give it a
+# description.
+function describe_image {
+    mv $1 report
+
+    if [ "$3" == "embed" ]; then
+	embed="embed=\"1\""
+    fi
+
+    print_string "<image src=\"$1\" $embed>$2</image>"
+}
+
+# Function to be called from the post processing script to describe
+# a list of images with a shared description.
+function describe_images {
+    print_string "<group description=\"$1\">"
+
+    # Remove the first parameter to this function
+    shift
+
+    # Go through all images
+    for image in $@
+    do
+	# Use the image file name as the description
+	describe_image $image $image
+    done
+
+    print_string "</group>"
+}
+
+# Function to be called from the post processing script to indicate
+# that a text file should be a part of the report and to give it a
+# description.
+function describe_textfile {
+    mv $1 report
+    print_string "<textfile src=\"$1\" description=\"$2\"/>"
+}
+
+# Export report functions which the post processing script should
+# have access to.
+export -f print_string describe_benchmark describe_image \
+    describe_images describe_textfile
+
+rm -rf report
+mkdir report
+print_report_header
+
+# Run the post processing script
+PATH=$pp_common_dir:$PATH bash $pp_script
+
+print_report_footer
+
+# Convert the XML file to HTML
+cd report
+$(dirname $0)/report2html report.xml ../../info.txt > index.html
