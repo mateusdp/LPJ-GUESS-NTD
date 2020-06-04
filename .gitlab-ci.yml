@@ -1,0 +1,75 @@
+# This is a GitLab Continuous Integration (CI) file in YAML format.
+# See the official docs to learn more: https://docs.gitlab.com/ee/ci/yaml/
+
+stages:
+  - build
+  - test
+  - simulate
+
+variables:
+  # Install packages without user interaction.
+  DEBIAN_FRONTEND: "noninteractive"
+
+# The documentation and the source code are compiled
+# separately so that the pipeline can continue with the unit
+# tests even if doxygen fails.
+
+compile:
+  image: gcc:latest
+  stage: build
+  needs: [] # no dependencies
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq cmake
+  script:
+    - mkdir --verbose --parents "build/"
+    - cd "build/"
+    # We compile in Debug mode so that any `assert()`
+    # statements are active.
+    - cmake -DCMAKE_BUILD_TYPE=Debug -DUNIT_TESTS=ON ..
+    - make guess runtests
+  artifacts:
+    paths:
+      - build/guess
+      - build/runtests
+    expire_in: 30 minutes
+
+doxygen:
+  image: gcc:latest
+  stage: build
+  needs: [] # no dependencies
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq doxygen
+  script:
+    - cd doxygen/
+    - doxygen doxygen.conf
+
+unit_tests:
+  image: gcc:latest # GCC is required for lisbstdc++ library.
+  stage: test
+  needs: ["compile"]
+  script:
+    - ./build/runtests
+
+# Quick simulation with default global instruction files and demo climate
+# input.
+demo_global:
+  image: gcc:latest # GCC is required for lisbstdc++ library.
+  stage: simulate
+  needs: ["compile", "unit_tests"]
+  before_script:
+    - mkdir --verbose --parents build/
+    - cp data/gridlist/gridlist_global.txt build/gridlist.txt
+    # Copy the demo files to the root directory so that the paths in the
+    # existing "global_demo.ins" do not need to be changed.
+    - cp data/env/*.grd build/
+    - cp data/env/soils_lpj.dat build/
+    - cp data/ins/*.ins build/
+    # Shorten the simulation time in order to have faster results.
+    - sed --in-place "s/^nyear_spinup.*/nyear_spinup 40/" build/global.ins
+    - sed --in-place "s/^freenyears.*/freenyears 20/" build/global.ins
+    - sed --in-place "s/^nyear.*/nyear 20/" build/global_demo.ins
+  script:
+    - cd build/
+    - ./guess -input demo global_demo.ins
