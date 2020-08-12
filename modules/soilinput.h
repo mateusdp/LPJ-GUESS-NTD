@@ -26,9 +26,7 @@ typedef std::pair<double, double> coord;
 */
 class SoilInput {
 public:
-	SoilInput() : 
-		searchradius_soil(0),
-		STEP(0.5) {
+	SoilInput() {
 		declare_parameter("searchradius_soil", &searchradius_soil, 0, 100,
 			"Search radius for soil input.");
 		declare_parameter("searchstep_soil", &STEP, 0, 1,
@@ -42,8 +40,8 @@ public:
 
 	/// Get and set the Soiltype-object in the current Gridcell-object.
 	void get_soil(double lon, double lat, Gridcell& gridcell);
-	
-	double STEP;
+
+	static double STEP;
 
 private:
 	void get_soil_mineral(double lon, double lat, Gridcell& gridcell);
@@ -51,8 +49,8 @@ private:
 	void get_soil_organic(double lon, double lat, Gridcell& gridcell);
 
 	bool soil_code;
-	
-	double searchradius_soil;
+
+	static double searchradius_soil;
 
 	coord find_closest_point(double searchradius, coord C);
 
