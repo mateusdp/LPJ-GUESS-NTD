@@ -20,20 +20,19 @@ group "moss"(
 	wscal_min 0.0
 	litterme 0.2
 	fireresist 0.5
-	!cton_leaf 50 ! Yurova et al. (2006) and Wania et al. (2009b)
-	cton_root 50  ! Yurova et al. (2006) and Wania et al. (2009b)
-	ltor_max 1.0  ! must tune this parameter. 5 means mostly leaves
+	cton_root 50		! Yurova et al. (2006) and Wania et al. (2009b)
+	ltor_max 1.0		! must tune this parameter. 5 means mostly leaves
 	emax 1.0
 	intc 0.01
-	!Merged version, add those values from group 'grass'
   	nuptoroot 0.00551
 	rootdist 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	root_beta 0.0
 	km_volume 0.000001876
 	fnstorage 0.3
-	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19 ! C3G values - must update
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5 ! C3G values - must update
+	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19 	! C3G values
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5 	! C3G values
 )
+
 
 ! Non peatland moss. Needs to be here since the group moss is here. Copy group moss
 ! and pft Np_moss to the instruction file to enable simulations with non-peatland mosses
@@ -63,13 +62,13 @@ pft "Np_moss" (
 	gdd5min_est 0
 	drought_tolerance 0.82
 
-	! BVOC values - Guy Schurgers, October/November 2011
-	eps_iso 1.
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
+	! copied from cushionforblichenmosstundra in arctic.ins
+	eps_iso 1.29
 	seas_iso 0
-	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0		! Fraction from C3G
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	ga 0.030
-	!sla 25.8
 )
 
 
@@ -78,13 +77,12 @@ pft "pLSE" (
 	! Low shrub, evergreen
 	! Typical species: Vaccinium vitis-idaea, Cassiope tet.,
 	! Ledum palustre, Erica spec.
-
 	! Peatland version
 
 	include 1
 
 	needleleaved
-	lowshrub
+	lowshrub 		! NB: Overrides k_latosa set in needleleaved
 	boreal
 	evergreen
 
@@ -92,60 +90,49 @@ pft "pLSE" (
 
  	leaflong 3
 	turnover_leaf 0.33
-	gdd5min_est 75
-
-	fireresist 0.12
 
 	! Found on the driest peatlands, or raised hummocks
-	wtp_max -250 ! mm
-	inund_duration 5 ! days
+	wtp_max -250
+	inund_duration 5
 
-	! BVOC values, 2015-06-18
-	eps_iso 1.737  !Jing, based on obs. value for Empetrum hermaphroditum! at 30 degree, 4.96, but at 20 degree, 4.47
+    	! BVOC values, Tang et al., 2016
+	eps_iso 1.75  		! Jing updated 2020
 	seas_iso 0
-	!eps_mon 0.088  !Jing, based on obs. value for Empetrum hermaphroditum ! at 30 degree is 0.13, at 20 degree, 0.12
-	eps_mon 0.088 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
-	storfrac_mon 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
+	eps_mon 0.02 0.01 0.01 0.01 0.01 0.00 0.01 0.01 0.01	! Fraction from C3G
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 	ga 0.040
-
 )
-
 
 
 pft "pLSS" (
 
 	! Low shrub, summergreen
 	! Typical species: Vaccinium myrtillus, V. uliginosum, Salix hastata, S. glauca etc.
-
 	! Peatland version
+
 	include 1
+
 	broadleaved
-	lowshrub
+	lowshrub 		! NB: Overrides k_latosa set in broadleaved
 	boreal
 	summergreen
 
 	landcover "peatland"
 
-	leaflong 0.5
-	gdd5min_est 100
+	phengdd5ramp 20
 
-	phengdd5ramp 50 ! PM, AW: 0, which is unrealistic
-
-	fireresist 0.12
+	k_latosa 150		! Set to the same relative difference as broadleafed/needleleafed, was 125
 
 	! Found on the driest peatlands, or raised hummocks
-	wtp_max -250 ! mm
-	inund_duration 5 ! days
+	wtp_max -250
+	inund_duration 5
 
-	! BVOC values - Guy Schurgers, October/November 2011
-	eps_iso 2.0
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
+	eps_iso 6.9  		! Jing updated 2020
 	seas_iso 1
-	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19 ! C3G values - must update
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5 ! C3G values - must update
-	!sla 24.25
-
+	eps_mon 0.17 0.09 0.11 0.05 0.05 0.04 0.05 0.10 0.09	! Fraction from C3G
+	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 )
-
 
 
 pft "pCLM" (
@@ -174,11 +161,8 @@ pft "WetGRS" (
 
 	landcover "peatland"
 
-	! AW, override these grass values
 	pathway "c3"
-	turnover_root 0.5 ! Override grass value
-	!cton_leaf 40 	! Wania et al. (2009b)
-	!cton_root 40	! Wania et al. (2009b)
+	turnover_root 0.5 	! Override grass value
 
 	! Wania et al. values
 	pstemp_min -5
@@ -194,17 +178,16 @@ pft "WetGRS" (
 	gdd5min_est 0
 
 	! Never suffers from inundation stress
-	wtp_max 100 ! mm
-	inund_duration 31 ! days
-	has_aerenchyma 1 ! This PFT has aerenchyma for gas transport
+	wtp_max 100
+	inund_duration 31
+	has_aerenchyma 1 	! This PFT has aerenchyma for gas transport
 
-	! BVOC values - Guy Schurgers, October/November 2011
-	eps_iso 20.0
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
+	eps_iso 9.82  		! Jing updated 2020
 	seas_iso 1
-	eps_mon 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
-	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
+	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0		! Fraction from C3G
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 	ga 0.030
-	!sla 19.75
 )
 
 
@@ -216,7 +199,7 @@ pft "pmoss" (
 	moss
 	landcover "peatland"
 
-	parff_min 1000000 ! PM, reduce disadvantage RE wetgrs
+	parff_min 1000000 	! Reduces disadvantage RE WetGRS
 	pathway "c3"
 	phenology "any"
 	leaflong 1
@@ -235,24 +218,24 @@ pft "pmoss" (
 
 	! Wetland parameters
 	! taken from Annet Wolf's CLM PFT
-	gdd0_max 5000 		! A. Wolf's value (2000), but gdd0_max 2000 restricts establishment at Fajemyr, for example
+	gdd0_max 5000		! A. Wolf's value (2000), but gdd0_max 2000 restricts establishment at Fajemyr
 	wtp_max -50
 	inund_duration 15
 
 	! BVOC values - Guy Schurgers, October/November 2011
-	eps_iso 1.2
+	! copied from cushionforblichenmosstundra in arctic.ins
+	eps_iso 1.29
 	seas_iso 0
-	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
-	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
+	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0		! Fraction from C3G
+	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	ga 0.030
-	!sla 25.8
 )
 
 
 pft "C3G_wet" (
 	include 1
 	C3G
-	tcmin_surv 5 ! Ensures that this PFT cannot establish at high latitudes
+	tcmin_surv 5		! Ensures that this PFT cannot establish at high latitudes
 	tcmin_est 5
 	landcover "peatland"
 
@@ -262,7 +245,7 @@ pft "C3G_wet" (
 pft "C4G_wet" (
 	include 1
 	C4G
-	tcmin_surv 5 ! Ensures that this PFT cannot establish at high latitudes
+	tcmin_surv 5		! Ensures that this PFT cannot establish at high latitudes
 	tcmin_est 5
 	landcover "peatland"
 )

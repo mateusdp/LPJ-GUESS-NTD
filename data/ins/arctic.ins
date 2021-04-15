@@ -44,7 +44,7 @@ file_ngases "ngases.out"
 file_nsources "nsources.out"
 file_npool "npool.out"
 !file_nlitter "nlitter.out"
-!
+!file_nuptake "nuptake.out"
 file_nflux "nflux.out"
 !file_vmaxnlim "vmaxnlim.out"
 
@@ -67,12 +67,12 @@ file_nflux "nflux.out"
 !file_mmon_mt1 "mmon_mt1.out"
 !file_mmon_mt2 "mmon_mt2.out"
 
-! Soil temperature at 25cm depth
-!file_msoiltempdepth25 "soiltemp25cm.out"
+!file_msoiltempdepth25 "soiltemp25cm.out"	! Soil temperature at 25cm depth
 !file_mch4 "mch4.out"
 !file_mch4diff "mch4_diffusion.out"
 !file_mch4plan "mch4_plant.out"
 !file_mch4ebull "mch4_ebullition.out"
+
 !file_msnow "msnowdepth.out"
 !file_mwtp "mwtp.out"
 !file_mald "mald.out"
@@ -81,7 +81,7 @@ file_nflux "nflux.out"
 !file_mburned_area_out "monthly_burned_area.out"
 
 !///////////////////////////////////////////////////////////////////////////////
-!// RUN PARAMETERS AND OPTIONS
+! RUN PARAMETERS AND OPTIONS
 !///////////////////////////////////////////////////////////////////////////////
 
 ! Settings recognised by Plib
@@ -101,7 +101,7 @@ npatch 5			! Number of replicate patches to simulate
 patcharea 1000			! Patch area (m2)
 estinterval 5			! Years between establishment events in cohort mode
 ifdisturb 1			! Whether generic patch-destroying disturbances enabled
-distinterval 300		! Average return time for generic patch-destroying disturbances
+distinterval 150 		! Average return time for generic patch-destroying disturbances
 				! Hickler et al. (2011) used 200
 				! Pugh et al. (2019) have 300 approx for boreal forests
 ifbgestab 1			! Whether background establishment enabled
@@ -175,7 +175,7 @@ run_landcover 0			! Whether to use (and change) landcover fractions (1) or not (
 
 
 !///////////////////////////////////////////////////////////////////////////////
-!// PARAMETERS FOR STAND TYPES
+! PARAMETERS FOR STAND TYPES
 !///////////////////////////////////////////////////////////////////////////////
 
 group "common_stand" (
@@ -194,8 +194,8 @@ st "Natural" (
 
 
 !///////////////////////////////////////////////////////////////////////////////
-!// PARAMETERS FOR PFTS
-!// Run GUESS with -help option for list of keywords and their meanings
+! PARAMETERS FOR PFTS
+! Run GUESS with -help option for list of keywords and their meanings
 !///////////////////////////////////////////////////////////////////////////////
 
 group "common" (
@@ -206,9 +206,8 @@ group "common" (
 	emax 5
 	reprfrac 0.1
 	wscal_min 0.35
-	drought_tolerance 0.0001
-	! default value - ensures that this has little effect even if
-	! ifdroughtlimitedestab is turned on
+	drought_tolerance 0.0001	! default value - ensures that this has little effect even if
+					! ifdroughtlimitedestab is turned on
 	landcover "natural"
 	harv_eff 0
 	res_outtake 0
@@ -218,14 +217,15 @@ group "common" (
 	harvest_slow_frac 0
 
 	! Default peatland values unless overriden in PFT definitions
-	wtp_max -301 		! [mm] maximum inundation (water table) tolerance, i.e. restrict on wetlands because wtp >= -300 always
-	inund_duration 0	! [day] maximum days per month of inundation before GPP is reduced to 0
-	min_snow 0.0 		! [mm] minimum snow needed for establishment (DJF average) and survival (20-year average maximum),
-				! i.e. No restriction here
-	max_snow 100000		! [mm] maximum snow tolerance (never used), i.e. No restriction here
-	gdd0_max 100000		! [degC day] max GDD0, i.e. No restriction here
-	gdd0_min 0		! [degC day] min GDD0, i.e. No restriction here
-	has_aerenchyma 0	! PFTs do not have aerenchyma for gas transport by default
+	wtp_max -301 			! [mm] maximum inundation (water table) tolerance,
+					! i.e. restrict on wetlands because wtp >= -300 always
+	inund_duration 0		! [day] maximum days per month of inundation before GPP is reduced to 0
+	min_snow 0.0 			! [mm] minimum snow needed for establishment (DJF average) and survival
+					! (20-year average maximum), i.e. No restriction here
+	max_snow 100000			! [mm] maximum snow tolerance (never used), i.e. No restriction here
+	gdd0_max 100000			! [degC day] max GDD0, i.e. No restriction here
+	gdd0_min 0			! [degC day] min GDD0, i.e. No restriction here
+	has_aerenchyma 0		! PFTs do not have aerenchyma for gas transport by default
 )
 
 group "tree" (
@@ -259,8 +259,9 @@ group "tree" (
 
 	harv_eff 0.95
 	res_outtake 0.75
-	turnover_harv_prod 0.04 ! Turnover rate for long-lived harvested products (wood) : 0.04 corresponds to a 25-year turnover time (as in Bondeau 2007)
-	harvest_slow_frac 0.33	! Bondeau 0.33
+	turnover_harv_prod 0.04 	! Turnover rate for long-lived harvested products (wood): 
+					! 0.04 corresponds to a 25-year turnover time (as in Bondeau 2007)
+	harvest_slow_frac 0.33		! Bondeau 0.33
 )
 
 group "shrub" (
@@ -270,6 +271,7 @@ group "shrub" (
 	leafphysiognomy "broadleaf"
 	crownarea_max 10
 	ltor_max 1
+	turnover_root 0.7
 	k_allom1 100
 	k_allom2 5
 	k_allom3 0.67
@@ -289,7 +291,9 @@ group "shrub" (
 	root_beta 0.982
 	longevity 100
 
-	turnover_harv_prod 1 ! Turnover rate for long-lived harvested products (wood) : 1-year turnover time
+	fireresist 0.12 	! Common to all shrubs
+
+	turnover_harv_prod 1	! Turnover rate for long-lived harvested products (wood): 1-year turnover time
 	harvest_slow_frac 0
 )
 
@@ -306,22 +310,22 @@ group "grass" (
 	root_beta 0.9555
 	gmin 0.5
 	phenology "any"
-	phengdd5ramp 100		! C3 har 50 hos Thomas
-	leaflong 0.5			! Leaf longevity (years)
+	phengdd5ramp 100
+	leaflong 0.5		! Leaf longevity (years)
 	turnover_leaf 1
-	turnover_root 0.7		! 0.5 hos guess2008
+	turnover_root 0.7
 	!cton_leaf_min 16
 	cton_root 29
 	nuptoroot 0.00551
 	km_volume 0.000001876
 	fnstorage 0.3
 	litterme 0.2
-	parff_min 1000000		! 2500000 i guess2008
-	fireresist 0.5			! 1.0 hos Thomas
+	parff_min 1000000
+	fireresist 0.5
 	intc 0.01
 	ga 0.030
 
-	turnover_harv_prod 1 ! Turnover rate for long-lived harvested products (wood) : 1-year turnover time for GRASS
+	turnover_harv_prod 1 	! Turnover rate for long-lived harvested products (wood): 1-year turnover time for GRASS
 	harvest_slow_frac 0
 )
 
@@ -343,7 +347,6 @@ group "needleleaved" (
 	! Parameters common to all needleleaved trees
 
 	leafphysiognomy "needleleaf"
-	!cton_leaf_min 28
 	k_allom1 150
 	k_latosa 5000
 	gmin 0.3
@@ -402,7 +405,6 @@ group "shade_tolerant" (
 	turnover_sap 0.05
 )
 
-! So far only trial values; not used in this global version
 group "intermediate_shade_tolerant" (
 	est_max 0.15
 	parff_min 2000000
@@ -430,8 +432,8 @@ pft "BNE" (
 	shade_tolerant
 	evergreen
 	boreal
-	leaflong 3
-	turnover_leaf 0.33
+	leaflong 4		! global.ins has 3
+	turnover_leaf 0.25
 	tcmin_surv -31
 	tcmin_est -30
 	tcmax_est -1
@@ -487,16 +489,19 @@ pft "BNS" (
 	tcmin_est -1000		! no limit
 	tcmax_est -2
 	twmin_est -1000		! no limit
-	twminusc 43		! AA from TH 03-11 added this
-	gdd5min_est 350		! Stefan added new value, old 500
-	phengdd5ramp 100	! Stefan added new value, old 200
+	twminusc 43		! continentality condition
+	gdd5min_est 300
+	phengdd5ramp 50
 	longevity 300
+	root_beta 0.938		! Tundra profile (Jackson et al, 1996)	
 	!rootdist 0.26 0.19 0.14 0.11 0.08 0.06 0.05 0.03 0.02 0.02 0.01 0.01 0.01 0.01 0.0
 	fireresist 0.3
+
+	greff_min 0.04		
 	eps_iso 8.0
 	seas_iso 1
 	eps_mon 3.18 0.72 0.18 0.12 0.14 0.11 0.2 0.13 0.02
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	
 )
 
 pft "IBS" (
@@ -512,10 +517,14 @@ pft "IBS" (
 	tcmin_surv -30
 	tcmin_est -30
 	tcmax_est 7
-	twmin_est -1000  !no limit
-	gdd5min_est 350 !from TH 2010-03-10 AA
-	longevity 300 !from TH 2010-04-07 was 300 AA
+	twmin_est -1000
+	gdd5min_est 350
+	longevity 300
 	fireresist 0.1
+
+	greff_min 0.06		! override shade intolerant value
+	wooddens 250		! was 200
+
 	eps_iso 45.0
 	seas_iso 1
 	eps_mon 0.52 0.14 0.1 0.04 0.49 0.01 0.04 0.18 0.08
@@ -557,11 +566,11 @@ group "C3G" (
 	pstemp_low 10
 	pstemp_high 30
 	pstemp_max 45
-	tcmin_surv -1000	!no limit
-	tcmin_est -1000 	!no limit
-	tcmax_est 1000  	!no limit
-	twmin_est -1000 	!no limit
-	gdd5min_est 0   	!no limit
+	tcmin_surv -1000	! no limit
+	tcmin_est -1000		! no limit
+	tcmax_est 1000		! no limit
+	twmin_est -1000		! no limit
+	gdd5min_est 0		! no limit
 	eps_iso 16.0
 	seas_iso 1
 	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19
@@ -574,13 +583,15 @@ pft "C3G" (
 	! Temperate (C3) grass
 	include 1
 	C3G
-	gdd0_min 1000 ! Wolf et al. (2008) have 800. 1000 matches the gdd0_max limit for GFT, minimizing overlap
+	gdd0_min 1000		! Wolf et al. (2008) have 800. 1000 matches the gdd0_max limit for the GRT PFT, minimizing overlap
+	ltor_max 0.33		! overrides grass group value
 )
 
 
+!///////////////////////////////////////////////////////////////////////////////
 ! Arctic specific groups and PFTs
 ! Values from Wolf et al. and Wania et al., unless otherwise stated.
-! **********************************************************************
+!///////////////////////////////////////////////////////////////////////////////
 
 group "tallshrub" (
 
@@ -590,19 +601,15 @@ group "tallshrub" (
 	crownarea_max 4.0
 	k_allom2 6
 	k_latosa 500
-	longevity 100 ! Wolf et al have 40. Juniper can live for > 100 years
 	rootdist 0.14 0.14 0.14 0.14 0.14 0.03 0.03 0.03 0.03 0.03 0.03 0.03 0.03 0.03 0.03
-	turnover_root 0.7
 
-	! Bioclimatic limits
-	gdd5min_est 0
-	gdd0_min 600
+	! Longevity
+	longevity 100 		! Wolf et al have 40. Juniper can live for > 100 years
+
+	! Bioclimatic limits (GDD5 values set for each PFT below)
+	gdd0_min 600 
 	tcmin_surv -32.5
 	tcmax_est 5
-	twmin_est -1000
-
-	! stresses
-	fireresist 0.12
 
 	! Shade tolerance (Zhang et al. 2014 - Table S2b)
 	est_max 0.5
@@ -615,6 +622,7 @@ group "tallshrub" (
 
 
 group "lowshrub" (
+
 	! Typical species: Vaccinium vitis-idaea, Cassiope tet.,
 	! Ledum palustre, Erica spec.
 
@@ -625,13 +633,16 @@ group "lowshrub" (
 	k_allom1 10
 	k_allom2 4
 	k_latosa 125
-	longevity 25
 	rootdist 0.16 0.16 0.16 0.16 0.16 0.02 0.02 0.02 0.02 0.02 0.02 0.02 0.02 0.02 0.02	
-	turnover_root 0.7
+	root_beta 0.938		! Somewhat closer to tundra vegetation in Jackson et al.
+
+	! Longevity
+	longevity 25
 
 	! Bioclimatic limits
-	gdd5min_est 0
-	gdd0_min 250
+	tcmax_est 5
+	gdd0_min 250		! Wolf et al (2008), Zhang et al (2013) have 300
+	gdd5min_est 100 	! Wolf et al (2008), Zhang et al (2013)
 
 	! Shade tolerance (Zhang et al. 2014 - Table S2b)
 	est_max 0.75
@@ -639,52 +650,50 @@ group "lowshrub" (
 	alphar 2.0
 	greff_min 0.012
 	turnover_sap 0.01
-
 )
 
 
 group "prostratedwarfshrub" (
+
 	! Prostrate dwarf shrubs
 	! Typical species: Vaccinium oxycoccus, Salix arctica, Arctostaphylos alpinus
 
 	shrub
 
 	! Allometry
+	crownarea_max 1.0
+	k_allom1 10
+	k_allom2 1
 	rootdist 0.18 0.18 0.18 0.18 0.18 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01
-	!root_beta 0.9555
-	turnover_root 0.5
+	root_beta 0.914		! Tundra vegetation in Jackson et al., 1996
+	ltor_max 0.5   		! overrides shrub group value
+
+	! Longevity
+	longevity 30
+
+	! Structure and function
+	wooddens 200
+	cton_sap 300		! overrides shrub value of 330
 
 	! Bioclimatic limits
-	tcmin_surv -1000
-	tcmin_est -1000
 	tcmax_est 5
-	twmin_est -1000
 	gdd5min_est 0
-	gdd0_min 150
-	gdd0_max 800 !orig is 350, temp testing 1200 for abisko. Jing, turned off for the abisko area, since it can normally over 1200.
+	gdd0_min 100		! Wolf et al (2008) have 150 
+	gdd0_max 900		! as in Zhang et al. (2013)
 	min_snow 20.0
 
 	! Shade tolerance (Zhang et al. 2014 - Table S2b) - Assumed to be the same as low shrubs
 	est_max 0.75
-	parff_min 500000 ! Lower than the low shrub value
+	parff_min 500000	! Lower than the low shrub value
 	alphar 2.0
 	greff_min 0.012
 	turnover_sap 0.01
 
 	! Tundra peatlands
-	wtp_max -200 ! mm
-	inund_duration 10 ! days
+	wtp_max -200
+	inund_duration 10
 
-	! BVOC values - Guy Schurgers, October/November 2011
-	eps_iso 23.5
-	seas_iso 1
-	!eps_mon 1.1
-	!storfrac_mon 0.5
-	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19 ! C3G values - must update
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5 ! C3G values - must update
 	ga 0.030
-
-
 )
 
 group "cushionforblichenmosstundra" (
@@ -695,37 +704,34 @@ group "cushionforblichenmosstundra" (
 
 	grass
    	boreal
-
-	ltor_max 0.1
-	turnover_root 0.5
-	turnover_leaf 0.6
 	pathway "c3"
 
-	tcmin_surv -1000
-	tcmin_est -1000
+	! Structure and function
+	rootdist 0.37 0.23 0.15 0.09 0.06 0.04 0.02 0.02 0.01 0.01 0.0 0.0 0.0 0.0 0.0
+	root_beta 0.9555
+	ltor_max 0.4
+	turnover_root 0.5
+	turnover_leaf 0.6
+
+	! Bioclimatic limits
 	tcmax_est 5
-	twmin_est -1000
 	gdd5min_est 0
 	phengdd5ramp 1
 	min_snow 50.0
 	gdd0_min 50
-	gdd0_max 150 ! This is the main condition limiting CLM growing in the Abisko region.
+	gdd0_max 150		! This is the main condition limiting CLM growing in the Abisko region.
 
 	! Tundra (High Arctic) peatlands
-	wtp_max -200 ! mm
-	inund_duration 10 ! days
+	wtp_max -200
+	inund_duration 10
 
-	rootdist 0.37 0.23 0.15 0.09 0.06 0.04 0.02 0.02 0.01 0.01 0.0 0.0 0.0 0.0 0.0
-	root_beta 0.9555
-
-	! BVOC values - Guy Schurgers, October/November 2011
-	eps_iso 1.188
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
+	eps_iso 1.29
 	seas_iso 0
-	!eps_mon 0.029
-	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19 ! C3G values - must update
+	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 		! Fraction from C3G
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	ga 0.030
-	!sla 25.8
+
 )
 
 
@@ -738,24 +744,26 @@ pft "HSE" (
 	include 1
 
 	needleleaved  
-	tallshrub ! NB: Overrides k_latosa set in needleleaved
+	tallshrub 		! NB: Overrides k_latosa set in needleleaved
 	boreal
 	evergreen
 
 	k_allom1 28
 
-	leaflong 3 		! Wolf: 2
-	turnover_leaf 0.333	! Wolf: 0.5
+	leaflong 3
+	turnover_leaf 0.333
 
-	tcmin_est -16 		! Estimated from map
+	est_max 0.2		! overrides group value
+	wooddens 300		! was 250
+
+	tcmin_est -16		! Estimated from map
 	gdd5min_est 300
 
-	! BVOC values - Guy Schurgers, October/November 2011
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
 	eps_iso 0.0
 	seas_iso 0
-	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22 ! BNE/BINE values - must update
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5 ! BNE/BINE values - must update
-	!sla 12.56
+	eps_mon 0.462 0.246 0.292 0.124 0.13 0.108 0.13 0.276 0.232 	! Fraction from C3G
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
 
 
@@ -775,20 +783,18 @@ pft "HSS" (
 
 	k_allom1 30
 
-	tcmin_est -32.5 ! Estimated from map
+	wooddens 200		! was 250
+	k_latosa 600		! Set to the same relative difference as broadleafed/needleleafed, was 500
 
+	tcmin_est -32.5 	! Estimated from map
 	gdd5min_est 200
-	phengdd5ramp 50 ! PM, AW: 0, which is unrealistic
+	phengdd5ramp 50
 
-	! BVOC values - Guy Schurgers, October/November 2011
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
 	eps_iso 4.0
 	seas_iso 1
-	!eps_mon 2.0
-	!storfrac_mon 0.0
-	eps_mon 0.52 0.14 0.1 0.04 0.49 0.01 0.04 0.18 0.08	! IBS values - must update
+	eps_mon 0.462 0.246 0.292 0.124 0.13 0.108 0.13 0.276 0.232	! Fraction from C3G
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-	!sla 24.25
-
 )
 
 
@@ -802,24 +808,21 @@ pft "LSE" (
 	include 1
 
 	needleleaved
-	lowshrub ! NB: Overrides k_latosa set in needleleaved
+	lowshrub		! NB: Overrides k_latosa set in needleleaved
 	boreal
 	evergreen
 
  	leaflong 3
 	turnover_leaf 0.33
-	gdd5min_est 75
+ 
+	est_max 0.25 		! overrides group value
 
-	fireresist 0.12
-
-	! BVOC values, 2015-06-18
-	eps_iso 1.737  !Jing, based on obs. value for Empetrum hermaphroditum! at 30 degree, 4.96, but at 20 degree, 4.47
+	! BVOC values, Tang et al., 2016
+	eps_iso 1.75
 	seas_iso 0
-	!eps_mon 0.088  !Jing, based on obs. value for Empetrum hermaphroditum ! at 30 degree is 0.13, at 20 degree, 0.12
-	eps_mon 0.088 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
-	storfrac_mon 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
+	eps_mon 0.02 0.01 0.01 0.01 0.01 0.00 0.01 0.01 0.01 		! Fraction from C3G
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 	ga 0.040
-
 )
 
 
@@ -831,24 +834,19 @@ pft "LSS" (
 	include 1
 
 	broadleaved
-	lowshrub ! NB: Overrides k_latosa set in broadleaved
+	lowshrub 		! NB: Overrides k_latosa set in broadleaved
 	boreal
 	summergreen
 
-	leaflong 0.5
-	gdd5min_est 100
+	phengdd5ramp 20
 
-	phengdd5ramp 50 ! PM, AW: 0, which is unrealistic
+	k_latosa 150		! Set to the same relative difference as broadleafed/needleleafed, was 125
 
-	fireresist 0.12 ! Found on the driest peatlands, or raised hummocks
-
-	! BVOC values - Guy Schurgers, October/November 2011
-	eps_iso 2.0
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
+	eps_iso 6.9 
 	seas_iso 1
-	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19 ! C3G values - must update
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5 ! C3G values - must update
-	!sla 24.25
-
+	eps_mon 0.17 0.09 0.11 0.05 0.05 0.04 0.05 0.10 0.09		! Fraction from C3G
+	storfrac_mon  0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
 
 
@@ -865,28 +863,19 @@ pft "GRT" (
 	boreal
 
 	pathway "c3"
-	ltor_max 0.2 ! AW, overrides grass
-	! turnover_root 0.5 ! AW, overrides grass. Too competitive when = 0.5
-
-	tcmin_surv -1000
-	tcmin_est -1000
-	tcmax_est 1000
-	twmin_est -1000
+	ltor_max 0.2 		! overrides grass group value - Wolf et al (2008) has 0.2
+	
 	gdd5min_est 0
-	phengdd5ramp 50 ! orig. paul has 50 Jing, temporary testing! AW has 0, but then GFT is too dominant in heath areas. Overrides grass
-	gdd0_min 150  ! orig. 150
-	gdd0_max 1000 !This is the limitation for excluding abisko GRT establishment, gdd0 value around 1984-2012 is generally higher than 1200
+	phengdd5ramp 10 	! Overrides grass group value
+	gdd0_min 150
+	gdd0_max 1000
 
-
-	! BVOC values - Guy Schurgers, October/November 2011
-	eps_iso 9.818   !Jing, before used 20, but after checking Anna Ekberg's data for E. angustifolium and C. rostrata, at 30 degree, it is 9.9, at 20 degree is 8.92
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
+	eps_iso 9.82
 	seas_iso 1
-	!eps_mon 0.000   !Jing, could be set towards to 0. at 30 degree, it is 0.01. but at 20 degree set 0.0
-	!storfrac_mon 0.5
-	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19 ! C3G values - must update
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5 ! C3G values - must update
+	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 			! Fraction from C3G
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 	ga 0.030
-	!sla 19.75
 )
 
 pft "EPDS" (
@@ -901,40 +890,24 @@ pft "EPDS" (
 	evergreen
 	boreal
 
-	ltor_max 0.5   ! Jing not sure
-
 	leaflong 2
 	turnover_leaf 0.5
 
-	turnover_root 0.7
-	!turnover_sap 0.15
+	k_latosa 100		! Overrides value in needleleaved
 
-	fireresist 0.12
-	crownarea_max 1
-	k_allom1 10
-	k_allom2 1
-	k_latosa 100 ! Overrides value in needleleaved
+	est_max 0.5		! overrides group value
 
-	wooddens 200
-
-	longevity 30
-	phengdd5ramp 50
-	gdd5min_est 0
-	cton_sap 300
-	gdd0_max 1500 !orig is 350, Jing, increased this value for the abisko area, since it can normally over 1200.
-
-	! BVOC
-	eps_iso 1.400   ! Jing at 30 degree is 1.6, but at 20 degree is  1.44
+	! BVOC values - Guy Schurgers, October/November 2011, Tang et al., 2016
+	eps_iso 1.4
 	seas_iso 0
-	!eps_mon 1.301   ! Jing at 30 degree is 1.49, but at 20 degree is 1.34
-	!storfrac_mon 0.5
-	eps_mon 1.391 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
-	storfrac_mon 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
+	eps_mon 0.30 0.16 0.19 0.08 0.08 0.07 0.08 0.18 0.15 		! Fraction from C3G
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 	ga 0.030
-	!sla 12.56
 )
 
+
 pft "SPDS" (
+
 	! Prostrate dwarf shrubs
 	! Typical species: Salix arctica, Arctostaphylos alpinus, Salix reticulata
 
@@ -945,32 +918,16 @@ pft "SPDS" (
 	summergreen
 	boreal
 
-	ltor_max 0.5   ! Jing not sure
+	k_latosa 120		! set to the same relative difference as broadleafed/needleleafed, was 100	
 
-	turnover_root 0.7
-	turnover_sap 0.15
-	fireresist 0.12
-
-	crownarea_max 1
-	k_allom1 10
-	k_allom2 1
-	k_latosa 100 ! Overrides value in needleleaved
-	wooddens 200
-
-	longevity 30
-	phengdd5ramp 20
-	gdd5min_est 0
-
-	cton_sap 300
-	nuptoroot 0.00551  ! was 0.0028
+	phengdd5ramp 10
 
 	! BVOC
-	eps_iso 14.003
+	eps_iso 14.11
 	seas_iso 1
-	eps_mon 0.425 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
-	storfrac_mon 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ! old values - must update
+	eps_mon 0.10 0.05 0.06 0.03 0.03 0.02 0.03 0.06 0.05 		! Fraction from C3G
+	storfrac_mon  0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 	ga 0.030
-	!sla 24.25
 )
 
 
@@ -997,7 +954,7 @@ group "C4G" (
 	phenology "any"
 	leaflong 0.5
 	turnover_leaf 1
-	turnover_root 0.7 ! PM_Dec2012, was 0.5
+	turnover_root 0.7
 	phengdd5ramp 100
 	pstemp_min 6
 	pstemp_low 20
@@ -1006,10 +963,10 @@ group "C4G" (
 	respcoeff 0.15
 	tcmin_surv 15.5
 	tcmin_est 15.5
-	tcmax_est 1000			! limit not implemented
-	twmin_est -1000			! limit not implemented  ! limit not implemented
-	gdd5min_est 0			! limit not implemented
-	parff_min 1000000		! ThomasH 2000000 ! Changed from 2500000 on April 10, 2006
+	tcmax_est 1000		! limit not implemented
+	twmin_est -1000		! limit not implemented
+	gdd5min_est 0		! limit not implemented
+	parff_min 1000000
 	fireresist 0.5
 	intc 0.01
 	eps_iso 0.

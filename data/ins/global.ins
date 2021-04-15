@@ -67,7 +67,7 @@ file_nflux "nflux.out"
 !file_mmon_mt1 "mmon_mt1.out"
 !file_mmon_mt2 "mmon_mt2.out"
 
-!file_msoiltempdepth25 "soiltemp25cm.out"
+!file_msoiltempdepth25 "soiltemp25cm.out"	! Soil temperature at 25cm depth
 !file_mch4 "mch4.out"
 !file_mch4diff "mch4_diffusion.out"
 !file_mch4plan "mch4_plant.out"
@@ -81,7 +81,7 @@ file_nflux "nflux.out"
 !file_mburned_area_out "monthly_burned_area.out"
 
 !///////////////////////////////////////////////////////////////////////////////////////
-!// RUN PARAMETERS AND OPTIONS
+! RUN PARAMETERS AND OPTIONS
 !///////////////////////////////////////////////////////////////////////////////////////
 
 ! Settings recognised by Plib
@@ -174,7 +174,7 @@ run_landcover 0			! Whether to use (and change) landcover fractions (1) or not (
 
 
 !///////////////////////////////////////////////////////////////////////////////////////
-!// PARAMETERS FOR STAND TYPES
+! PARAMETERS FOR STAND TYPES
 !///////////////////////////////////////////////////////////////////////////////////////
 
 group "common_stand" (
@@ -193,8 +193,9 @@ st "Natural" (
 
 
 !///////////////////////////////////////////////////////////////////////////////////////
-!// PARAMETERS FOR PFTS
-!// Run GUESS with -help option for list of keywords and their meanings
+! PARAMETERS FOR PFTS
+! Run GUESS with -help option for list of keywords and their meanings
+!///////////////////////////////////////////////////////////////////////////////
 
 group "common" (
 
@@ -204,9 +205,8 @@ group "common" (
 	emax 5
 	reprfrac 0.1
 	wscal_min 0.35
-	drought_tolerance 0.0001
-	! default value - ensures that this has little effect even if
-	! ifdroughtlimitedestab is turned on
+	drought_tolerance 0.0001	! default value - ensures that this has little effect even if
+					! ifdroughtlimitedestab is turned on
 	landcover "natural"
 	harv_eff 0
 	res_outtake 0
@@ -216,14 +216,15 @@ group "common" (
 	harvest_slow_frac 0
 
 	! Default peatland values unless overriden in PFT definitions
-	wtp_max -301 		! [mm] maximum inundation (water table) tolerance, i.e. restrict on wetlands because wtp >= -300 always
-	inund_duration 0	! [day] maximum days per month of inundation before GPP is reduced to 0
-	min_snow 0.0 		! [mm] minimum snow needed for establishment (DJF average) and survival (20-year average maximum),
-				! i.e. No restriction here
-	max_snow 100000		! [mm] maximum snow tolerance (never used), i.e. No restriction here
-	gdd0_max 100000		! [degC day] max GDD0, i.e. No restriction here
-	gdd0_min 0		! [degC day] min GDD0, i.e. No restriction here
-	has_aerenchyma 0	! PFTs do not have aerenchyma for gas transport by default
+	wtp_max -301 			! [mm] maximum inundation (water table) tolerance,
+					! i.e. restrict on wetlands because wtp >= -300 always
+	inund_duration 0		! [day] maximum days per month of inundation before GPP is reduced to 0
+	min_snow 0.0 			! [mm] minimum snow needed for establishment (DJF average) and survival
+					! (20-year average maximum), i.e. No restriction here
+	max_snow 100000			! [mm] maximum snow tolerance (never used), i.e. No restriction here
+	gdd0_max 100000			! [degC day] max GDD0, i.e. No restriction here
+	gdd0_min 0			! [degC day] min GDD0, i.e. No restriction here
+	has_aerenchyma 0		! PFTs do not have aerenchyma for gas transport by default
 )
 
 group "tree" (
@@ -257,7 +258,8 @@ group "tree" (
 
 	harv_eff 0.95
 	res_outtake 0.75
-	turnover_harv_prod 0.04 ! Turnover rate for long-lived harvested products (wood) : 0.04 corresponds to a 25-year turnover time (as in Bondeau 2007)
+	turnover_harv_prod 0.04 ! Turnover rate for long-lived harvested products (wood): 
+				! 0.04 corresponds to a 25-year turnover time (as in Bondeau 2007)
 	harvest_slow_frac 0.33	! Bondeau 0.33
 )
 
@@ -287,10 +289,10 @@ group "shrub" (
 	root_beta 0.982
 	longevity 100
 
-	turnover_harv_prod 1 ! Turnover rate for long-lived harvested products (wood) : 1-year turnover time
+	turnover_harv_prod 1 	! Turnover rate for long-lived harvested products (wood): 
+				! 1-year turnover time
 	harvest_slow_frac 0
 )
-
 
 group "grass" (
 
@@ -304,25 +306,25 @@ group "grass" (
 	root_beta 0.9555
 	gmin 0.5
 	phenology "any"
-	phengdd5ramp 100		! C3 har 50 hos Thomas
-	leaflong 0.5			! Leaf longevity (years)
+	phengdd5ramp 100	! C3 har 50 hos Thomas
+	leaflong 0.5		! Leaf longevity (years)
 	turnover_leaf 1
-	turnover_root 0.7		! 0.5 hos guess2008
+	turnover_root 0.7	! 0.5 hos guess2008
 	!cton_leaf_min 16
 	cton_root 29
 	nuptoroot 0.00551
 	km_volume 0.000001876
 	fnstorage 0.3
 	litterme 0.2
-	parff_min 1000000		! 2500000 i guess2008
-	fireresist 0.5			! 1.0 hos Thomas
+	parff_min 1000000	! 2500000 i guess2008
+	fireresist 0.5		! 1.0 hos Thomas
 	intc 0.01
 	ga 0.030
 
-	turnover_harv_prod 1 ! Turnover rate for long-lived harvested products (wood) : 1-year turnover time for GRASS
+	turnover_harv_prod 1 	! Turnover rate for long-lived harvested products (wood): 
+				! 1-year turnover time for GRASS
 	harvest_slow_frac 0
 )
-
 
 group "broadleaved" (
 
@@ -398,9 +400,9 @@ group "tropical" (
 
 	tcmin_surv 15.5
 	tcmin_est 15.5
-	tcmax_est 1000   ! no limit
-	twmin_est -1000  ! no limit
-	gdd5min_est 0    ! no limit
+	tcmax_est 1000   	! no limit
+	twmin_est -1000  	! no limit
+	gdd5min_est 0    	! no limit
 	pstemp_min 2
 	pstemp_low 25
 	pstemp_high 30
@@ -434,7 +436,6 @@ group "shade_intolerant" (
 	greff_min 0.09
 	turnover_sap 0.1
 )
-
 
 
 pft "BNE" (
@@ -504,8 +505,8 @@ pft "BNS" (
 	tcmax_est -2
 	twmin_est -1000		! no limit
 	twminusc 43		! AA from TH 03-11 added this
-	gdd5min_est 350		! Stefan added new value, old 500
-	phengdd5ramp 100	! Stefan added new value, old 200
+	gdd5min_est 350		! Changed 2013-04-30 from value 500
+	phengdd5ramp 100	! Changed 2013-04-30 from value 200
 	longevity 300
 	fireresist 0.3
 	eps_iso 8.0
@@ -513,6 +514,7 @@ pft "BNS" (
 	eps_mon 3.18 0.72 0.18 0.12 0.14 0.11 0.2 0.13 0.02
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
+
 
 pft "TeNE" (
 
@@ -530,14 +532,15 @@ pft "TeNE" (
 	tcmin_est -2 		! As in Sitch et al. (2003), a little lower than TeBE
 	tcmax_est 10 		! Hickler et al. (2012) have 9 degC for Pin_hal
 	twmin_est 5  		! low, since Hickler et al. (2012) have -1000 for Jun_oxy
-	gdd5min_est 2000 	!(Stefans value 900)2000 ! As TeBE, a little lower than Jun_oxy, Pin_hal in europe.ins
+	gdd5min_est 2000 	! Changed 2013-04-30 from value 900. As TeBE, a little lower than Jun_oxy, Pin_hal in europe.ins
 	longevity 300  		! Hickler et al. (2012) have 350 for Pin_hal
 	fireresist 0.3 		! Hickler et al. (2012) have 0.2 for Pin_hal and 0.4 for Jun_oxy
-	eps_iso 8.0		! ?????????????
-	seas_iso 0		! ?????????????
-	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22	! ?????
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	! ?????
+	eps_iso 8.0		! Values set to be the same as those for BNE and BINE
+	seas_iso 0		! Values set to be the same as those for BNE and BINE
+	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22	! Values set to be the same as those for BNE and BINE
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	! Values set to be the same as those for BNE and BINE
 )
+
 
 pft "TeBS" (
 
@@ -562,6 +565,7 @@ pft "TeBS" (
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
 
+
 pft "IBS" (
 
 	! Shade-intolerant broadleaved summergreen tree
@@ -584,8 +588,9 @@ pft "IBS" (
 	eps_mon 0.52 0.14 0.1 0.04 0.49 0.01 0.04 0.18 0.08
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.
 
-	greff_min 0.12 ! Version 4.1 update. Improves B(I)NE/IBS balance in boreal regions.
+	greff_min 0.12 		! Version 4.1 update. Improves B(I)NE/IBS balance in boreal regions.
 )
+
 
 pft "TeBE" (
 
@@ -604,13 +609,14 @@ pft "TeBE" (
 	tcmax_est 18.8
 	twmin_est 5
 	gdd5min_est 2000
-	longevity 300 !from TH 2010-04-07 was 350 AA
+	longevity 300 		! from TH 2010-04-07 was 350 AA
 	fireresist 0.3
 	eps_iso 24.0
 	seas_iso 0
 	eps_mon 0.74 0.2 0.2 0.09 0.13 0.08 0.02 0.08 0.08
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
+
 
 pft "TrBE" (
 
@@ -624,7 +630,7 @@ pft "TrBE" (
 	tropical
 	leaflong 2
 	turnover_leaf 0.5
-	longevity 500   !from Thomas H 2010-03-30 new 500 instead of 600 2010-04-07
+	longevity 500   	! from Thomas H 2010-03-30 new 500 instead of 600 2010-04-07
 	fireresist 0.1
 	eps_iso 24.0
 	seas_iso 0
@@ -668,13 +674,14 @@ pft "TrBR" (
 	fnstorage 0.15
 	leaflong 0.5
 	turnover_leaf 1
-	longevity 400    ! from Thomas h 2010-03-30
+	longevity 400    	! from Thomas h 2010-03-30
 	fireresist 0.3
 	eps_iso 45.0
 	seas_iso 0
 	eps_mon 0.95 0.26 0.22 0.18 0.18 0.13 0.12 0.22 0.14
 	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5
 )
+
 
 group "C3G" (
 
@@ -688,11 +695,11 @@ group "C3G" (
 	pstemp_low 10
 	pstemp_high 30
 	pstemp_max 45
-	tcmin_surv -1000	!no limit
-	tcmin_est -1000 	!no limit
-	tcmax_est 1000  	!no limit
-	twmin_est -1000 	!no limit
-	gdd5min_est 0   	!no limit
+	tcmin_surv -1000	! no limit
+	tcmin_est -1000 	! no limit
+	tcmax_est 1000  	! no limit
+	twmin_est -1000 	! no limit
+	gdd5min_est 0   	! no limit
 	eps_iso 16.0
 	seas_iso 1
 	eps_mon 0.37 0.2 0.23 0.1 0.1 0.09 0.1 0.22 0.19
@@ -700,9 +707,11 @@ group "C3G" (
 	harv_eff 0.5
 )
 
+
 pft "C3G" (
 	C3G
 )
+
 
 group "C4G" (
 
@@ -718,9 +727,9 @@ group "C4G" (
 	pstemp_max 55
 	tcmin_surv 15.5
 	tcmin_est 15.5
-	tcmax_est 1000		!no limit
-	twmin_est -1000		!no limit
-	gdd5min_est 0		!no limit
+	tcmax_est 1000		! no limit
+	twmin_est -1000		! no limit
+	gdd5min_est 0		! no limit
 	eps_iso 8.0
 	seas_iso 0
 	eps_mon 0.48 0.19 0.67 0.14 0.12 0.13 0.14 0.29 0.24
@@ -731,6 +740,7 @@ group "C4G" (
 pft "C4G" (
 	C4G
 )
+
 
 group "lowshrub"(
 	shrub
@@ -749,6 +759,8 @@ group "lowshrub"(
 	turnover_root 0.5
 
 )
+
+
 pft "BLSE" (
 
 	! Arctic low shrub, evergreen
@@ -771,15 +783,15 @@ pft "BLSE" (
 	gdd5min_est 100
 	fireresist 0.12
 
-	drought_tolerance 0.1 	! PaulM -  < Pinus
-	!gdd0_min 300		! orig is 300, change based on CAVM region simulations
+	drought_tolerance 0.1
+	!gdd0_min 300
 	nuptoroot 0.0028
 
 	! BVOC values
 	eps_iso 2.0
 	seas_iso 0
-	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22	! Needs checking!
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	! Needs checking!
+	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22	! Same values as PFT LSE in arctic.ins
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	! Same values as PFT LSE in arctic.ins
 	ga 0.040
 	!sla 12.56
 )
@@ -796,26 +808,26 @@ pft "BLSS" (
 	summergreen
 	shade_intolerant
 
-	tcmin_surv -40		! orig is -32,5, change, based on the CAVM region
-	tcmin_est -40		! orig is -32,5, change, based on the CAVM region
+	tcmin_surv -40		! Estimate from map is -32.5. Change based on the CAVM region
+	tcmin_est -40		! Estimate from map is -32.5. Change based on the CAVM region
 	tcmax_est 1000
 	twmin_est -1000
 	gdd5min_est 100
 	phengdd5ramp 50
 	fireresist 0.12
 
-	drought_tolerance 0.1 	! PaulM -  < Pinus
+	drought_tolerance 0.1
 	!gdd0_min 300
 
 	! Found on the driest peatlands, or raised hummocks
 	!wtp_max -250 ! mm
-	!inund_duration 5 ! days
+	!inund_duration 5 	! days
 
 	! BVOC values
 	eps_iso 2.0
 	seas_iso 1
-	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22	! Needs checking!
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	! Needs checking!
+	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22	! Same values as PFT LSS in arctic.ins
+	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	! Same values as PFT LSS in arctic.ins
 	ga 0.040
 	!sla 24.25
 )
