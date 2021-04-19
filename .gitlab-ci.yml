@@ -73,3 +73,13 @@ demo_global:
   script:
     - cd build/
     - ./guess -input demo global_demo.ins
+    # Fail on broken nitrogen or carbon balance.
+    - if grep --quiet '[CN] balance year' guess.log; then
+    -   echo >&2 "Carbon and/or nitrogen balance is broken. Check 'guess.log'."
+    -   exit 1
+    - fi
+  artifacts:
+    paths:
+      - guess.log
+    when: on_failure
+
