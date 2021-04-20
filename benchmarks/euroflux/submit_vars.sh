@@ -1,2 +1,0 @@
-NPROCESS=2
-INPUT_MODULE=euroflux

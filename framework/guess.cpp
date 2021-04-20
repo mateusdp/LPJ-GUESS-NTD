@@ -3,7 +3,7 @@
 /// \brief LPJ-GUESS Combined Modular Framework
 ///
 /// \author Ben Smith
-/// $Date: 2020-03-03 16:31:01 +0100 (Di, 03. Mär 2020) $
+/// $Date: 2020-09-16 19:22:00 +0200 (Mi, 16. Sep 2020) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -183,6 +183,14 @@ void Fluxes::report_flux(PerPFTFluxType flux_type, int pft_id, double value) {
 void Fluxes::report_flux(PerPatchFluxType flux_type, double value) {
 	monthly_fluxes_patch[date.month][flux_type] += value;
 	daily_fluxes_patch[date.day][flux_type] += value;
+}
+
+double Fluxes::get_daily_flux(PerPFTFluxType flux_type, int day) const {
+	return daily_fluxes_pft[day][flux_type];
+}
+
+double Fluxes::get_daily_flux(PerPatchFluxType flux_type, int day) const {
+	return daily_fluxes_patch[day][flux_type];
 }
 
 double Fluxes::get_monthly_flux(PerPFTFluxType flux_type, int month) const {

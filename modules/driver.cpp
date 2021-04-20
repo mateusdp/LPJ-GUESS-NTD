@@ -3,7 +3,7 @@
 /// \brief Environmental driver calculation/transformation
 ///
 /// \author Ben Smith
-/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
+/// $Date: 2020-11-24 18:23:10 +0100 (Di, 24. Nov 2020) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -463,7 +463,8 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 	// On first day of year ...
 
 	if (date.day == 0) {
-		// ... reset annual GDD5 counter
+		// ... reset annual GDD0 and GDD5 counter
+		climate.agdd0 = 0.0;
 		climate.agdd5 = 0.0;
 
 		// reset annual nitrogen input variables
@@ -527,11 +528,11 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 			++gc_itr;
 		}
 	}
-	else if ( (climate.lat >= 0.0 && date.day == COLDEST_DAY_NHEMISPHERE) ||
-	          (climate.lat < 0.0 && date.day == COLDEST_DAY_SHEMISPHERE) ) {
+	
+	if ( (climate.lat >= 0.0 && date.day == COLDEST_DAY_NHEMISPHERE) || 
+		 (climate.lat < 0.0 && date.day == COLDEST_DAY_SHEMISPHERE) ) {
 		// In midwinter, reset GDD counter for summergreen phenology
 		climate.gdd5 = 0.0;
-		climate.agdd0 = 0.0;
 		climate.ifsensechill = false;
 	}
 	else if ( (climate.lat >= 0.0 && date.day == WARMEST_DAY_NHEMISPHERE) ||
@@ -623,9 +624,8 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 			climate.mtemp_max20 /= (double)(21 - startyear);
 			climate.mtemp_min_20[19] = climate.mtemp_min;
 			climate.mtemp_max_20[19] = climate.mtemp_max;
+			climate.agdd0_20.add(climate.agdd0);
 		}
-
-		climate.agdd0_20.add(climate.agdd0);
 
 		climate.hmtemp_20[date.month].add(climate.dtemp_31.periodicmean(date.ndaymonth[date.month]));
 		climate.hmprec_20[date.month].add(climate.dprec_31.periodicsum(date.ndaymonth[date.month]));

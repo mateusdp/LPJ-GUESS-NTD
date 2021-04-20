@@ -2491,8 +2491,8 @@ void cnstep(int layer0, double Di[NLAYERS], double dz[NLAYERS], double surf_temp
 		}
 		else {
 			// bottom padding layer
-			dzplus = pad_dz[PAD_LAYERS - 1]; // PaulM added -1
-			tplus = pad_temp[PAD_LAYERS - 1]; // PaulM added -1
+			dzplus = pad_dz[PAD_LAYERS - 1];
+			tplus = pad_temp[PAD_LAYERS - 1];
 		}
 
 		// --- MINUS ---
@@ -2943,7 +2943,7 @@ void Soil::update_soil_diffusivities(const int& daynum, bool ansoln) {
 		Ftot = totalwaterinlayer + totaliceinlayer + Frac_org[i] + Frac_min[i] + Frac_peat[i]; 
 
 		if (Ftot + Frac_air[i] > 1.000001)
-			fail("Illegal Ftot (%g) + Fair (%g) value in Soil::update_soil_diffusivities: %g", Ftot, Frac_air[i], Ftot +Frac_air[i]);
+			fail("Illegal Ftot (%g) + Frac_air (%g) value in Soil::update_soil_diffusivities: %g", Ftot, Frac_air[i], Ftot +Frac_air[i]);
 
 		lKforg = (Frac_org[i] / Ftot) * lKorg;
 		lKfpeat = (Frac_peat[i] / Ftot) * lKpeat;
@@ -3273,7 +3273,7 @@ void Soil::update_layer_fractions(const int& daynum, const int& mixedl, const in
 
 			for (int ii = IDX; ii<NLAYERS; ii++) {
 
-				if (!iforganicsoilproperties || soiltype.soilcode == 7) {
+				if (!iforganicsoilproperties || soiltype.soilcode == 8) {
 
 					// No updates to the standard values for LPJ-GUESS soils
 					por[ii] = soiltype.porosity;
@@ -3311,7 +3311,7 @@ void Soil::update_layer_fractions(const int& daynum, const int& mixedl, const in
 			// initialize after restarts
 			for (int ii = IDX; ii<NLAYERS; ii++) {
 
-				if (!iforganicsoilproperties || soiltype.soilcode == 7) {
+				if (!iforganicsoilproperties || soiltype.soilcode == 8) {
 
 					// No updates to the standard values for LPJ-GUESS soils
 					por[ii] = soiltype.porosity;

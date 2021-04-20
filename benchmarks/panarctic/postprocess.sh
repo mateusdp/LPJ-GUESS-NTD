@@ -77,5 +77,13 @@ describe_images "Panarctic - Nfluxes (1961-90 average). Units kgN m-2 yr-1" nflu
 gmap tot_runoff1961to1990.txt -o total_runoff.jpg -i Total -t "Total runoff" -p npolar
 describe_images "Panarctic - Total runoff (1961-90 average)" total_runoff.jpg
 
+
+# Treeline
+tslice fpc.out -f 2005 -t 2015 -lon 1 -lat 2 -y 3 -o fpc2005to2015.txt
+compute fpc2005to2015.txt -i 'TreeFPC=BNE+BINE+BNS+IBS+TeBS' -o treefpc.txt
+gmap treefpc.txt -p MERCATOR -s 0 0.01 10 -i TreeFPC -horiz -o treefpc.jpg
+describe_images "Panarctic - Tree FPC and treeline (2005-2015 average)" treefpc.jpg
+
+
 # Cleanup
 rm aldSep.txt aldMax.txt

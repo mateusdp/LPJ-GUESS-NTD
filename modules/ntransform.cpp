@@ -223,7 +223,7 @@ void denitrification(Patch& patch,Soil& soil) {
 
 		double f_n2_n2o_T = 1.0 / (1.0 + exp(-(soil_T - 5.0) / 10.0));
 
-		double f_n2o_n2_w = richards_curve(1.0, 0.0, 62.0, 0.875, wfps_upper); // DW_COMMENT added decimals to be consistent with other richards_curve calls
+		double f_n2o_n2_w = richards_curve(1.0, 0.0, 62.0, 0.875, wfps_upper); // decimals added to be consistent with other richards_curve calls
 
 		// Above 0.7 WFPS, no NO is produced and below the same threshold no N2 production. Pilegaard 2013
 		if (wfps_upper < 0.7){

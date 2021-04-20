@@ -459,7 +459,7 @@ void SoilInput::get_soil_organic(double lon, double lat, Gridcell& gridcell) {
 		}
 	}
 
-	// Get the properties of organic soil, i.e. with a soilcode of 7 
+	// Get the properties of organic soil, i.e. with a soilcode of 8 
 	SoilProperties soilproporganic = get_lpj_organic_soil();
 
 	soiltype.sand_frac = soilpropmineral.sand;

@@ -3,7 +3,7 @@
 /// \brief Output module for the land use and management information
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
+/// $Date: 2020-09-16 19:22:00 +0200 (Mi, 16. Sep 2020) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,13 +79,12 @@ private:
 		   file_daily_cmass_storage, file_daily_nmass_storage,
 		   file_daily_n_input_soil, file_daily_avail_nmass_soil,
 		   file_daily_upper_wcont, file_daily_lower_wcont,
-		   file_daily_irrigation, file_daily_temp, file_daily_prec,
-		   file_daily_rad, file_daily_cmass_dead_leaf,
-		   file_daily_nmass_dead_leaf, file_daily_fphu, file_daily_nminleach,
+		   file_daily_irrigation, file_daily_climate,
+		   file_daily_cmass_dead_leaf, file_daily_nmass_dead_leaf, 
+		   file_daily_fphu, file_daily_nminleach,
 		   file_daily_norgleach, file_daily_nuptake, file_daily_ds,
 		   file_daily_stem, file_daily_leaf, file_daily_root,
 		   file_daily_storage;
-	xtring file_daily_climate;
 
 	// Output tables
 	Table out_yield, out_yield1, out_yield2, out_sdate1, out_sdate2,
@@ -116,11 +115,9 @@ private:
 		  out_daily_nmass_storage, out_daily_n_input_soil,
 		  out_daily_cmass_dead_leaf, out_daily_nmass_dead_leaf, out_daily_fphu,
 		  out_daily_avail_nmass_soil, out_daily_upper_wcont,
-		  out_daily_lower_wcont, out_daily_irrigation, out_daily_temp,
-		  out_daily_prec, out_daily_rad, out_daily_nminleach,
-		  out_daily_norgleach, out_daily_nuptake, out_daily_ds, out_daily_stem,
-		  out_daily_leaf, out_daily_root, out_daily_storage;
-	Table out_daily_climate;
+		  out_daily_lower_wcont, out_daily_irrigation, out_daily_climate,
+		  out_daily_nminleach, out_daily_norgleach, out_daily_nuptake, out_daily_ds, 
+		  out_daily_stem, out_daily_leaf, out_daily_root, out_daily_storage;
 };
 
 }

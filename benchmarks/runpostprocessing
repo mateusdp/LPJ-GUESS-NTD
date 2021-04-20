@@ -64,6 +64,8 @@ function describe_image {
 
     if [ "$3" == "embed" ]; then
 	embed="embed=\"1\""
+    else
+	embed="embed=\"0\""
     fi
 
     print_string "<image src=\"$1\" $embed>$2</image>"
@@ -71,17 +73,29 @@ function describe_image {
 
 # Function to be called from the post processing script to describe
 # a list of images with a shared description.
+# The function takes the following arguments: group description, image file names..., [embed]
+# Image files named "embed" are forbidden: such images will be ignored, i.e. excluded from the report. 
 function describe_images {
     print_string "<group description=\"$1\">"
 
     # Remove the first parameter to this function
     shift
 
+    # Get the last argument and consider if it is the embed flag
+    for ith_argument in $@; do :; done
+    if [ "$ith_argument" == "embed" ]; then
+        embedflag="embed"
+    else
+        embedflag=""
+    fi
+
     # Go through all images
     for image in $@
     do
-	# Use the image file name as the description
-	describe_image $image $image
+      if [ "$image" != "$embedflag" ]; then
+        # Use the image file name as the description
+        describe_image $image $image $embedflag
+      fi
     done
 
     print_string "</group>"

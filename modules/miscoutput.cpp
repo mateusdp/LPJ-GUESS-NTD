@@ -236,9 +236,11 @@ void MiscOutput::define_output_tables() {
 	seasonality_columns += ColumnDescriptor("V_prec",     10, 3);
 	seasonality_columns += ColumnDescriptor("temp_min",   10, 1);
 	seasonality_columns += ColumnDescriptor("temp_mean",  10, 1);
+	seasonality_columns += ColumnDescriptor("temp_max",   10, 1);
 	seasonality_columns += ColumnDescriptor("mtemp_max",  10, 1);
 	seasonality_columns += ColumnDescriptor("temp_seas",  10, 0);
-	seasonality_columns += ColumnDescriptor("gdd5",  10, 0);
+	seasonality_columns += ColumnDescriptor("gdd0",       10, 0);
+	seasonality_columns += ColumnDescriptor("gdd5",       10, 0);
 	seasonality_columns += ColumnDescriptor("prec_min",   10, 2);
 	seasonality_columns += ColumnDescriptor("prec",       10, 1);
 	seasonality_columns += ColumnDescriptor("prec_range", 12, 0);
@@ -1077,8 +1079,10 @@ void MiscOutput::outannual(Gridcell& gridcell) {
 	outlimit_misc(out, out_seasonality,   gridcell.climate.var_prec);
 	outlimit_misc(out, out_seasonality,   gridcell.climate.mtemp_min20);
 	outlimit_misc(out, out_seasonality,   gridcell.climate.atemp_mean);
+	outlimit_misc(out, out_seasonality,   gridcell.climate.mtemp_max20);
 	outlimit_misc(out, out_seasonality,   gridcell.climate.mtemp_max);
 	outlimit_misc(out, out_seasonality,   gridcell.climate.temp_seasonality);
+	outlimit_misc(out, out_seasonality,   gridcell.climate.agdd0_20.mean());
 	outlimit_misc(out, out_seasonality,   gridcell.climate.agdd5);
 	outlimit_misc(out, out_seasonality,   gridcell.climate.mprec_petmin20);
 	outlimit_misc(out, out_seasonality,   gridcell.climate.aprec);

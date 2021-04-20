@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2020-03-03 16:31:01 +0100 (Di, 03. Mär 2020) $
+/// $Date: 2020-11-24 18:23:10 +0100 (Di, 24. Nov 2020) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1247,6 +1247,12 @@ public:
 
 	/// Report flux for a certain flux type
 	void report_flux(PerPatchFluxType flux_type, double value);
+
+	/// \returns daily flux for a given flux type (for all PFTs)
+	double get_daily_flux(PerPFTFluxType flux_type, int day) const;
+
+	/// \returns daily flux for a given flux type
+	double get_daily_flux(PerPatchFluxType flux_type, int day) const;
 
 	/// \returns flux for a given month and flux type (for all PFTs)
 	double get_monthly_flux(PerPFTFluxType flux_type, int month) const;
@@ -4835,10 +4841,16 @@ private:
 //   (Hybrid v3.0). Ecological Modelling, 95, 249-287.
 // Fulton, MR 1991 Adult recruitment rate as a function of juvenile growth in size-
 //   structured plant populations. Oikos 61: 102-105.
+// Gerten, D., Schaphoff, S., Haberlandt, W., Lucht, W. & Sitch, S. 2004. 
+//   Terrestrial vegetation and water balance—hydrological evaluation of a dynamic 
+//   global vegetation model. Journal of Hydrology 286: 249-270.
 // Haxeltine A & Prentice IC 1996 BIOME3: an equilibrium terrestrial biosphere
 //   model based on ecophysiological constraints, resource availability, and
 //   competition among plant functional types. Global Biogeochemical Cycles 10:
 //   693-709
+// Jackson, R.B., Canadell, J., Ehleringer, J.R., Mooney, H.A., Sala O.E. & Schulze, E.D. 1996
+//   A global analysis of root distributions for terrestrial biomes. 
+//   Oecologia, Volume 108: 389–411
 // Lloyd, J & Taylor JA 1994 On the temperature dependence of soil respiration
 //   Functional Ecology 8: 315-323
 // Macduff, JH, Humphreys, MO & Thomas, H 2002. Effects of a stay-green mutation on

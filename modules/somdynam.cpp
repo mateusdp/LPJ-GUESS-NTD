@@ -3,7 +3,7 @@
 /// \brief Soil organic matter dynamics
 ///
 /// \author Ben Smith (LPJ SOM dynamics, CENTURY), David Wårlind (CENTURY)
-/// $Date: 2019-12-12 17:16:09 +0100 (Do, 12. Dez 2019) $
+/// $Date: 2020-11-24 18:23:10 +0100 (Di, 24. Nov 2020) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1470,7 +1470,7 @@ void som_dynamics_century(Patch& patch, Climate& climate, bool tillage) {
 	// Daily or monthly decomposition and fluxes between SOM pools
 	somfluxes(patch, false, tillage);
 
-	// Nitrogen transformation in soil DW_COMMENT bring if statement into ntransform to make code cleaner?
+	// Nitrogen transformation in soil
 	ntransform(patch, climate);
 
 	// Solve SOM pool sizes at end of year given by soil.solvesomcent_endyr
