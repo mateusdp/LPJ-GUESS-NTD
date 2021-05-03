@@ -63,4 +63,4 @@ describe_textfile mch4_diffusion2000to2012_areaaveraged.txt "Total monthly CH4-C
 describe_textfile mch4_ebullition2000to2012_areaaveraged.txt "Total monthly CH4-C emissions from ebullition (2000 to 2012 average). Units: Tg CH4-C yr-1"
 
 # Cleanup
-rm mch4_N mch4_S mch4_hbl mch4_N_aa mch4_S_aa mch4_amazon mch4_amazon_aa mch4_hbl_aa mch4_wsl_aa
+rm -f mch4_N.txt mch4_S.txt mch4_hbl.txt mch4_N_aa.txt mch4_S_aa.txt mch4_amazon.txt mch4_amazon_aa.txt mch4_hbl_aa.txt mch4_wsl_aa.txt

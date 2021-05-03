@@ -3,7 +3,7 @@
 /// \brief Soil organic matter dynamics
 ///
 /// \author Ben Smith (LPJ SOM dynamics, CENTURY), David Wårlind (CENTURY)
-/// $Date: 2020-11-24 18:23:10 +0100 (Di, 24. Nov 2020) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -350,6 +350,54 @@ void setntoc(Soil& soil, double fac, pooltype pool, double cton_max, double cton
 	}
 }
 
+
+/// Temperature modifier for decomposition
+/** Calculate decomposition temperature modifier (in range 0-1)
+ *  [A(T_soil), Eqn A9, Comins & McMurtrie 1993; ET, Friend et al 1997; abiotic
+ *  effect of soil temperature, Parton et al 1993, Fig 2)
+ *
+ *  \param temp_soil  Soil temperature at 25 cm depth
+ */
+double temperature_modifier(double temp_soil) {
+
+	double temp_mod = temp_soil > 0.0 ? max(0.0, 0.0326 + 0.00351 * pow(temp_soil, 1.652) - pow(temp_soil / 41.748, 7.19)) : 0.0;
+
+	// Include as an overide option when: MIN_DECOMP_TEMP < temp < 0 degC
+	// This increases the respiration (from 0) between MIN_DECOMP_TEMP and 0 degC - cf Koven et al. 2011
+	if (ifcarbonfreeze && temp_soil <= 0.0 && temp_soil >= MIN_DECOMP_TEMP && !iftwolayersoil) {
+
+		double decomp_at_freezing_point = 0.0326; // temp_mod above when temp_soil = 0;
+		bool linear_decrease_below_freezing = false;
+
+		if (linear_decrease_below_freezing) {
+			// Alternative: Linear approach (Koven et al. 2011)
+			double slope = decomp_at_freezing_point / fabs(MIN_DECOMP_TEMP);
+			temp_mod = slope * temp_soil + decomp_at_freezing_point; // i.e. a linear decrease from decomp_at_freezing_point at 0C to 0 at MIN_DECOMP_TEMP (-4C).
+		} 
+		else {
+			// Default: Q10 relationship (Schaefer & Jafarov, 2016)
+			double q10_freeze = 200.5; // i.e. average of 164 and 237 based on incubation of frozen soil samples (Mikan et al., 2002)
+			temp_mod = decomp_at_freezing_point * pow(q10_freeze, temp_soil / 10.0);
+		}
+	}
+
+	return temp_mod;
+}
+
+
+/// Water Modifier for Decomposition
+/** Calculate decomposition moisture modifier (in range 0-1)
+ *  Friend et al 1997, Eqn 53 (Parton et al 1993, Fig 2)
+ *
+ *  \param wfps  Water-filled pore space
+ */
+double moisture_modifier(double wfps) {
+
+	double moist_mod = wfps < 60.0 ? exp((wfps - 60.0) * (wfps - 60.0) / -800.0) : 0.000371 * wfps * wfps - 0.0748 * wfps + 4.13;
+	
+	return moist_mod;
+}
+
 /// Calculates CENTURY instantaneous decay rates
 /** Calculates CENTURY instantaneous decay rates given soil temperature,
  *  water content of upper soil layer
@@ -375,52 +423,15 @@ void decayrates_century(Soil& soil, double temp_soil, double wcont_soil, bool ti
 	const double texture_mod_peat = 1.0 - 0.75 * (soil.soiltype.clay_frac_peat + soil.soiltype.silt_frac_peat); // = 1
 
 	// Calculate decomposition temperature modifier (in range 0-1)
-	// [A(T_soil), Eqn A9, Comins & McMurtrie 1993; ET, Friend et al 1997; abiotic
-	// effect of soil temperature, Parton et al 1993, Fig 2)
-
-	double temp_mod = 0.0;
-
-	if (temp_soil > 0.0) {
-		temp_mod = max(0.0,
-			0.0326 + 0.00351 * pow(temp_soil, 1.652) - pow(temp_soil / 41.748, 7.19));
-	}
-
-	// Include as an overide option when: MIN_DECOMP_TEMP < temp < 0 degC
-	// This increases the respiration (from 0) between MIN_DECOMP_TEMP and 0 degC - cf Koven et al. 2011
-	if (ifcarbonfreeze && temp_soil <= 0.0 && temp_soil >= MIN_DECOMP_TEMP && !iftwolayersoil) {
-
-		double decomp_at_freezing_point = 0.0326; // temp_mod above when temp_soil = 0;
-		bool linear_decrease_below_freezing = false;
-
-		if (linear_decrease_below_freezing) {
-			// Linear approach (Koven et al. 2011)
-			double slope = decomp_at_freezing_point / fabs(MIN_DECOMP_TEMP);
-			temp_mod = slope * temp_soil + decomp_at_freezing_point; // i.e. a linear decrease from decomp_at_freezing_point at 0C to 0 at MIN_DECOMP_TEMP (-4C).
-		} 
-		else {
-			// Alternative Q10 relationship (Schaefer & Jafarov, 2016)
-			double q10_freeze = 200.5; // i.e. average of 164 and 237 based on incubation of frozen soil samples (Mikan et al., 2002)
-			temp_mod = decomp_at_freezing_point * pow(q10_freeze, temp_soil / 10.0);
-		}
-	}
+	double temp_mod = temperature_modifier(temp_soil);
 
 	// Calculate decomposition moisture modifier (in range 0-1)
-	// Friend et al 1997, Eqn 53
-	// (Parton et al 1993, Fig 2)
-
-	// Water Filled Pore Spaces (wfps) %
-	// water holding capacity at wilting point (wp) and saturation capacity (wsats)
+	// Water Filled Pore Spaces (wfps) % water holding capacity at wilting point (wp) and saturation capacity (wsats)
 	// is calculated with the help of Cosby et al 1984;
 	// use Gerten equivalents here, but wfps COULD be made depth equivalent
 	const double wfps = soil.wfps(0)*100.0;
-	double moist_mod;
-
-	if (wfps < 60.0)
-		moist_mod = exp((wfps - 60.0) * (wfps - 60.0) / -800.0);
-	else
-		moist_mod = 0.000371 * wfps * wfps - 0.0748 * wfps + 4.13;
-
-	double moist_mod_inundated_mineral = 0.000371 * 100 * 100 - 0.0748 * 100 + 4.13; // 100% WFPS for wetlands on mineral soils, 0.36 approx
+	double moist_mod = moisture_modifier(wfps);
+	double moist_mod_inundated_mineral = moisture_modifier(100); // 100% WFPS for wetlands on mineral soils, 0.36 approx
 
 	// Combined moisture and temperature modifier
 	

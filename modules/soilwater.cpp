@@ -12,7 +12,7 @@
 /// determines if the original (Gerten et al) scheme is used or the newer scheme.
 ///
 /// \author Ben Smith
-/// $Date: 2019-12-12 17:16:09 +0100 (Do, 12. Dez 2019) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -193,7 +193,6 @@ void initial_infiltration(Patch& patch, Climate& climate) {
 				// water that can still be added to each soil layer (mm)
 
 				double ice_fraction = 0.0; // [0-1]
-				double ice_impedance = 1.0; // [0-1]
 
 				// initialise to 0 mm
 				for (int sl = 0; sl<NACROTELM; sl++) {
@@ -227,30 +226,17 @@ void initial_infiltration(Patch& patch, Climate& climate) {
 
 					// Check balance
 					if (potential_layer[ly] < -0.00001) {
-						fail("initial_infiltration - error in a soil layer's water balance!\n");
+						fail("initial_infiltration (PEATLAND) - error in a soil layer's water balance!\n");
 					}
 
 				} // for loop (ly)
 
 
-				// Impedance - this is the fraction of water that can infiltrate initially 
-				// ice_fraction = 0 (e.g. summer, no phase change etc.) = 1
-				// ice_fraction = 1 (e.g. winter, daturated soil to field capacity, all soil water frozen) = 0.000000
-				// CLM4.5 - see Swenson et al (2012) Eqn. (8)
-				if (ICE_IMPEDANCE && patch.soil.can_freeze()) {
-
-					ice_impedance = max(0.0, 1.0 - ice_fraction_of_pore_space);
-					// CLM method: ice_impedance = pow(10.0, -6.0 * ice_fraction_of_pore_space);
-				}
-				else {
-					ice_impedance = 1.0;
-				}
-
 				double water_in = 0.0;
 				double rain_melt_orig = soil.rain_melt;
 
 				// Assume the amount of water available for initial infiltration is limited by the ice content in the top layer
-				double water_for_infiltration = ice_impedance * soil.rain_melt;
+				double water_for_infiltration = soil.rain_melt;
 
 				// Only infiltrate what we can. The rest remains in rain_melt.
 				if (water_for_infiltration >= total_potential) {
@@ -294,7 +280,6 @@ void initial_infiltration(Patch& patch, Climate& climate) {
 				double potential_layer[NSOILLAYER_UPPER];
 		
 				double ice_fraction = 0.0; // [0-1]
-				double ice_impedance = 1.0; // [0-1]
 				double total_potential = 0.0;
 
 				// Average ice fraction as a fraction of pore space.
@@ -314,40 +299,17 @@ void initial_infiltration(Patch& patch, Climate& climate) {
 					
 					// Check balance
 					if (potential_layer[ly] < -0.00001) {
-						fail("initial_infiltration - error in a soil layer's water balance!\n");
+						fail("initial_infiltration (UPLAND SOIL) - error in a soil layer's water balance!\n");
 					}
 
 				} // for loop (ly)
 
 
-				// Impedance - this is the fraction of water that can infiltrate initially 
-				// ice_fraction = 0 (e.g. summer, no phase change etc.) = 1
-				// ice_fraction = 1 (e.g. winter, daturated soil to field capacity, all soil water frozen) = 0.000000
-				// CLM4.5 - see Swenson et al (2012) Eqn. (8)
-
-				if (ICE_IMPEDANCE && patch.soil.can_freeze()) {
-				
-					double ice_fraction_of_pore_space = 0.0;
-
-					for (int ly = 0; ly < soil.num_evaplayers; ly++) {
-
-						int layerix = ly + IDX_STD;
-						ice_fraction_of_pore_space += 1.0 / soil.num_evaplayers *
-							(patch.soil.Frac_ice[layerix] + patch.soil.Fpwp_ref[layerix] - patch.soil.Frac_water_belowpwp[layerix]) / patch.soil.por[layerix];
-					}
-
-					ice_impedance = max(0.0, 1.0 - ice_fraction_of_pore_space);
-					// CLM method: ice_impedance = pow(10.0, -6.0 * ice_fraction_of_pore_space);
-				}
-				else {
-					ice_impedance = 1.0;
-				}
-
 				double water_in = 0.0;
 				double rain_melt_orig = soil.rain_melt;
 
-				// Assume the amount of water available for initial infiltration is limited by the ice content in the top layer
-				double water_for_infiltration = ice_impedance * soil.rain_melt;
+				// Assume the amount of water available for initial infiltration is not limited by the ice content in the top layer
+				double water_for_infiltration = soil.rain_melt;
 
 				// Only infiltrate what we can. The rest remains in rain_melt.
 				if (water_for_infiltration >= total_potential) {
@@ -394,14 +356,12 @@ void initial_infiltration(Patch& patch, Climate& climate) {
 			// water that can still be added to each soil layer (mm)
 			double potential_layer[NSOILLAYER];
 
-			double ice_fraction = 0.0; // [0-1]
 			double total_potential = 0.0;
 
 			for (int ly = 0; ly < NSOILLAYER; ly++) {
 
 				Faw_layer[ly] = soil.get_layer_soil_water(ly) * soil.soiltype.awc[ly]; // mm
 				ice_layer[ly] = soil.Frac_ice[ly + soil.IDX] * soil.Dz[ly + soil.IDX]; // mm
-				ice_fraction += ice_layer[ly] / soil.soiltype.awc[ly] / (double)NSOILLAYER;
 
 				// Water in this layer
 				double layerwater = Faw_layer[ly] + ice_layer[ly]; // mm
@@ -411,7 +371,7 @@ void initial_infiltration(Patch& patch, Climate& climate) {
 
 				// Check balance
 				if (potential_layer[ly] < -0.00001) {
-					dprintf("initial_infiltration - error in a soil layer's water balance!\n");
+					dprintf("initial_infiltration (MINERAL WETLANDS) - error in a soil layer's water balance!\n");
 					return;
 				}
 
@@ -422,9 +382,9 @@ void initial_infiltration(Patch& patch, Climate& climate) {
 			else
 				soil.rain_melt -= total_potential;
 
-			if (total_potential > 0.0 && ice_fraction <= 0.0001) {
+			if (total_potential > 0.0) {
 
-				// Now add the rain_melt in proportion to the capacity if total_potential > 0.0 mm
+				// Add water to saturate each soil soil layer if total_potential > 0.0 mm
 				for (int ly = 0; ly<NSOILLAYER; ly++) {
 
 					double water_input_ly = potential_layer[ly];

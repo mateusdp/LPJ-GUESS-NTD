@@ -6,7 +6,7 @@
 /// production, respiration and evapotranspiration.
 ///
 /// \author Ben Smith
-/// $Date: 2019-12-12 17:16:09 +0100 (Do, 12. Dez 2019) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -36,6 +36,7 @@
 #include "q10.h"
 #include "bvoc.h"
 #include "ncompete.h"
+#include "somdynam.h"
 #include <assert.h>
 
 
@@ -1040,8 +1041,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 	const double nmin_avail = soil.nmass_avail(NO);
 	// Scalar to soil temperature (Eqn A9, Comins & McMurtrie 1993) for nitrogen uptake
 	double soilT = patch.soil.get_soil_temp_25();
-	double temp_scale = soilT > 0.0 ? max(0.0, 0.0326 + 0.00351 * pow(soilT, 1.652) - pow(soilT / 41.748, 7.19)) : 0.0;
-
+	double temp_scale = temperature_modifier(soilT); 
+	
 	/// Rate of nitrogen uptake not associated with Michaelis-Menten Kinetics (Zaehle and Friend 2010)
 	double kNmin = 0.05;
 
@@ -1066,7 +1067,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 			indiv.nday_leafon++;
 
-			// Added a scalar depending on individual lai to slow down light optimization of newly shaded leafs
+			// Added a scalar depending on individual lai to slow down light optimization of newly shaded leaves
 			// Peltoniemi et al. 2012
 			indiv.nextin = exp(0.12 * min(10.0*indiv.phen, indiv.lai_indiv_today()));
 

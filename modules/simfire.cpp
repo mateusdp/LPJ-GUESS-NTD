@@ -273,7 +273,7 @@ void simfire_update_pop_density(Gridcell& gridcell) {
 
 	// Find start and end year index of pop interpolation
 	int idx = 0 ;    
-	while (POPTIME[idx] < cyear) {
+	while (POPTIME[idx] < cyear && idx < NPOPENTRIES-1) {
 		idx++;
 	}
 

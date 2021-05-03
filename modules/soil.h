@@ -181,10 +181,6 @@ const double AIR_THICKNESS = 100.0;
 ////////////////////////////////////////////////////////////////////////
 
 // SOIL CONSTANTS 
-
-/// reduce infiltration and percolation rates sharply when there is ice present in the soil
-// See CLM4.5 - Swenson et al. (2012)
-const bool ICE_IMPEDANCE = false;
 	
 /// min temp [deg C] for heterotrophic decomposition.
 // Clein & Schimel (1995) use -4 degC

@@ -3,7 +3,7 @@
 /// \brief LPJ-GUESS Combined Modular Framework
 ///
 /// \author Ben Smith
-/// $Date: 2020-09-16 19:22:00 +0200 (Mi, 16. Sep 2020) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1345,7 +1345,7 @@ void Individual::report_flux(Fluxes::PerPatchFluxType flux_type, double value) {
 }
 
 
-/// Help function for reduce_biomass(), partitions nstore into leafs and roots
+/// Help function for reduce_biomass(), partitions nstore into leaves and roots
 /**
  *  As leaf and roots can have a very low N concentration after growth and allocation,
  *  N in nstore() is split between them to saticfy relationship between their average C:N ratios
@@ -2265,6 +2265,11 @@ Gridcell::Gridcell():climate(*this) {
 	}
 
 	seed = 12345678;
+	for (int i=0;i<12;i++) {
+		monthly_burned_area[i] = 0.0;
+		monthly_fire_risk[i] = 0.0;
+
+	}
 }
 
 double Gridcell::get_lon() const {

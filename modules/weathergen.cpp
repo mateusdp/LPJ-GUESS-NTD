@@ -2058,10 +2058,10 @@ void weathergen_get_daily_met(MetVariables& metvars, WeatherGenState& rndst) {
 				
 				// Today's precipitation
 				prec = ran_gamma_gp(rndst,true,g_shape,g_scale,thresh2use,gp_shape,gp_scale);
-				// Simulated precipitation should have no more precision than the input (0.1mm)
-				prec = roundoff(prec,1) ;
 				
 				if (prec > 0. && prec <= 1.05 * pre) {
+					// Simulated precipitation should have no more precision than the input (0.1mm)
+					prec = roundoff(prec,1);
 					break;
 				}
 				if (i == 1000) { 
@@ -2631,7 +2631,9 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 
 		tmincor -= in_mtmin[mon];
 		tmaxcor -= in_mtmax[mon];
-		preccor /= in_mprec[mon];
+		if (in_mprec[mon] > 0.0) {
+			preccor /= in_mprec[mon];
+		}
 		
 		windcor /= (in_mwind[mon]*(double)ndaymon);
 

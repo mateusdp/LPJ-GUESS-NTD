@@ -73,25 +73,25 @@ aslice soil_nflux1990to2000.txt -o soil_nflux1990to2000_areaaverage.txt -n -sum 
 describe_textfile soil_nflux1990to2000_areaaverage.txt "Global Terrestrial Soil Nitrogen Fluxes, 1990 to 2000. Units: Tg N/y"
 
 aslice cpool1961to1990.txt -o cpool1961to1990_areaaverage.txt -n -sum 'kg/m2->Pg'  -lon 1 -lat 2 -n -pixsize 0.5 0.5 -pixoffset 0.0 0.0
-describe_textfile cpool1961to1990_areaaverage.txt "Global Terrestrial Carbon Pools, 1961 to 1990. Units: Pg C/y"
+describe_textfile cpool1961to1990_areaaverage.txt "Global Terrestrial Carbon Pools, 1961 to 1990. Units: Pg C"
 
 aslice npool1961to1990.txt -o npool1961to1990_areaaverage.txt -n -sum 'kg/m2->Pg' -lon 1 -lat 2 -n -pixsize 0.5 0.5 -pixoffset 0.0 0.0
-describe_textfile npool1961to1990_areaaverage.txt "Global Terrestrial Nitrogen Pools, 1961 to 1990. Units: Pg N/y"
+describe_textfile npool1961to1990_areaaverage.txt "Global Terrestrial Nitrogen Pools, 1961 to 1990. Units: Pg N"
 
 aslice tot_runoff1961to1990.txt -o tot_runoff1961to1990_areaaverage.txt -sum 'kg/m2->Pg' -lon 1 -lat 2 -n -pixsize 0.5 0.5 -pixoffset 0.0 0.0   
 describe_textfile tot_runoff1961to1990_areaaverage.txt "Global Runoff, 1961 to 1990. Units: km3 yr-1"
 
-gmap anpp1961to1990.txt -t 'Global Terrestrial NPP, 1961 to 1990. Units: Pg C/y' -lon 1 -lat 2 -i "Total" -legend common/legend_npp_global.txt -portrait -o cflux_npp.jpg -pixoffset 0.0 0.0 $GMAPSMOOTH
+gmap anpp1961to1990.txt -t 'Global Terrestrial NPP, 1961 to 1990. Units: Pg C/y' -lon 1 -lat 2 -i "Total" -legend common/legend_npp_global.txt -portrait -o cflux_npp.jpg -pixoffset 0.0 0.0 $GMAPSMOOTH -vert
 describe_image cflux_npp.jpg "Global Terrestrial NPP (1961-90 average)"
 
-gmap cflux1961to1990.txt -t 'Global Terrestrial NEE, 1961 to 1990. Units: Pg C/y' -lon 1 -lat 2 -i "NEE" -vert -slog -2 2 10 -c NEEGREEN NEERED -portrait -o cflux_nee.jpg -pixoffset 0.0 0.0 $GMAPSMOOTH
+gmap cflux1961to1990.txt -t 'Global Terrestrial NEE, 1961 to 1990. Units: Pg C/y' -lon 1 -lat 2 -i "NEE" -vert -slog -2 2 10 -c NEEGREEN NEERED -portrait -o cflux_nee.jpg -pixoffset 0.0 0.0 $GMAPSMOOTH -vert
 describe_image cflux_nee.jpg "Global Terrestrial NEE (1961-90 average)"
 
-gmap cpool1961to1990.txt -t 'Global Terrestrial Carbon Veg Pool, 1961 to 1990. Units: Pg C/y' -lon 1 -lat 2 -i "VegC" -legend common/legend_cmass_global.txt -portrait -o cpool_veg.jpg -pixoffset 0.0 0.0 $GMAPSMOOTH
+gmap cpool1961to1990.txt -t 'Global Terrestrial Carbon Veg Pool, 1961 to 1990. Units: Pg C/y' -lon 1 -lat 2 -i "VegC" -legend common/legend_cmass_global.txt -portrait -o cpool_veg.jpg -pixoffset 0.0 0.0 $GMAPSMOOTH -vert
 describe_image cpool_veg.jpg "Global Terrestrial Carbon Veg Pool (1961-90 average)"
 
 compute cpool1961to1990.txt -i 'SumLitSoil=LitterC+SoilC' -o cpool1961to1990.sumLitSoil.txt
-gmap cpool1961to1990.sumLitSoil.txt -t 'Global Terrestrial Litter and Soil C pools sum, 1961-1990. Units: Pg C/y' -lon 1 -lat 2 -i "SumLitSoil" -legend common/legend_cmass_global.txt -portrait -o cpool_sumlitsoil.jpg -pixoffset 0.0 0.0 $GMAPSMOOTH
+gmap cpool1961to1990.sumLitSoil.txt -t 'Global Terrestrial Litter and Soil C pools sum, 1961-1990. Units: Pg C/y' -lon 1 -lat 2 -i "SumLitSoil" -legend common/legend_cmass_global.txt -portrait -o cpool_sumlitsoil.jpg -pixoffset 0.0 0.0 $GMAPSMOOTH -vert
 describe_image cpool_sumlitsoil.jpg "Global Terrestrial Carbon: Sum of Litter and Soil Pools (1961-90 average)"
 
 compute cpool.out -n -o cpool_total.out -i Lon Lat Year Total

@@ -3,7 +3,7 @@
 /// \brief The "shell" is the model's interface to the world
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-04-23 14:48:43 +0200 (Di, 23. Apr 2019) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,7 @@ void fail(xtring format,...);
 void plot(xtring window_name,xtring series_name,double x,double y);
 
 
-/// 'Frac_orgets' series and data for line graph 'window_name'.
+/// 'Forgets' series and data for line graph 'window_name'.
 /**
  * Functional only when the framework is built as a DLL and linked to the 
  * LPJ-GUESS Windows Shell.
@@ -43,7 +43,7 @@ void plot(xtring window_name,xtring series_name,double x,double y);
 void resetwindow(xtring window_name);
 
 
-/// 'Frac_orgets' series and data for all currently-defined line graphs.
+/// 'Forgets' series and data for all currently-defined line graphs.
 /** 
  * Functional only when the framework is built as a DLL and linked to the 
  * LPJ-GUESS Windows Shell.
@@ -107,10 +107,10 @@ public:
 	                  double x, 
 	                  double y) = 0;
 
-	/// 'Frac_orgets' series and data for line graph 'window_name'.
+	/// 'Forgets' series and data for line graph 'window_name'.
 	virtual void resetwindow(const char* window_name) = 0;
 
-	/// 'Frac_orgets' series and data for all currently-defined line graphs.
+	/// 'Forgets' series and data for all currently-defined line graphs.
 	virtual void clear_all_graphs() = 0;
 
 	/// May be called by framework to respond to abort request from the user.

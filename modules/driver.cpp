@@ -3,7 +3,7 @@
 /// \brief Environmental driver calculation/transformation
 ///
 /// \author Ben Smith
-/// $Date: 2020-11-24 18:23:10 +0100 (Di, 24. Nov 2020) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -49,7 +49,7 @@ double randfrac(long& seed) {
 	const long q = 127773;
 	const long r = 2836;
 
-	seed = multiplier * (seed % q) - r * seed / q;
+	seed = multiplier * (seed % q) - r * (seed / q);
 	if (!seed) seed++; // increment seed to 1 in unlikely event of 0 value
 	else if (seed < 0) seed += modulus;
 	return (double)seed / fmodulus;
@@ -529,8 +529,8 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 		}
 	}
 	
-	if ( (climate.lat >= 0.0 && date.day == COLDEST_DAY_NHEMISPHERE) || 
-		 (climate.lat < 0.0 && date.day == COLDEST_DAY_SHEMISPHERE) ) {
+	if ( (climate.lat >= 0.0 && date.day == COLDEST_DAY_NHEMISPHERE) ||
+	     (climate.lat < 0.0 && date.day == COLDEST_DAY_SHEMISPHERE) ) {
 		// In midwinter, reset GDD counter for summergreen phenology
 		climate.gdd5 = 0.0;
 		climate.ifsensechill = false;

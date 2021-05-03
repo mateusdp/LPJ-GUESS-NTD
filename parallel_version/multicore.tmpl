@@ -6,16 +6,17 @@
 # BINARY
 # as a parallel job on a multicore system.
 #
-# Created automatically on DATE
+# Created automatically from multicore.tmpl on DATE 
+# by e.g. setting SYSTEM to multicore in ccmake.
 # 
 # Usage: 
 #
-#   1. Copy script to the directory where you want output written.
-#      This will be called the RUN DIRECTORY.
+#   1. Copy this script submit.sh to the directory where you want output
+#      written. This will be called the RUN DIRECTORY.
 #   2. In an editor, set appropriate values for the variables NPROCESS,
 #      INSFILE, GRIDLIST and OUTFILES (NB: no space after the = sign):
 
-NPROCESS=15
+NPROCESS=4
 INSFILE=guess.ins
 INPUT_MODULE=cru_ncep
 GRIDLIST=gridlist.txt

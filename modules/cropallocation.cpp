@@ -117,7 +117,7 @@ void turnover_grass(Individual& indiv) {
 		cmass_root_pre_turnover * indiv.pft.turnover_root / cton_root_bg * nrelocfrac;
 
 	// Max longterm nitrogen storage
-	indiv.max_n_storage = max(0.0, min(cmass_root_pre_turnover * indiv.pft.fnstorage / cton_leaf_bg, retransn_nextyear));
+	indiv.max_n_storage = max(0.0, max(cmass_root_pre_turnover * indiv.pft.fnstorage / cton_leaf_bg, retransn_nextyear));
 
 	// Scale this year productivity to max storage
 	if (grs_npp > 0.0) {

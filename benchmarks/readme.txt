@@ -11,9 +11,9 @@ Running the benchmarks
 ======================
 To run the benchmarks you need a Unix system. You can run the tests as regular
 processes, in which case most Unix systems should work. By default however the
-tests are submitted to a PBS batch queue. This has been tested on Simba 
-(ENES own cluster), but it should be possible to adapt the scripts for any
-system with PBS installed.
+tests are submitted to a HPC cluster batch queue. This has been tested on Simba 
+(INES own cluster), but it should be possible to adapt the scripts for any
+system with PBS or SLURM installed.
 
 Dependencies
 ------------
@@ -45,10 +45,10 @@ This will run all available benchmarks, placing all files under
 /scratch/sally/benchmarks. The produced output files from for instance the
 global benchmark will be under /scratch/sally/benchmarks/global.
 
-For each benchmark two PBS jobs are submitted, one for the actual model, and
-one for post processing of the output. You can use PBS tools like qstat to
-see when your jobs are finished, or you can have a look in the file 
-progress.txt in this directory.
+For each benchmark three batch jobs are submitted, one for the actual model, 
+one for appending out files, and one for post processing of the output. You 
+can use HPC cluster tools like qstat or squeue to see when your jobs are 
+finished, or you can have a look in the file progress.txt in this directory.
 
 The script allows you to specify exactly which benchmarks to run, and has
 an option for running without PBS. For more information, run the script
@@ -79,7 +79,7 @@ mybenchmark
 `-- submit_vars.sh
 
 postprocess.sh is a bash script file containing post processing commands 
-specific for this benchmark. 
+specific for this benchmark. See its main section below.
 
 If there is a file named extra_source.txt, it should include the name of a
 directory under benchmarks/extra_source. The files in that directory will be 
@@ -110,10 +110,13 @@ If a variable isn't defined it will be given a default value.
 Post processing
 ---------------
 Post processing commands that should be performed for a benchmark should be
-placed in the file postprocess.sh in the benchmark's directory. In order to
+placed in the file  in the benchmark's directory. In order to
 avoid duplication, this script can call other scripts from the "postprocess"
 directory (in the "benchmarks" directory). The scripts under postprocess
 contain commands that can be useful in several of the benchmarks.
+When editing or adding new code to postprocess.sh, or making a new benchmark, 
+make sure to strictly follow the style of already existing benchmarks. E.g 
+plots are emeded in the benchmark report, while gmaps are shown as links.
 
 Common files
 ------------

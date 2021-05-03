@@ -239,7 +239,6 @@ void Soil::init_states() {
 	nsublayer1 = (int)(SOILDEPTH_UPPER / Dz_soil);		// 5, typically
 	nsublayer2 = (int)(SOILDEPTH_LOWER / Dz_soil);		// 10, typically
 	num_evaplayers = (int)(SOILDEPTH_EVAP / Dz_soil);	// 2, typically
-	whc_evap = soiltype.awc[0] + soiltype.awc[1];		// mm
 
 	// Depths of the acrotelm & catotelm 
 	acro_depth = NACROTELM * Dz_acro;
@@ -955,7 +954,6 @@ void Soil::hydrology_lpjf(const Climate& climate, double fevap) {
 
 
 	// Implement in- and outgoing fluxes to the top 50cm soil layers, taking into account AET in those layers and evaporation
-	// ice_impedance[0] reduces the input when there is ice present in the top 20cm.
 	double water_flux_in = rain_melt;	// mm
 
 	// Initialise runoff variables
@@ -1120,7 +1118,6 @@ void Soil::hydrology_lpjf(const Climate& climate, double fevap) {
 		double perc_from_base = 0.0;
 		if (percolate && Faw_perc_layer_2 > MIN_WATER_PERC) {
 
-			// ice_impedance[2] reduces the base flow rate when there is ice present in the 50-150 cm layers.
 			perc_from_base = min(BASEFLOW_FRAC * soiltype.perc_base * pow(wcont_perc_layer_2, soiltype.perc_exp), max_rain_melt);
 			perc_from_base = min(perc_from_base, Faw_perc_layer_2); // Only available water in these layers can percolate
 
@@ -2646,8 +2643,6 @@ void Soil::init_hydrology_variables() {
 	// sub_water[NSUBLAYERS_ACRO] - the volumetric water content in the NSUBLAYERS_ACRO of the acrotelm
 	// whc[NSOILLAYER] - available water holding capacity of soil layers [0=upper layer] [mm], taking into
 	// account the unavailability of frozen water. Default value: soiltype.awc[]
-	// whc_evap - available water holding capacity of evap soil layers [mm], taking into
-	// account the unavailability of frozen water. Default value: (2/5) * soiltype.awc[]
 	// aw_max[NSOILLAYER] - Max water (mm) that can be held in each layer
 	// alwhc[NLAYERS] - the volumetric liquid water content. A fraction. 
 	// Considers the entire (awc + Fpwp) volumetric water content MINUS the ice fraction. Updated daily.
@@ -3905,7 +3900,6 @@ void Soil::serialize(ArchiveStream& arch) {
 		& Frac_water
 		& Frac_air
 		& whc
-		& whc_evap
 		& alwhc
 		& aw_max // optimise through init after restart?
 		// Methane parameters

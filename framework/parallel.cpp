@@ -3,7 +3,7 @@
 /// \brief Functionality for parallel computation
 ///
 /// \author Joe Siltberg
-/// $Date: 2016-12-08 18:24:04 +0100 (Do, 08. Dez 2016) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -71,9 +71,14 @@ void init(int& argc, char**& argv) {
 
 int get_rank() {
 #ifdef HAVE_MPI
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	return rank;
+	if (parallel) {
+		int rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+		return rank;
+	}
+	else { 
+		return 0;
+	}
 #else
 	return 0;
 #endif
@@ -85,8 +90,10 @@ int get_num_processes() {
 		int size;
 		MPI_Comm_size(MPI_COMM_WORLD, &size);
 		return size;
-	}else
+	}
+	else {
 		return 1;	
+	}
 #else
 	return 1;
 #endif

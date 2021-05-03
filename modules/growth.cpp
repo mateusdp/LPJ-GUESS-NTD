@@ -9,7 +9,7 @@
 /// cohort/individual mode - see canexch.cpp)
 ///
 /// \author Ben Smith
-/// $Date: 2020-03-03 16:31:01 +0100 (Di, 03. Mär 2020) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -641,7 +641,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 				// Make sure we don't end up with negative cmass_root
 				cmass_root_inc = max(-cmass_root, cmass_root_inc);
 
-				// If biomass of roots and leafs can't meet biomass decrease then
+				// If biomass of roots and leaves can't meet biomass decrease then
 				// sapwood also needs to decrease
 				cmass_sap_inc = bminc - cmass_leaf_inc - cmass_root_inc;
 
@@ -1484,9 +1484,9 @@ void growth(Stand& stand, Patch& patch) {
 
 					// Max longterm nitrogen storage
 					if (indiv.pft.lifeform == TREE)
-						indiv.max_n_storage = max(0.0, min(indiv.cmass_sap * indiv.pft.fnstorage / cton_leaf_bg, retransn_nextyear));
+						indiv.max_n_storage = max(0.0, max(indiv.cmass_sap * indiv.pft.fnstorage / cton_leaf_bg, retransn_nextyear));
 					else // GRASS
-						indiv.max_n_storage = max(0.0, min(indiv.cmass_root * indiv.pft.fnstorage / cton_leaf_bg, retransn_nextyear));
+						indiv.max_n_storage = max(0.0, max(indiv.cmass_root * indiv.pft.fnstorage / cton_leaf_bg, retransn_nextyear));
 
 					// Scale this year productivity to max storage
 					if (indiv.anpp > 0.0) {

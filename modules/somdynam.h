@@ -3,7 +3,7 @@
 /// \brief Soil organic matter dynamics
 ///
 /// \author Ben Smith
-/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,6 +15,12 @@
 #define LPJ_GUESS_SOMDYNAM_H
 
 #include "guess.h"
+
+// computes the decomposition temperature modifier (in range 0-1)
+double temperature_modifier(double temp);
+
+// computes the decomposition moisture modifier (in range 0-1)
+double moisture_modifier(double wfps);
 
 void som_dynamics(Patch& patch, Climate& climate);
 
