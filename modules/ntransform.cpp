@@ -187,7 +187,7 @@ void denitrification(Patch& patch,Soil& soil) {
 	double soil_T = soil.get_soil_temp_25();
 	double wcont = soil.get_soil_water_upper();
 	// used to remove the per m3 from the constants KC and KN.
-	double water_cont_m3 = wcont * soil.soiltype.awc[0] / 1000.0;
+	double water_cont_m3 = wcont * soil.soiltype.gawc[0] / 1000.0;
 
 	double wfps_upper = soil.wfps(0);
 
