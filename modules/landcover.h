@@ -3,7 +3,7 @@
 /// \brief Functions handling landcover aspects, such as creating or resizing Stands
 ///
 /// \author Mats Lindeskog
-/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mon, 28 Oct 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 

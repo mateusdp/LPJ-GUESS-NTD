@@ -3,7 +3,7 @@
 /// \brief Soil organic matter dynamics
 ///
 /// \author Ben Smith (LPJ SOM dynamics, CENTURY), David Wårlind (CENTURY)
-/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Thu, 22 Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 

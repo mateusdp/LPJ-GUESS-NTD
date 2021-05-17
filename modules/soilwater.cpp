@@ -12,7 +12,7 @@
 /// determines if the original (Gerten et al) scheme is used or the newer scheme.
 ///
 /// \author Ben Smith
-/// $Date: 2021-04-22 18:36:50 +0200 (Do, 22. Apr 2021) $
+/// $Date: 2021-04-22 18:36:50 +0200 (Thu, 22 Apr 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 

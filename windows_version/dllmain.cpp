@@ -6,7 +6,7 @@
 /// time argument(s) for GUESS and pointers to the executable's own callback functions.
 ///
 /// \author Ben Smith
-/// $Date: 2019-04-23 14:48:43 +0200 (Di, 23. Apr 2019) $
+/// $Date: 2019-04-23 14:48:43 +0200 (Tue, 23 Apr 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 

@@ -3,7 +3,7 @@
 /// \brief Utility functions for working with strings (std::string and char*)
 ///
 /// \author Joe Siltberg
-/// $Date: 2014-02-13 10:31:34 +0100 (Do, 13. Feb 2014) $
+/// $Date: 2014-02-13 10:31:34 +0100 (Thu, 13 Feb 2014) $
 ///
 ////////////////////////////////////////////////////////////////////////////////
 

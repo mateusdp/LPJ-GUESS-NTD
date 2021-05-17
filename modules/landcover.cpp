@@ -7,7 +7,7 @@
 /// \author Mats Lindeskog,
 /// \Part of code in this file as well as in cropphenology.cpp, cropallocation.cpp and
 /// \management.cpp based on LPJ-mL C++ code received from Alberte Bondeau in 2008.
-/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mon, 28 Oct 2019) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 

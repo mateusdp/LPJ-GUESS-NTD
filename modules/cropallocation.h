@@ -2,7 +2,7 @@
 /// \file cropallocation.h
 /// \brief Crop allocation and growth
 /// \author Mats Lindeskog
-/// $Date: 2015-11-13 16:25:45 +0100 (Fr, 13. Nov 2015) $
+/// $Date: 2015-11-13 16:25:45 +0100 (Fri, 13 Nov 2015) $
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef LPJ_GUESS_CROPALLOCATION_H

@@ -3,7 +3,7 @@
 /// \brief Output module for the land use and management information
 ///
 /// \author Joe Siltberg
-/// $Date: 2020-09-16 19:22:00 +0200 (Mi, 16. Sep 2020) $
+/// $Date: 2020-09-16 19:22:00 +0200 (Wed, 16 Sep 2020) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 

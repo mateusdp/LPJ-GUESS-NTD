@@ -5,7 +5,7 @@
 /// line 2 etc.: lon lat year data-columns. For local static data, use: lon lat data-columns,
 /// for global static data, use: dummy data-columns (with "static" as first word in header).
 /// \author Mats Lindeskog
-/// $Date: 2016-12-08 18:24:04 +0100 (Do, 08. Dez 2016) $
+/// $Date: 2016-12-08 18:24:04 +0100 (Thu, 08 Dec 2016) $
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef INDATA_H

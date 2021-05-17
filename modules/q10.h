@@ -7,7 +7,7 @@
 /// because of their application for BVOC calculations as well.
 ///
 /// \author Guy Schurgers (based on LPJ-GUESS 2.1 / Ben Smith)
-/// $Date: 2012-07-11 18:10:03 +0200 (Mi, 11. Jul 2012) $
+/// $Date: 2012-07-11 18:10:03 +0200 (Wed, 11 Jul 2012) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 

@@ -2,7 +2,7 @@
 /// \file externalinput.h
 /// \brief Input code for land cover, management and other data from text files.
 /// \author Mats Lindeskog
-/// $Date: 2019-10-28 18:48:52 +0100 (Mo, 28. Okt 2019) $
+/// $Date: 2019-10-28 18:48:52 +0100 (Mon, 28 Oct 2019) $
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef LPJ_GUESS_EXTERNALINPUT_H
