@@ -3,7 +3,7 @@
 /// \brief LPJ-GUESS Combined Modular Framework
 ///
 /// \author Ben Smith
-/// $Date: 2021-04-22 18:36:50 +0200 (Thu, 22 Apr 2021) $
+/// $Date: 2021-05-24 18:34:40 +0200 (Mon, 24 May 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -119,11 +119,11 @@ void Climate::serialize(ArchiveStream& arch) {
 		& var_prec
 		& var_temp
 		& aprec
-		& avg_annual_rainfall
+		& rainfall_annual_avg
 		& last_rainfall
 		& days_since_last_rainfall
 		& kbdi
-		& months_ffdi
+		& ffdi_monthly
 		& weathergenstate;
 }
 
@@ -408,11 +408,12 @@ Patch::Patch(int i,Stand& s,Soiltype& st):
 	}
 
 	for (int i = 0; i < N_YEAR_BIOMEAVG; i++) {
-		avg_fbrlt[i] = 0.0;
-		avg_fgrass[i] = 0.0;
-		avg_fndlt[i] = 0.0;
-		avg_fshrb[i] = 0.0;
-		avg_ftot[i] = 0.0;
+		fapar_brlt_avg[i]  = 0.0;
+		fapar_trbr_avg[i]  = 0.0;
+		fapar_grass_avg[i] = 0.0;
+		fapar_ndlt_avg[i]  = 0.0;
+		fapar_shrub_avg[i] = 0.0;
+		fapar_total_avg[i] = 0.0;
 	}
 
 }
@@ -476,15 +477,17 @@ void Patch::serialize(ArchiveStream& arch) {
 		& lfwd_to_atm
 		& lcwd_to_atm;
 		for (unsigned int i=0; i < N_YEAR_BIOMEAVG; i++)
-			arch & avg_fgrass[i];
+			arch & fapar_grass_avg[i];
 		for (unsigned int i=0; i < N_YEAR_BIOMEAVG; i++)
-			arch & avg_fndlt[i];
+			arch & fapar_ndlt_avg[i];
 		for (unsigned int i=0; i < N_YEAR_BIOMEAVG; i++)
-			arch & avg_fbrlt[i];
+			arch & fapar_brlt_avg[i];
 		for (unsigned int i=0; i < N_YEAR_BIOMEAVG; i++)
-			arch & avg_fshrb[i];
+			arch & fapar_trbr_avg[i];
 		for (unsigned int i=0; i < N_YEAR_BIOMEAVG; i++)
-			arch & avg_ftot[i];
+			arch & fapar_shrub_avg[i];
+		for (unsigned int i=0; i < N_YEAR_BIOMEAVG; i++)
+			arch & fapar_total_avg[i];
 }
 
 const Climate& Patch::get_climate() const {
@@ -2352,10 +2355,10 @@ void Gridcell::serialize(ArchiveStream& arch) {
 		& landcover
 		& seed
 		& balance
-		& max_nesterov
-		& monthly_max_nesterov
-		& cur_nesterov
-		& recent_max_fapar;
+		& nesterov_max
+		& nesterov_monthly_max
+		& nesterov_cur
+		& fapar_recent_max;
 
 	if (arch.save()) {
 		for (unsigned int i = 0; i < pft.nobj; i++) {

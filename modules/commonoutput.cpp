@@ -3,7 +3,7 @@
 /// \brief Implementation of the common output module
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-10-28 18:48:52 +0100 (Mon, 28 Oct 2019) $
+/// $Date: 2021-05-24 18:34:40 +0200 (Mon, 24 May 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -256,17 +256,19 @@ void CommonOutput::define_output_tables() {
 	// FIRERT
 	ColumnDescriptors firert_columns;
 	firert_columns += ColumnDescriptor("FireRT",			8, 1);
-	firert_columns += ColumnDescriptor("BurntAr",			8, 5);
+	firert_columns += ColumnDescriptor("BurntFr",			8, 5);
 
 	// BLAZE burnt area 
 	ColumnDescriptors blaze_columns;
-	blaze_columns += ColumnDescriptor("BurntAr",			9, 5);
+	blaze_columns += ColumnDescriptor("BurntFr",			9, 5);
 
 	// SIMFIRE Analysis 
 	ColumnDescriptors simfireanalysis_columns;
 	simfireanalysis_columns += ColumnDescriptor("Biome",	6, 0);
 	simfireanalysis_columns += ColumnDescriptor("MxNest",	7, 0);
 	simfireanalysis_columns += ColumnDescriptor("PopDens",	10, 3);
+	simfireanalysis_columns += ColumnDescriptor("AMxFApar",	10, 7);
+	simfireanalysis_columns += ColumnDescriptor("FireProb",	10, 7);
 	simfireanalysis_columns += ColumnDescriptor("Region",	7, 0);
 	
 	// RUNOFF
@@ -1409,8 +1411,10 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	outlimit(out,out_clitter,				clitter_gridcell);
 	outlimit(out,out_aburned_area,				gridcell.annual_burned_area);
 	outlimit(out,out_simfireanalysis,			gridcell.simfire_biome);
-	outlimit(out,out_simfireanalysis,			gridcell.max_nesterov);
+	outlimit(out,out_simfireanalysis,			gridcell.nesterov_max);
 	outlimit(out,out_simfireanalysis,			gridcell.pop_density);
+	outlimit(out,out_simfireanalysis,			gridcell.fapar_annual_max);
+	outlimit(out,out_simfireanalysis,			gridcell.simfire_annual_burned_area);
 	outlimit(out,out_simfireanalysis,			gridcell.simfire_region);
 	outlimit(out,out_firert,				firert_gridcell);
 	outlimit(out,out_firert,				burned_area_gridcell);
