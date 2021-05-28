@@ -58,7 +58,22 @@ const double TFREEZE = 273.15;
 // min maxcount=20; max maxcount = 10000000
 const int MAXITER = 20;
 
-const int QSIZ  = 10 ; 
+//Tmin break-off criterion
+const double E_TMIN = 2.5;
+
+// Dampening factors for Tmax and Tmin
+// (use these to increase/reduce amplitude of daily Tmin/Tmax variability)
+const double TMIN_DAMP = 0.25;
+const double TMAX_DAMP = 0.8;
+
+//whether to reset residuals at beginning of each year
+const bool LRESET = false;
+
+// Correction for circular conditions when using climatology
+// (do not use for transient simulations)
+const bool CIRCULAR_CLIM = false;
+
+const int QSIZ  = 10 ;
 const int CMUL  = 69609;
 const int COFFS =   123;
 
@@ -1790,8 +1805,10 @@ void rmsmooth(int lm,int rm, double *m,int *dmonth,double bcond[2], double *m_cu
 			}
 			// Correction for circular conditions when using climatology 
 			// (do not use for transient simulations)
-			bc[0] = r[ni-1];
-			bc[1] = r[0];
+			if (CIRCULAR_CLIM) {
+				bc[0] = r[ni-1];
+				bc[1] = r[0];
+			}
 		}
 	}
 	for (int k=0; k<dmonth[1]; k++) {
@@ -2103,8 +2120,8 @@ void weathergen_get_daily_met(MetVariables& metvars, WeatherGenState& rndst) {
 		metvars.resid[j] = CC[j]+DD[j];
 	}
 
-	tmin = roundoff(metvars.resid[0] * metvars.dmtmin_sd + metvars.dmtmin_mn,1);
-	tmax = roundoff(metvars.resid[1] * metvars.dmtmax_sd + metvars.dmtmax_mn,1);
+	tmin = roundoff(TMIN_DAMP * metvars.resid[0] * metvars.dmtmin_sd + metvars.dmtmin_mn,1);
+	tmax = roundoff(TMAX_DAMP * metvars.resid[1] * metvars.dmtmax_sd + metvars.dmtmax_mn,1);
 	cldf = metvars.resid[2] * metvars.dmcldf_sd + metvars.dmcldf_mn;
 	wind = max(0.0, metvars.resid[3] * sqrt(max(0.0, metvars.dmwind_sd)) + sqrt(max(0.0, metvars.dmwind_mn)));
 	wind = roundoff(wind * wind, 1);
@@ -2303,9 +2320,11 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 		// Have a min cldf of 1% to introduce a monthly variability 
 		// to fit lower sol vals with rainfall
 		in_mcldf[m] = max(0.01,in_mcldf[m]);
-	}
 
-	bool lreset = false;
+		if (in_mwetd[m]==0 && in_mprec[m]>1.) {
+			in_mwetd[m] = 1.;
+		}
+	}
 
 	int accumday = 0;
 
@@ -2341,7 +2360,7 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 
 		int i_count = 1;
 		// Initially populate cloud params
-		if ( is_first_day ) {
+		if ( is_first_day && mon==0 ) {
 
 			calc_cloud_params(metvars);
 
@@ -2433,18 +2452,15 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 			mwind_curr[day] = max(0.1,mwind_curr[day]); 
 		}
 		
-		// Reset residuals at beginning of month if desired
-		if (lreset) {
+		// Reset residuals at beginning of year if desired
+		if (LRESET && mon==0) {
 			for (int i=0;i<4;i++)
 				metvars.resid[i] = 0.;
 			i_count = 0;
 		}
-		else {
-			i_count = 1;
-		}
 		
 		// Set quality threshold for preciptation amount
-		double prec_t = max(2.,0.5 * in_mprec[mon]);  
+		double prec_t = max(0.5,0.05 * in_mprec[mon]);
 		
 		metvars.mprec = in_mprec[mon];
 
@@ -2471,13 +2487,14 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 		// Set breakoff-threshold for raindays according to
 		// total amount of raindays in month.
 		int pday_thresh;
-		if((int)roundoff(metvars.mwetd,0) <= 5) {
+
+		if(metvars.mwetd <= 5.1) {
 			pday_thresh = 0;
 		}
-		else if ((int)roundoff(metvars.mwetd,0) <= 10) {
+		else if (metvars.mwetd <= 10.1) {
 			pday_thresh = 1;
 		}
-		else if ((int)roundoff(metvars.mwetd,0) <= 20) {
+		else if (metvars.mwetd <= 20.1) {
 			pday_thresh = 2;
 		}
 		else {
@@ -2487,8 +2504,15 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 		do {
 			int mwetd_sim    = 0;
 			double mprec_sim = 0.0;
-			double tmin_acc = 0.;
+			double tmin_acc  = 0.;
 	
+			//Reload residuals and pday for start of month
+			metvars.pday[0] = metvar_sav.pday[0];
+			metvars.pday[1] = metvar_sav.pday[1];
+			for (int i=0;i<4;i++) {
+				metvars.resid[i] = metvar_sav.resid[i];
+			}
+
 			// Dayloop
 			for (int day=0; day<ndaymon; day++) {
 				
@@ -2496,13 +2520,6 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 				metvars.dtmax   = mtmax_curr[day] ;
 				metvars.dcldf   = mcloud_curr[day];
 				metvars.dwind   = mwind_curr[day] ;
-				if (day == 0) {
-					metvars.pday[0] = metvar_sav.pday[0];
-					metvars.pday[1] = metvar_sav.pday[1];
-					for (int i=0;i<4;i++) {
-						metvars.resid[i] = metvar_sav.resid[i];
-					}
-				}
 
 				// Now get day's weather
 				weathergen_get_daily_met(metvars, rndst);
@@ -2524,17 +2541,10 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 			
 			// Reset met_out_save after initialization
 			if (i_count == 0) {
-				if (! restart) {
-					metvar_sav = metvars;
-				}
-				else {
-					for (int i=0;i<4;i++) {
-						metvar_sav.resid[i] = metvars.resid[i];
-					}
-				}
+				metvar_sav = metvars;
 			}
 
-			if (metvars.mprec <= 0.01 && tmindiff < 2.5) {
+			if (metvars.mprec <= 0.01 && tmindiff < E_TMIN) {
 				pdaydiff = 0;
 				precdiff = 0.;
 				break;
@@ -2542,16 +2552,16 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 			// Enforce at least two times over the month to get initial values ok
 			else if (i_count >= 1) {
 				
-				pdaydiff = (int)roundoff(metvars.mwetd,0) - mwetd_sim;
+				pdaydiff = (int)metvars.mwetd - mwetd_sim;
 				precdiff = metvars.mprec - mprec_sim;
 
-				// Breakoff-criteria for sufficient skill 			
-				if ( (abs(pdaydiff) <= pday_thresh && fabs(precdiff) <= prec_t && tmindiff < 2.5) ||
-				     (pdaydiff == 0 && fabs(precdiff) <= 1.5*prec_t  && tmindiff < 2.5))  {
+				// Breakoff-criteria for sufficient skill
+				if ( (abs(pdaydiff) <= pday_thresh && fabs(precdiff) <= prec_t && tmindiff < E_TMIN) ||
+				     (pdaydiff == 0 && fabs(precdiff) <= 1.5*prec_t  && tmindiff < E_TMIN))  {
 					break;
 				}
 
-				double metric = abs(pdaydiff)*20/((double)pday_thresh + 1.0)  + fabs(precdiff) ;
+				double metric = abs(pdaydiff)*20/((double)pday_thresh + 1.0)  + fabs(precdiff) + 2.*tmindiff;
 				
 				// Save state if better w.r.t. metric 
 				if ( metric < metric_sav ) {
@@ -2601,8 +2611,8 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 		// Enforce conservation by scaling with monthly averages
 
 		// Correct Temperature biases by shifting
-		double tmincor = 0.;
-		double tmaxcor = 0.;
+		double tmeancor= 0.;
+		double dtrcor  = 0.;
 		double preccor = 0.;
 		double windcor = 0.;
 		double cldfcor = 0.;
@@ -2617,8 +2627,8 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 				dtmax[day]   = dummy;
 			}
 
-			tmincor += dtmin[day]/(double)ndaymon;
-			tmaxcor += dtmax[day]/(double)ndaymon;
+			tmeancor+= 0.5*(dtmax[day]+dtmin[day])/(double)ndaymon;
+			dtrcor  += (dtmax[day]-dtmin[day])/(double)ndaymon;
 			preccor += dprec[day];
 			windcor += dwind[day];
 			cldfcor += dcldf[day];
@@ -2629,12 +2639,19 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 			tot_cldwght += cldwght[day];
 		}
 
-		tmincor -= in_mtmin[mon];
-		tmaxcor -= in_mtmax[mon];
-		if (in_mprec[mon] > 0.0) {
+		tmeancor-= in_mtemp[mon];
+		if (in_mdtr[mon] > 0.) {
+			dtrcor  /= in_mdtr[mon];
+		}
+		else {
+			dtrcor = 1.;
+		}
+		if (in_mprec[mon] > 0.){
 			preccor /= in_mprec[mon];
 		}
-		
+		else{
+			preccor = 1.;
+		}
 		windcor /= (in_mwind[mon]*(double)ndaymon);
 
 		tot_cldwght /= (double)ndaymon;
@@ -2642,9 +2659,11 @@ void weathergen_get_met(Gridcell& gridcell, double* in_mtemp, double* in_mprec, 
 		for (int day=0; day<ndaymon;day++) {
 
 			// Correct temp by shifting
-			dtmin[day] -= tmincor;
-			dtmax[day] -= tmaxcor;
-
+			double ttmean = 0.5 * (dtmin[day]+dtmax[day]) - tmeancor;
+			double tdtr   = (dtmax[day]-dtmin[day]) / dtrcor;
+			dtmin[day] = ttmean - 0.5 * tdtr;
+			dtmax[day] = ttmean + 0.5 * tdtr;
+			
 			// Correct wind by factor
 			dwind[day] /= windcor;
 

@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2021-04-22 18:36:50 +0200 (Thu, 22 Apr 2021) $
+/// $Date: 2021-05-24 18:34:40 +0200 (Mon, 24 May 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -915,9 +915,9 @@ public:
 
 	// BLAZE
 	/// average annual rainfall (mm/a)
-	double avg_annual_rainfall;
+	double rainfall_annual_avg;
 	/// current sum of annual Rainfall (mm)
-	double cur_rainfall;
+	double rainfall_cur;
 	/// Accumulated last rainfall (mm)
 	double last_rainfall;
 	/// Days since last rainfall 
@@ -927,7 +927,7 @@ public:
 	/// McArthur forest fire index (FFDI)
 	double mcarthur_forest_fire_index;	
 	/// To keep track of running months daily FFDI 
-	double months_ffdi[30];	
+	double ffdi_monthly[30];	
 
 	// Saved parameters used by function daylengthinsoleet
 
@@ -4071,15 +4071,17 @@ public:
 
 	// Storage for averaging of different Fapars for biome mapping in SIMFIRE
 	/// SIMFIRE fapar: Grasses
-	double avg_fgrass[N_YEAR_BIOMEAVG];
+	double fapar_grass_avg[N_YEAR_BIOMEAVG];
 	/// SIMFIRE fapar: Needle-leaf tree
-	double avg_fndlt[N_YEAR_BIOMEAVG];
+	double fapar_ndlt_avg[N_YEAR_BIOMEAVG];
 	/// SIMFIRE fapar: Broad-leaf tree
-	double avg_fbrlt[N_YEAR_BIOMEAVG];
+	double fapar_brlt_avg[N_YEAR_BIOMEAVG];
+	/// SIMFIRE fapar: TrBR (Savanna)
+	double fapar_trbr_avg[N_YEAR_BIOMEAVG];
 	/// SIMFIRE fapar: Shrubs
-	double avg_fshrb[N_YEAR_BIOMEAVG];
+	double fapar_shrub_avg[N_YEAR_BIOMEAVG];
 	/// SIMFIRE fapar: Total fapar
-	double avg_ftot[N_YEAR_BIOMEAVG];
+	double fapar_total_avg[N_YEAR_BIOMEAVG];
 
 	/// whether management has started on this patch
 	bool managed;
@@ -4731,25 +4733,29 @@ public:
 	/// tuning factor for available litter
 	double k_tun_litter;
 	/// maximum annual Nesterov Index
-	double max_nesterov;
+	double nesterov_max;
 	/// current Nexterov index
-	double cur_nesterov;
+	double nesterov_cur;
 	/// Monthly max Nexterov index (to keep track of running year)
-	double monthly_max_nesterov[12];
+	double nesterov_monthly_max[12];
 	/// biome classification used in SIMFIRE
 	int simfire_biome;
 	/// Average maximum annual fAPAR (over avg_interv_fpar years)
-	double ann_max_fapar;
+	double fapar_annual_max;
 	/// Average maximum annual fAPAR of recent years
-	double recent_max_fapar[AVG_INTERVAL_FAPAR];
+	double fapar_recent_max[AVG_INTERVAL_FAPAR];
 	/// maximum fapar of running year so far
-	double cur_max_fapar;
+	double fapar_cur_max;
 	/// monthly fire risk (factor describing local monthly fire climatology)
 	double monthly_fire_risk[12];
 	/// current burned area from SIMFIRE (fract.)
 	double burned_area;
+	/// effectively burned area (after randFrac in BLAZE)
+	double effective_burned_area;
 	/// accumulated burned area from SIMFIRE for tstep < 1a (fract.)
 	double burned_area_accumulated;
+	/// accumulated simfire burned area
+	double simfire_annual_burned_area;
 	/// Simple tracker to check whether at least one patch has enough fuel to burn
 	int can_burn;
 	/// annual burned area from SIMFIRE (fract.)
