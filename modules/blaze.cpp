@@ -56,13 +56,13 @@ const double TURNOVERFRACT[13][5] = {
 
 // Tuning factors for litter ready for combustion
 // Boreal
-const double K_LITTER_BOREAL    = 0.24;
+const double K_LITTER_BOREAL    = 0.38;
 // Temperate region
-const double K_LITTER_TEMPERATE = 0.003;
+const double K_LITTER_TEMPERATE = 0.0025;
 // Tropics
-const double K_LITTER_TROPICS   = 0.2;
+const double K_LITTER_TROPICS   = 0.25;
 // Savanna
-const double K_LITTER_SAVANNA   = 0.5 ;
+const double K_LITTER_SAVANNA   = 0.75 ;
 
 // Grassy vegetation burn-rate for cohort and individual mode
 const double MAX_GRASS_BURN = 0.75;
@@ -262,20 +262,20 @@ double survival_probability_boreal(double fire_line_intensity) {
 // Survival probability for temperate Needleleaf trees following Kobziar 2006
 double survival_probability_temp_needleleaf(double diameter_at_breast_height, double fire_line_intensity, double mass_cwd) {
 
-	double daimeter_at_breast_height_cm  = diameter_at_breast_height * CM_PER_M; // in cm
+	double diameter_at_breast_height_cm  = diameter_at_breast_height * CM_PER_M; // in cm
 	double cwd = mass_cwd * 0.1; // in Mg/ha
 	// survival probability at intensity below 750 kW/m
-	double sruvival_probability_750;
+	double survival_probability_750;
 	double survival_probability;
 
 	if ( fire_line_intensity < 750. ) {
-		sruvival_probability_750   = 1. - (1./(1.+ exp(-(1.0337 + 0.000151*750. 
-						- .221*daimeter_at_breast_height_cm + .0219*cwd))));
-		survival_probability = 1. - (fire_line_intensity/750. * (1. - sruvival_probability_750) );
+		survival_probability_750   = 1. - (1./(1.+ exp(-(1.0337 + 0.000151*750. 
+						- .221*diameter_at_breast_height_cm + .0219*cwd))));
+		survival_probability = 1. - (fire_line_intensity/750. * (1. - survival_probability_750) );
 	}
 	else {
 		survival_probability = 1. - (1./(1.+ exp(-(1.0337 + 0.000151*fire_line_intensity
-						- .221*daimeter_at_breast_height_cm + .0219*cwd))));
+						- .221*diameter_at_breast_height_cm + .0219*cwd))));
 	}
 
 	return survival_probability;
