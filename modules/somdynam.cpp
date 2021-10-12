@@ -3,7 +3,7 @@
 /// \brief Soil organic matter dynamics
 ///
 /// \author Ben Smith (LPJ SOM dynamics, CENTURY), David Wårlind (CENTURY)
-/// $Date: 2021-04-22 18:36:50 +0200 (Thu, 22 Apr 2021) $
+/// $Date: 2021-09-30 16:23:14 +0200 (Thu, 30 Sep 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -880,8 +880,8 @@ void transfer_litter(Patch& patch) {
 	double ligcmass_new, ligcmass_old;
 
 	// Fire (GlobFIRM)
-	double litterme[NSOMPOOL];
-	double fireresist[NSOMPOOL];
+	double litterme[NSOMPOOL]  = {0.};
+	double fireresist[NSOMPOOL]= {0.};
 	if ( firemodel == GLOBFIRM ) {
 
 		litterme[SURFSTRUCT]   = soil.sompool[SURFSTRUCT].cmass * soil.sompool[SURFSTRUCT].litterme;

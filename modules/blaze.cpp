@@ -60,7 +60,7 @@ const double K_LITTER_BOREAL    = 0.38;
 // Temperate region
 const double K_LITTER_TEMPERATE = 0.0025;
 // Tropics
-const double K_LITTER_TROPICS   = 0.25;
+const double K_LITTER_TROPICS   = 0.15;
 // Savanna
 const double K_LITTER_SAVANNA   = 0.75 ;
 
@@ -120,9 +120,9 @@ double pixelsize(double latpos,double longsize,double latsize,int postype) {
 	latbot = lattop - latsize;
 	h1 = R_EARTH * sin(lattop * PI / 180.0);
 	h2 = R_EARTH * sin(latbot * PI / 180.0);
-	s  = 2.0 * PI * R_EARTH * (h1 - h2);  //for this latitude band
+	s  = 2.0 * PI * R_EARTH * (h1 - h2); //for this latitude band
 	
-	return s * longsize / 360.0;  //for this pixel
+	return s * longsize / 360.0; //for this pixel
 }
 
 /* Get combustion rates
@@ -490,76 +490,69 @@ double survival_probability(Patch& patch, Individual& indiv) {
  * settings for vegetation model and uses the century som-model
  * soil-pools.
  */
-void blaze(Patch& patch, Climate& climate) {
+bool blaze(Patch& patch, Climate& climate) {
 
 	Gridcell& gridcell = climate.gridcell;
 	
 	// Flammable area witin gridcell
-	double flammable_area = gridcell.landcover.frac[PASTURE]+gridcell.landcover.frac[FOREST]+gridcell.landcover.frac[NATURAL]+gridcell.landcover.frac[PEATLAND];
+	double flammable_area = gridcell.landcover.frac[PASTURE]+gridcell.landcover.frac[NATURAL];
 
-	// Return if total burnable area has already burned
+	// Return if total burnable area too small
 	if (flammable_area < 0.00001 ) {
-		return;
-	}
-	if (gridcell.burned_area_accumulated >= flammable_area) {
-		return;
+		return false;
 	}
 	
 	// Effective area burned as fraction of burnable area
 	double area_burned = gridcell.burned_area / flammable_area;
 
 	// Correction fractions burned earlier in the same year (vegmode = POPULATION only)
-	double accumulated_fraction_burned= 1.  / (1. - gridcell.burned_area_accumulated / flammable_area);
-
-	// Get relative fluxes between pools
-	int fli_index = get_fire_line_intensity_index(patch.fire_line_intensity);
-	
-	// If fuel availability is too low: Return
-	if ( fli_index < 0 )  {
-		return;
-	}
+	double accumulated_fraction_burned= 1.  / (1. - gridcell.annual_burned_area / flammable_area);
 
 	// Check whether it burns
 	if (!( randfrac(patch.stand.seed) <= area_burned || vegmode == POPULATION)) {
-		return;
+		return false;
 	}
+	
+	// Flag patch as burned for rest of the year
+	patch.burned = true;
+	
+	// Get relative fluxes between pools
+	int fli_index = get_fire_line_intensity_index(patch.fire_line_intensity);
 	
 	// Adjustment factor for fluxes
 	double fab = 1.0;
 	if ( vegmode == POPULATION ) {
 		fab = max(area_burned * accumulated_fraction_burned,1.);
 	}
-	
-	gridcell.effective_burned_area += flammable_area;
-	
+		
 	get_combustion_rates(patch,fli_index,gridcell.k_tun_litter);
 
 	// Compute fluxes from soil litter pools to atmosphere first
 	// as they are patch-specific. The fluxes to 
 	// soil litter will be added in loop over individuals below.
-	double cmtb2atm = fab * patch.litf_to_atm * patch.soil.sompool[SURFMETA].cmass   ;
-	double cstr2atm = fab * patch.litf_to_atm * patch.soil.sompool[SURFSTRUCT].cmass ;
-	double cfwd2atm = fab * patch.lfwd_to_atm * patch.soil.sompool[SURFFWD].cmass    ;
-	double ccwd2atm = fab * patch.lcwd_to_atm * patch.soil.sompool[SURFCWD].cmass    ;   
-	
+	double cmtb2atm = fab * patch.litf_to_atm * patch.soil.sompool[SURFMETA].cmass  ;
+	double cstr2atm = fab * patch.litf_to_atm * patch.soil.sompool[SURFSTRUCT].cmass;
+	double cfwd2atm = fab * patch.lfwd_to_atm * patch.soil.sompool[SURFFWD].cmass   ;
+	double ccwd2atm = fab * patch.lcwd_to_atm * patch.soil.sompool[SURFCWD].cmass   ;
+
 	// Nitrogen proportional to cmass flux [kg(C)/m2]
-	double nmtb2atm = fab * patch.litf_to_atm * patch.soil.sompool[SURFMETA].nmass   ;
-	double nstr2atm = fab * patch.litf_to_atm * patch.soil.sompool[SURFSTRUCT].nmass ;
-	double nfwd2atm = fab * patch.lfwd_to_atm * patch.soil.sompool[SURFFWD].nmass    ;
-	double ncwd2atm = fab * patch.lcwd_to_atm * patch.soil.sompool[SURFCWD].nmass    ;   
-	
+	double nmtb2atm = fab * patch.litf_to_atm * patch.soil.sompool[SURFMETA].nmass  ;
+	double nstr2atm = fab * patch.litf_to_atm * patch.soil.sompool[SURFSTRUCT].nmass;
+	double nfwd2atm = fab * patch.lfwd_to_atm * patch.soil.sompool[SURFFWD].nmass   ;
+	double ncwd2atm = fab * patch.lcwd_to_atm * patch.soil.sompool[SURFCWD].nmass   ;
+
 	// Update soil-surface-litter pools
 	// Carbon
-	patch.soil.sompool[SURFMETA].cmass   -= cmtb2atm ;
-	patch.soil.sompool[SURFSTRUCT].cmass -= cstr2atm ;
-	patch.soil.sompool[SURFFWD].cmass    -= cfwd2atm ;
-	patch.soil.sompool[SURFCWD].cmass    -= ccwd2atm ;   	
+	patch.soil.sompool[SURFMETA].cmass   -= cmtb2atm;
+	patch.soil.sompool[SURFSTRUCT].cmass -= cstr2atm;
+	patch.soil.sompool[SURFFWD].cmass    -= cfwd2atm;
+	patch.soil.sompool[SURFCWD].cmass    -= ccwd2atm;
 	// Nitrogen 
-	patch.soil.sompool[SURFMETA].nmass   -= nmtb2atm ;
-	patch.soil.sompool[SURFSTRUCT].nmass -= nstr2atm ;
-	patch.soil.sompool[SURFFWD].nmass    -= nfwd2atm ;
-	patch.soil.sompool[SURFCWD].nmass    -= ncwd2atm ;   
- 	
+	patch.soil.sompool[SURFMETA].nmass   -= nmtb2atm;
+	patch.soil.sompool[SURFSTRUCT].nmass -= nstr2atm;
+	patch.soil.sompool[SURFFWD].nmass    -= nfwd2atm;
+	patch.soil.sompool[SURFCWD].nmass    -= ncwd2atm;
+
 	// Report C litter -> atmosphere fluxes
 	patch.fluxes.report_flux(Fluxes::FIREC, cmtb2atm + cstr2atm + cfwd2atm + ccwd2atm);
 
@@ -602,7 +595,7 @@ void blaze(Patch& patch, Climate& climate) {
 		 * of this routine.
 		 */
 		
-		// Loop through individuals		
+		// Loop through individuals
 		vegetation.firstobj();
 		while (vegetation.isobj) {
 			Individual& indiv=vegetation.getobj();
@@ -613,7 +606,7 @@ void blaze(Patch& patch, Climate& climate) {
 
 			// For this individual ...
 			killed=false;
-			
+
 			if (indiv.pft.lifeform==GRASS) {
 				// Reduce individual live biomass and freshly created litter
 				indiv.reduce_biomass(MAX_GRASS_BURN,MAX_GRASS_BURN);
@@ -745,6 +738,8 @@ void blaze(Patch& patch, Climate& climate) {
 	// Report N litter -> atmosphere flux from transitional pools
 	report_fire_flux_n(patch, nmtb2atm_t + nstr2atm_t + nfwd2atm_t + ncwd2atm_t );
 	
+	return true;
+	
 }  
 
 /// Update C/N - Pools due to fire
@@ -787,10 +782,10 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
 		double wtotw = patch.wood_to_atm + patch.wood_to_str + patch.wood_to_fwd + patch.wood_to_cwd ;
 		// Adjust relative fluxes from wood when stochastic killing has occured
 		if ( wtotw > 0.0 ) {
-			wood_to_atm = patch.wood_to_atm * frac_killed ;			
-			wood_to_str = (1. - patch.wood_to_atm ) * F_BARK               * frac_killed ;
-			wood_to_fwd = (1. - patch.wood_to_atm ) * F_BRANCH             * frac_killed ;
-			wood_to_cwd = (1. - patch.wood_to_atm ) * (1.-F_BARK-F_BRANCH) * frac_killed ;
+			wood_to_atm = patch.wood_to_atm * frac_killed;
+			wood_to_str = (1. - patch.wood_to_atm ) * F_BARK               * frac_killed;
+			wood_to_fwd = (1. - patch.wood_to_atm ) * F_BRANCH             * frac_killed;
+			wood_to_cwd = (1. - patch.wood_to_atm ) * (1.-F_BARK-F_BRANCH) * frac_killed;
 		}
 		else {
 			wood_to_atm = frac_killed * DEFAULT_WOOD_TO_ATM;
@@ -905,10 +900,10 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
 		}
 		else {
 			chrtw2str  = 0.;
-			chrtw2cwd  = 0.; 
+			chrtw2cwd  = 0.;
 			chrtw2atm  = 0.;
 			csapw2str  = 0.;
-			csapw2fwd  = 0.; 
+			csapw2fwd  = 0.;
 			csapw2atm  = 0.;
 			cmass_debt -= (saploss + hrtloss);
 		}
@@ -957,7 +952,7 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
 	patch.soil.sompool[SURFMETA].cmass   += anpp2met  + cleaf2met;
 	patch.soil.sompool[SURFSTRUCT].cmass += anpp2str  + cleaf2str + csapw2str + chrtw2str;
 	patch.soil.sompool[SURFFWD].cmass    += anpp2fwd  + csapw2fwd;
-	patch.soil.sompool[SURFCWD].cmass    += anpp2cwd  + chrtw2cwd;   
+	patch.soil.sompool[SURFCWD].cmass    += anpp2cwd  + chrtw2cwd;
 
 	// Deep soil litter carbon
 	patch.soil.sompool[SOILMETA].cmass   += anpp2smtb + croot2met;
@@ -967,7 +962,7 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
 	patch.soil.sompool[SURFMETA].nmass   += nleaf2met;
 	patch.soil.sompool[SURFSTRUCT].nmass += nleaf2str + nsapw2str + nhrtw2str;
 	patch.soil.sompool[SURFFWD].nmass    += nsapw2fwd;
-	patch.soil.sompool[SURFCWD].nmass    += nhrtw2cwd;   
+	patch.soil.sompool[SURFCWD].nmass    += nhrtw2cwd;
 
 	// Deep soil litter nitrogen
 	patch.soil.sompool[SOILMETA].nmass   += nroot2met;
@@ -992,44 +987,18 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
  */
 void blaze_accounting_gridcell(Climate& climate) {
 
-	// To initialise on start of spinup or after restart
-	bool is_first_day = (date.day == 0 && (date.year == 0 || (restart && date.year == state_year)));
-
 	Gridcell& gridcell = climate.gridcell;
-	
-	// Initialise fields
-	if (date.year == 0 && date.day == 0 && !restart) {
-
-		if (vegmode == INDIVIDUAL) {
-			fail("BLAZE is incompatible with INDIVDUAL MODE!");
-		}
-
-		climate.rainfall_annual_avg = 0.0; // average annual rainfall [mm]
-		climate.rainfall_cur        = 0.0; // sum of this years rainfall so far [mm]
-		climate.days_since_last_rainfall                = 0  ; // #Days-since-last-rainfall >3mm
-		climate.last_rainfall       = 0.0; // rainfall of last day of previous year [mm]
-		climate.kbdi                = 0.0; // Keetch-Byram-Drought-index []
-		climate.mcarthur_forest_fire_index = 0.;
-
-		for (int x=0; x<30; x++) {
-			climate.ffdi_monthly[x] = 0.;
-		}
-		gridcell.burned_area         = 0.0; // area burned [frac.]
-	}
 
 	// To keep track of burned area over the year
 	// reset accumulated area_burned to 0 on begining of year
 	if (date.day == 0 ) {
-		gridcell.burned_area_accumulated    = 0.0;
 		gridcell.annual_burned_area         = 0.0;
 		gridcell.simfire_annual_burned_area = 0.0;
-		
+		climate.rainfall_cur                = 0.0;
+
 		for (int i = 0; i < 12; i++) {
 			gridcell.monthly_burned_area[i] = 0.0;
 		}
-	}
-
-	if ( date.day == 0 ) {
 
 		double lat = climate.gridcell.get_lat();
 
@@ -1047,12 +1016,27 @@ void blaze_accounting_gridcell(Climate& climate) {
 			gridcell.k_tun_litter = K_LITTER_TROPICS;
 		}
 	}
-
+	// Reset patch variables
+	Gridcell::iterator gc_itr = gridcell.begin();
+	while (gc_itr != gridcell.end()) {
+		Stand& stand = *gc_itr;
+		stand.firstobj();
+		while (stand.isobj) {
+			Patch& patch = stand.getobj();
+			patch.fire_line_intensity = 0.;
+			if (date.day==0) {
+				patch.burned = false;
+			}
+			stand.nextobj();
+		}
+		++gc_itr;
+	}
+	
 	// Keep track of Days-since-last-rainfall and accumulated last rainfall
 	if (climate.prec > 0.01) {
 		if (climate.days_since_last_rainfall > 0) {
 			climate.last_rainfall = climate.prec;
-		} 
+		}
 		else {
 			climate.last_rainfall += climate.prec;
 		}
@@ -1065,9 +1049,9 @@ void blaze_accounting_gridcell(Climate& climate) {
 	climate.rainfall_cur += climate.prec;
 
 	// Update the Keetch-Byram-Drought-Index (Keetch et al. 1968)
-	double v        = climate.u10    * KMH_PER_MS;       // Wind speed at 10m height [km/h] (for FFDI)
-	double rh       = climate.relhum * FRACT_TO_PERCENT; // relative humidity [%] (for FFDI)
-	double t        = climate.tmax  ;                    // day's max temperature [deg C] (for KBDI) 
+	double v  = climate.u10    * KMH_PER_MS;       // Wind speed at 10m height [km/h] (for FFDI)
+	double rh = climate.relhum * FRACT_TO_PERCENT; // relative humidity [%] (for FFDI)
+	double t  = climate.tmax  ;                    // day's max temperature [deg C] (for KBDI) 
 
 	// Gust parameterisation
 	v = ( 214.7 * pow(  v + 10. ,-1.6968)  + 1. ) * v;
@@ -1109,7 +1093,7 @@ void blaze_accounting_gridcell(Climate& climate) {
 	}
 	gridcell.effective_burned_area = 0.;
 
-	// Get burned area
+	// Get burned area from SIMFIRE
 	gridcell.burned_area = simfire_burned_area(gridcell);
 	
 	// End of year clean-up
@@ -1154,15 +1138,9 @@ void blaze_accounting_gridcell(Climate& climate) {
 void blaze_driver(Patch& patch, Climate& climate) {
 
 	// Check whether BLAZE should be called at all
-
 	// Has BLAZE been chosen as firemodel?
 	if (firemodel != BLAZE) { 
 		return;
-	}
-
-	// Fire and Weathergenerator compatibility. BLAZE needs GWGEN
-	if (weathergenerator != GWGEN) {
-		fail ("BLAZE needs GWGEN or daily data as input \n");
 	}
 
 	// Do not burn before century soil has started
@@ -1174,33 +1152,32 @@ void blaze_driver(Patch& patch, Climate& climate) {
 		return;
 	}
 
-	Gridcell& gridcell = climate.gridcell;
-	
-	// Initialise patch fire-line intensity
-	if (date.day == 0 && date.year == 0) {
-		patch.fire_line_intensity = 0.0;
+	// If patch has already burned this year
+	if (patch.burned) {
+		return;
 	}
 
+	Gridcell& gridcell = climate.gridcell;
+	
 	// Today's potential firelineintensity
 	get_fireline_intensity(patch, climate);
 
-	// Get relative fluxes between pools
-	int fli_index = get_fire_line_intensity_index(patch.fire_line_intensity);
-
-	if (!negligible(gridcell.burned_area)) {
-		blaze(patch, climate);
+	if (negligible(gridcell.burned_area) || patch.fire_line_intensity < 0.) {
+		return;
 	}
-
-	// After burning of the last patch reset accumulated variables
-	patch.fire_line_intensity = 0.0;
-	if ( patch.id == patch.stand.nobj-1 ) {
-		// Now add Burned Area to output if there was enough fuel...
-		gridcell.effective_burned_area           /= patch.stand.nobj;
-		gridcell.annual_burned_area              += gridcell.effective_burned_area;
-		gridcell.monthly_burned_area[date.month] += gridcell.effective_burned_area;
-		gridcell.burned_area_accumulated         += gridcell.effective_burned_area;
-		gridcell.simfire_annual_burned_area      += gridcell.burned_area;
-		gridcell.burned_area = 0.0;
+	
+	// Call combustion model blaze
+	bool caught_fire = blaze(patch, climate);
+	
+	// Now add Burned Area to output if patch cought fire, as the whole patch burns
+	// we use the full area as burned area.
+	if (caught_fire) {
+		Stand& stand = patch.stand;
+		double gridcell_fraction =  stand.get_gridcell_fraction() / (double)stand.npatch();
+	
+		gridcell.effective_burned_area           += gridcell_fraction;
+		gridcell.annual_burned_area              += gridcell_fraction;
+		gridcell.monthly_burned_area[date.month] += gridcell_fraction;
 	}
 }
 
