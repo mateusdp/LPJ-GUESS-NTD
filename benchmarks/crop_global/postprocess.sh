@@ -54,6 +54,7 @@ describe_benchmark "LPJ-GUESS - Global Benchmarks for crops"
 source scatter_plot.sh
 
 # Standard tables and gmaps
+
 common1961to1990.sh
 
 tslice cflux.out -o cflux1990to2000.txt -f 1990 -t 2000 -lon 1 -lat 2 -y 3
@@ -112,10 +113,12 @@ tslice yield.out -f 1996 -t 2005 -o yield1996to2005.txt
 prepareyielddata yield1996to2005.txt common/../crop_global/spam_yield_maize.dat temp_maize.dat TeCo
 scatter_plot "Maize yields" "SPAM" "LPJ-GUESS" temp_maize.dat maize_yield.png
 describe_image maize_yield.png "Crop yield: Modelled compared to SPAM data set. Units: kg m-2." embed
+rm temp_maize.dat
 
 prepareyielddata yield1996to2005.txt common/../crop_global/spam_yield_wheat.dat temp_wheat.dat TeWW
 scatter_plot "Wheat yields" "SPAM" "LPJ-GUESS" temp_wheat.dat wheat_yield.png
 describe_image wheat_yield.png "Crop yield: Modelled compared to SPAM data set. Units: kg m-2." embed
+rm temp_wheat.dat
 
 # Above-ground biomass    
 
@@ -202,3 +205,4 @@ rm -f cflux1997-2016.txt cflux1997-2016_joyned.txt cflux1997-2016_joyned_Fire.tx
 preparesoiln2odata soil_nflux1990to2000.txt common/../crop_global/Huang_2015_XURI_2008_N2O_025.dat temp_n2o.dat N2O
 scatter_plot "N2O emissions" "Observations" "LPJ-GUESS" temp_n2o.dat site_n2o.png
 describe_image site_n2o.png "N2O emissions: Modelled compared to observations from Huang et al. (2015) and Xu-Ri and Prentice (2008). Units: kg N2O-M ha-1 year-1." embed
+rm temp_n2o.dat

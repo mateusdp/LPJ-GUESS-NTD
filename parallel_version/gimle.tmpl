@@ -127,6 +127,7 @@ cat <<EOF > guess.cmd
 #!/bin/bash
 #SBATCH -n $NPROCESS
 #SBATCH --time=$WALLTIME
+#SBATCH -o "slurm-%j.log"
 
 mpprun BINARY -parallel -input $INPUT_MODULE $INSFILE
 

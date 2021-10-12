@@ -144,6 +144,7 @@ cat <<EOF > guess.cmd
 #SBATCH -n $NPROCESS
 #SBATCH --time=$WALLTIME
 #SBATCH --exclusive
+#SBATCH -o "slurm-%j.log"
 set -e
 
 if ! type -P mpirun &> /dev/null; then
@@ -177,7 +178,7 @@ cat <<EOF > append.cmd
 #SBATCH -n 1
 #SBATCH --time=$WALLTIME_APPEND
 #SBATCH --mem-per-cpu=12000
-#SBATCH --exclusive
+#SBATCH -o "slurm-%j.log"
 set -e
 
 function append_files {
