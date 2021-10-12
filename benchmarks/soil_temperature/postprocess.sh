@@ -29,13 +29,13 @@ selectData mod_season.txt ${DIR}/obs_soiltemp1985to1999.txt summer.txt Summer
 selectData mod_season.txt ${DIR}/obs_soiltemp1985to1999.txt autumn.txt Autumn
 
 gplot winter.txt -o soiltemp_winter.jpg -scatter -x 1 -y 2 -eq -t "Mean 1985 to 1999 winter soil temperature" -xt "Observed 25 cm temperature" -yt "Modelled 25 cm temperature"
-describe_image soiltemp_winter.jpg "Mean 1985 to 1999 winter soil temperature"
+describe_image soiltemp_winter.jpg "Mean 1985 to 1999 winter soil temperature" embed
 gplot spring.txt -o soiltemp_spring.jpg -scatter -x 1 -y 2 -eq -t "Mean 1985 to 1999 spring soil temperature" -xt "Observed 25 cm temperature" -yt "Modelled 25 cm temperature"
-describe_image soiltemp_spring.jpg "Mean 1985 to 1999 spring soil temperature"
+describe_image soiltemp_spring.jpg "Mean 1985 to 1999 spring soil temperature" embed
 gplot summer.txt -o soiltemp_summer.jpg -scatter -x 1 -y 2 -eq -t "Mean 1985 to 1999 summer soil temperature" -xt "Observed 25 cm temperature" -yt "Modelled 25 cm temperature"
-describe_image soiltemp_summer.jpg "Mean 1985 to 1999 summer soil temperature"
+describe_image soiltemp_summer.jpg "Mean 1985 to 1999 summer soil temperature" embed
 gplot autumn.txt -o soiltemp_autumn.jpg -scatter -x 1 -y 2 -eq -t "Mean 1985 to 1999 autumn soil temperature" -xt "Observed 25 cm temperature" -yt "Modelled 25 cm temperature"
-describe_image soiltemp_autumn.jpg "Mean 1985 to 1999 autumn soil temperature"
+describe_image soiltemp_autumn.jpg "Mean 1985 to 1999 autumn soil temperature" embed
 
 # Cleanup
 rm mod_season.txt winter.txt spring.txt summer.txt autumn.txt 

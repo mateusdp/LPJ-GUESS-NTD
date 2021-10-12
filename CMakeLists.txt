@@ -5,7 +5,7 @@
 # If it's not installed it can be downloaded for free from www.cmake.org.
 #
 
-cmake_minimum_required(VERSION 3.1...3.5.2)
+cmake_minimum_required(VERSION 2.8.12.2...3.5.2)
 project(guess)
 
 # Compiler flags for building with Microsoft Visual C++

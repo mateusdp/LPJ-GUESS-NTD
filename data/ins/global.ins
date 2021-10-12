@@ -306,18 +306,18 @@ group "grass" (
 	root_beta 0.9555
 	gmin 0.5
 	phenology "any"
-	phengdd5ramp 100	! C3 har 50 hos Thomas
+	phengdd5ramp 100
 	leaflong 0.5		! Leaf longevity (years)
 	turnover_leaf 1
-	turnover_root 0.7	! 0.5 hos guess2008
+	turnover_root 0.7
 	!cton_leaf_min 16
 	cton_root 29
 	nuptoroot 0.00551
 	km_volume 0.000001876
 	fnstorage 0.3
 	litterme 0.2
-	parff_min 1000000	! 2500000 i guess2008
-	fireresist 0.5		! 1.0 hos Thomas
+	parff_min 1000000
+	fireresist 0.5
 	intc 0.01
 	ga 0.030
 
@@ -419,7 +419,7 @@ group "shade_tolerant" (
 	turnover_sap 0.05
 )
 
-! So far only trial values; not used in this global version
+! So far only example values; not used in this global version
 group "intermediate_shade_tolerant" (
 	est_max 0.15
 	parff_min 2000000
@@ -428,7 +428,6 @@ group "intermediate_shade_tolerant" (
 	turnover_sap 0.075
 )
 
-! From global version; values from orginal European version after "!"
 group "shade_intolerant" (
 	est_max 0.2
 	parff_min 2500000
@@ -739,95 +738,4 @@ group "C4G" (
 
 pft "C4G" (
 	C4G
-)
-
-
-group "lowshrub"(
-	shrub
-
-	crownarea_max 1.0
-	k_allom1 10
-	k_allom2 4
-	k_latosa 125
-	rootdist 0.27 0.2 0.14 0.1 0.08 0.06 0.04 0.03 0.02 0.02 0.01 0.01 0.01 0.0 0.0
-	root_beta 0.9685
-	turnover_sap 0.01
-	greff_min 0.012 	! 60% of the shrub_high value, as in AW, but AW had 0.03
-	alphar 10 		! same as the shadeintol value, as in AW, but AW had 10
-	longevity 25
-	parff_min 1000000
-	turnover_root 0.5
-
-)
-
-
-pft "BLSE" (
-
-	! Arctic low shrub, evergreen
-	! Typical species: Vaccinium vitis-idaea, Cassiope tet.,
-	! Ledum palustre, Erica spec.
-
-	include 0
-	lowshrub
-	boreal
-	shade_intolerant
-	needleleaved
-	evergreen
-
-	leaflong 3
-	turnover_leaf 0.333
-	tcmin_surv -32.5
-	tcmin_est -32.5 	! Estimated from map
-	tcmax_est -1
-	twmin_est -1000
-	gdd5min_est 100
-	fireresist 0.12
-
-	drought_tolerance 0.1
-	!gdd0_min 300
-	nuptoroot 0.0028
-
-	! BVOC values
-	eps_iso 2.0
-	seas_iso 0
-	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22	! Same values as PFT LSE in arctic.ins
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	! Same values as PFT LSE in arctic.ins
-	ga 0.040
-	!sla 12.56
-)
-
-
-pft "BLSS" (
-	! Arctic low shrub, summergreen
-	! Typical species: Vaccinium myrtillus, V. uliginosum, Salix hastata, S. glauca etc.
-
-	include 0
-	lowshrub
-	boreal
-	broadleaved
-	summergreen
-	shade_intolerant
-
-	tcmin_surv -40		! Estimate from map is -32.5. Change based on the CAVM region
-	tcmin_est -40		! Estimate from map is -32.5. Change based on the CAVM region
-	tcmax_est 1000
-	twmin_est -1000
-	gdd5min_est 100
-	phengdd5ramp 50
-	fireresist 0.12
-
-	drought_tolerance 0.1
-	!gdd0_min 300
-
-	! Found on the driest peatlands, or raised hummocks
-	!wtp_max -250 ! mm
-	!inund_duration 5 	! days
-
-	! BVOC values
-	eps_iso 2.0
-	seas_iso 1
-	eps_mon 1.7 0.7 0.4 0.24 0.24 0.2 0.84 0.26 0.22	! Same values as PFT LSS in arctic.ins
-	storfrac_mon 0.4 0.8 0.8 0.4 0.4 0.5 0.8 0.2 0.5	! Same values as PFT LSS in arctic.ins
-	ga 0.040
-	!sla 24.25
 )

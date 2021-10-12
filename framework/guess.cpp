@@ -3,7 +3,7 @@
 /// \brief LPJ-GUESS Combined Modular Framework
 ///
 /// \author Ben Smith
-/// $Date: 2021-09-30 16:23:14 +0200 (Thu, 30 Sep 2021) $
+/// $Date: 2021-10-10 10:58:01 +0200 (Sun, 10 Oct 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -2270,18 +2270,16 @@ Gridcell::Gridcell():climate(*this) {
 	}
 	
 	// Initialise SIMFIRE variables
-	if ( date.year == 0 ) {
-		for(int i=0;i<AVG_INTERVAL_FAPAR;i++) {
-			fapar_recent_max[i] = 0.5;
-		}
-		fapar_annual_max = 0.5;
-
-		// Initialize Max annual Nesterov Index on first day of simulation
-		for ( int i=0; i<12; i++) {
-			nesterov_monthly_max[i] = 0.;
-		}
-		nesterov_cur = 0.;
+	for (int i = 0; i<AVG_INTERVAL_FAPAR; i++) {
+		fapar_recent_max[i] = 0.5;
 	}
+	fapar_annual_max = 0.5;
+
+	// Initialize Max annual Nesterov Index on first day of simulation
+	for (int i = 0; i<12; i++) {
+		nesterov_monthly_max[i] = 0.;
+	}
+	nesterov_cur = 0.;
 
 	// Initialise BLAZE variables
 	seed = 12345678;
