@@ -23,7 +23,7 @@ compute mch4_2000to2012.txt -o mch4_2000to2012tot.txt -n -i Lon Lat Total='(Jan+
 joyn ${DIR}/global_wetland_map.txt mch4_2000to2012tot.txt -o temp.txt -i Lon Lat
 compute temp.txt -o mch4_2000to2012scaled.txt -n -i Lon Lat CH4='Total * PEATLAND'
 
-gmap mch4_2000to2012scaled.txt -o mch4_2000to2012.png -t "Total CH4 emissions from wetlands(2000 to 2012 average). Units: kgCH4 yr-1" -portrait -c RED -s 0 .01 10
+gmap mch4_2000to2012scaled.txt -o mch4_2000to2012.png -t "Total CH4 emissions from wetlands(2000 to 2012 average). Units: kgCH4 yr-1" -portrait -c RED -s 0 .01 10 -vert
 describe_image mch4_2000to2012.png "CH4 flux density from wetlands (2000 to 2012 average). Units: kg CH4 m-2 yr-1"
 
 # Extract areas

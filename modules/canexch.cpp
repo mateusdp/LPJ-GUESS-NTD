@@ -6,7 +6,7 @@
 /// production, respiration and evapotranspiration.
 ///
 /// \author Ben Smith
-/// $Date: 2021-04-22 18:36:50 +0200 (Thu, 22 Apr 2021) $
+/// $Date: 2021-09-02 15:27:34 +0200 (Thu, 02 Sep 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -2485,8 +2485,8 @@ void leaf_senescence(Vegetation& vegetation) {
 			const double senNr = 0.1;
 			double senN = senNr * (indiv.nmass_leaf-indiv.cmass_leaf_today() / (indiv.pft.cton_leaf_max));
 
-			// Senescence is not done during spinup
-			if (date.year > nyear_spinup && senN > 0) {
+			// Senescence is not done during the period without no N-limitation
+			if (date.year > freenyears && senN > 0) {
 				indiv.nmass_leaf -= senN;
 				indiv.cropindiv->nmass_agpool += senN;
 			}

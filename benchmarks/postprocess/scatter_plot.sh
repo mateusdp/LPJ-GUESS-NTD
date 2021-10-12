@@ -30,15 +30,15 @@ set xlabel "${xtitle}"
 set ylabel "${ytitle}"
 set key on
 set grid ytics
-set terminal png
+set terminal pngcairo
 set output "${image}"
 set fit logfile "/dev/null"
 y(x) = m*x+c
 id(x) = x
 fit y(x) "${datafile}" via m,c
 rms = `cat fit.log | grep "^rms of residuals.*\:.*" | awk '{ print $NF }'`
-set label 'y = %.3f',m,'x + %.3f',c at screen 0.15,0.85 front
-set label 'rms of residuals = %.3f', rms at screen 0.15,0.80 front
+set label sprintf('y = %.3fx + %.3f', m, c) at screen 0.15,0.85 front
+set label sprintf('rms of residuals = %.3f', rms) at screen 0.15,0.80 front
 plot "${datafile}" title "data point" with points lt 3 pt 5, \
      y(x) title "linear regression", \
      id(x) title "y = x"

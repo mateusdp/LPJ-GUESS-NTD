@@ -4,7 +4,7 @@
 ///
 ///
 /// \author Ben Smith
-/// $Date: 2021-05-27 11:46:41 +0200 (Thu, 27 May 2021) $
+/// $Date: 2021-08-25 17:21:41 +0200 (Wed, 25 Aug 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -170,7 +170,7 @@ void DemoInput::init() {
 
 	// Demo input currently only works with the old INTERP weather generator and GLOBFIRM (or NO FIRE).
 	if (weathergenerator == GWGEN || firemodel == BLAZE) {
-		fail("Demo input currently only works with the INTERP weather generator and the fire model GLOBFIRM (or no fire with NOFIRE).\n Make sure that both of them are set correctly in global.ins.");
+		fail("Demo input currently only works with the INTERP weather generator and the fire model GLOBFIRM (or no fire with NOFIRE).\n Make sure that both of them are set correctly in global.ins, europe.ins, and arctic.ins.");
 	}
 
 	// Read list of grid coordinates and store in global Coord object 'gridlist'

@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2021-05-24 18:34:40 +0200 (Mon, 24 May 2021) $
+/// $Date: 2021-09-30 16:23:14 +0200 (Thu, 30 Sep 2021) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1127,6 +1127,17 @@ public:
 			coldestday = COLDEST_DAY_SHEMISPHERE;
 			adjustlat = 181;
 		}
+
+		// BLAZE related variables
+		rainfall_annual_avg      = 0.0; // average annual rainfall [mm]
+		days_since_last_rainfall = 0;   // #Days-since-last-rainfall >3mm
+		last_rainfall            = 0.0; // rainfall of last day of previous year [mm]
+		kbdi                     = 0.0; // Keetch-Byram-Drought-index []
+
+		for (int x=0; x<30; x++) {
+			ffdi_monthly[x] = 0.;
+		}
+
 	}
 
 	void serialize(ArchiveStream& arch);
@@ -4046,6 +4057,8 @@ public:
 	/// probability of fire this year (GlobFIRM)
 	double fireprob;
 
+	/// BLAZE if patch has burnt this year
+	bool burned;
 	/// BLAZE Fire line intensity (kW/m)
 	double fire_line_intensity;
 
@@ -4753,14 +4766,12 @@ public:
 	/// effectively burned area (after randFrac in BLAZE)
 	double effective_burned_area;
 	/// accumulated burned area from SIMFIRE for tstep < 1a (fract.)
-	double burned_area_accumulated;
-	/// accumulated simfire burned area
 	double simfire_annual_burned_area;
 	/// Simple tracker to check whether at least one patch has enough fuel to burn
 	int can_burn;
-	/// annual burned area from SIMFIRE (fract.)
+	/// annual burned area
 	double annual_burned_area;
-	/// monthly burned area from SIMFIRE (fract.)
+	/// monthly burned area
 	double monthly_burned_area[12];
 
 	// Nitrogen deposition

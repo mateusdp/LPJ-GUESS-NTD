@@ -4,7 +4,7 @@
 #
 # Portable bash script to run LPJ-GUESS version:
 # BINARY
-# as a parallel job using SLURM on Simba2. Based on Aurora.tmpl.
+# as a parallel job using PBS on Simba.
 #
 # Created automatically on DATE
 # 
@@ -15,14 +15,12 @@
 #   2. In an editor, set appropriate values for the variables NPROCESS,
 #      INSFILE, GRIDLIST and OUTFILES (NB: no space after the = sign):
 
-NPROCESS=12
+NPROCESS=15
 WALLTIME=150:00:00
-WALLTIME_APPEND=20:00:00   # Does not need to be as long as guess walltime
 INSFILE=guess.ins
 INPUT_MODULE=cru_ncep
 GRIDLIST=gridlist.txt
 OUTFILES='*.out'
-MAILTYPE='FAIL'
 
 #      Where:
 #      NPROCESS     = number of processes in parallel job
@@ -33,8 +31,6 @@ MAILTYPE='FAIL'
 #      OUTFILES     = list of LPJ-GUESS output files in single quotes,
 #                     and separated by spaces (filenames only, including
 #                     extension, no directory.) Shell wildcards are allowed.
-#      MAILTYPE     = events that trigger emails. Possible values include
-#                     FAIL, BEGIN, END, ALL; see sbatch manual for more
 #
 #   3. Run the script using the command:
 #        ./submit.sh
@@ -129,49 +125,28 @@ done
 
 split_gridlist
 
-# Create SLURM script to request place in queue
+# Create PBS script to request place in queue
 cat <<EOF > guess.cmd
 #!/bin/bash
-#SBATCH -n $NPROCESS
-#SBATCH --time=$WALLTIME
-#SBATCH --mail-type=$MAILTYPE
-#SBATCH -o "slurm-%j.log"
+#PBS -l nodes=$NPROCESS
+#PBS -l walltime=$WALLTIME
 set -e
 
-if ! type -P mpirun &> /dev/null; then
-    echo "Didn't find mpirun! Make sure an MPI module is loaded in your" >&2
-    echo "login script (~/.bashrc) and recompile LPJ-GUESS with MPI support!" >&2
-    exit 1
-fi
+cd \$PBS_O_WORKDIR
 
-# If there's a script for setting up files on local disk, run it
-if [ -f setup_local.sh ]; then
-    srun -n \$SLURM_NNODES -N \$SLURM_NNODES setup_local.sh
-fi
+umask 022
 
-# In each run directory, create a symbolic link to the node local storage
-for ((a=1; a <= $NPROCESS ; a++))
-do
-  cd run\$a
-  if [ -h local ]; then
-      rm local
-  fi
-  ln -s \$SNIC_TMP local
-  cd ..
-done
-
-mpirun --bind-to core BINARY -parallel -input $INPUT_MODULE $INSFILE
+mpiexec -comm mpich-p4 BINARY -parallel -input $INPUT_MODULE $INSFILE
 
 EOF
 
 cat <<EOF > append.cmd
 #!/bin/bash
-#SBATCH -n 1
-#SBATCH --time=$WALLTIME_APPEND
-#SBATCH --mail-type=$MAILTYPE
-#SBATCH -o "slurm-%j.log"
+#PBS -l nodes=1
+#PBS -l walltime=$WALLTIME
 set -e
 
+cd \$PBS_O_WORKDIR
 function append_files {
     local number_of_jobs=\$1
     local file=\$2
@@ -200,7 +175,7 @@ cat run*/guess.log > guess.log
 EOF
 
 # Submit guess job
-append_dependency=$(sbatch -J ${name:-"guess"} guess.cmd | awk '{print $NF}')
+append_dependency=$(qsub -N ${name:-"guess"} guess.cmd)
 
 # Submit append job
-sbatch --dependency=afterok:$append_dependency -J ${name:-"guess"}"_append" append.cmd | awk '{print $NF}'
+qsub -W depend=afterok:$append_dependency -N ${name:-"guess"}"_append" append.cmd

@@ -1,4 +1,4 @@
-                        LPJ-GUESS Version 4.0
+                        LPJ-GUESS Version 4.1
                         =====================
 
                         PLEASE READ CAREFULLY
@@ -89,13 +89,12 @@ Structure of this directory:
       
 ./benchmarks
      - Files required for running the benchmarks (under linux only).
-       ./euroflux and ./euroflux_globalpfts
-            - The benchmarks euroflux and euroflux_globalpfts are currently 
-              being updated, and consequently have been temporarily removed 
-              from the release package. (They are however kept in the code 
-              repository for repository reasons: users downloading from the 
-              svn code repository should remove these two catalogues before 
-              running he benchmark suite.)  
+       Note that the postprocessing of the benchmarks requires 
+	   the linux helper programs of "LPJ-GUESS utilities": its source 
+	   code is available at the same www page as where this version of 
+       LPJ-GUESS was downloaded from. The source code needs to be built 
+	   on the system where you will run it. Do not move executables
+	   after build.
               
 ./cru
      - Input module version for reading in CRU-NCEP historical climate 
@@ -110,4 +109,4 @@ Structure of this directory:
        LPJ-GUESS was downloaded from.
        
 Joe Siltberg 2014-06-27 (Version 3.0)
-Johan Nord 2016-12-06 (Version 4.0)
+Johan Nord 2021-09-29 (Version 4.1)

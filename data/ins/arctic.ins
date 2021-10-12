@@ -97,7 +97,7 @@ ifcalccton 1			! Whether to calculate leaf C:N min from leaf longevity
 				! (PFT-specific value can be specified in this file instead)
 firemodel "BLAZE"		! BLAZE, GLOBFIRM, NOFIRE
 weathergenerator "GWGEN"	! GWGEN, INTERP
-npatch 5			! Number of replicate patches to simulate
+npatch 15			! Number of replicate patches to simulate
 patcharea 1000			! Patch area (m2)
 estinterval 5			! Years between establishment events in cohort mode
 ifdisturb 1			! Whether generic patch-destroying disturbances enabled
@@ -490,14 +490,14 @@ pft "BNS" (
 	tcmax_est -2
 	twmin_est -1000		! no limit
 	twminusc 43		! continentality condition
-	gdd5min_est 300
+	gdd5min_est 350
 	phengdd5ramp 50
 	longevity 300
 	root_beta 0.938		! Tundra profile (Jackson et al, 1996)	
 	!rootdist 0.26 0.19 0.14 0.11 0.08 0.06 0.05 0.03 0.02 0.02 0.01 0.01 0.01 0.01 0.0
 	fireresist 0.3
 
-	greff_min 0.04		
+	greff_min 0.06		
 	eps_iso 8.0
 	seas_iso 1
 	eps_mon 3.18 0.72 0.18 0.12 0.14 0.11 0.2 0.13 0.02
@@ -521,8 +521,6 @@ pft "IBS" (
 	gdd5min_est 350
 	longevity 300
 	fireresist 0.1
-
-	greff_min 0.06		! override shade intolerant value
 	wooddens 250		! was 200
 
 	eps_iso 45.0
@@ -584,7 +582,7 @@ pft "C3G" (
 	include 1
 	C3G
 	gdd0_min 1000		! Wolf et al. (2008) have 800. 1000 matches the gdd0_max limit for the GRT PFT, minimizing overlap
-	ltor_max 0.33		! overrides grass group value
+	ltor_max 0.5		! possible override of the grass group value
 )
 
 
@@ -770,7 +768,7 @@ pft "HSE" (
 pft "HSS" (
 
 	! Tall shrub, summergreen
-	! Typical species: Alnus spec., Salix, Betula nana
+	! Typical species: Alnus spec., Salix, Betula, etc. 
 	! Values from Wolf et al., unless otherwise stated.
 	! Not a peatland PFT
 
@@ -863,7 +861,7 @@ pft "GRT" (
 	boreal
 
 	pathway "c3"
-	ltor_max 0.2 		! overrides grass group value - Wolf et al (2008) has 0.2
+	ltor_max 0.5 		! possible override of the grass group value - Wolf et al (2008) has 0.2
 	
 	gdd5min_est 0
 	phengdd5ramp 10 	! Overrides grass group value
