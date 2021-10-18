@@ -39,10 +39,6 @@ bool format_input_header(const char* fname) {
 }
 
 }
-
-double SoilInput::STEP = 0.5;
-double SoilInput::searchradius_soil = 0;
-
 coord SoilInput::find_closest_point(double searchradius, coord C) {
 
 	// First try the exact coordinate
