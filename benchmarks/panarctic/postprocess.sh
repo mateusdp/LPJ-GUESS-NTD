@@ -31,10 +31,10 @@ selectData ald2000to2015all.txt aldSep.txt Sep Sepmod
 selectData ald2000to2015all.txt aldMax.txt MAXALD MAXmod
 
 gplot aldSep.txt -o ALDSep.jpg -scatter -x 1 -y 2 -eq -t "Mean 2000 to 2015 september ALD" -xt "Observed ALD" -yt "Modelled ALD"
-describe_image ALDSep.jpg "Measured vs. Modelled 2000 to 2015 september Active layer depth" embed
+describe_image ALDSep.jpg "Measured vs. Modelled 2000 to 2015 september Active layer depth"
 
 gplot aldMax.txt -o ALDmax.jpg -scatter -x 1 -y 2 -eq -t "Mean 2000 to 2015 maximum ALD" -xt "Observed ALD" -yt "Modelled ALD"
-describe_image ALDmax.jpg "Measured vs. Modelled 2000 to 2015 maximum Active layer depth" embed
+describe_image ALDmax.jpg "Measured vs. Modelled 2000 to 2015 maximum Active layer depth"
 
 
 # Soil Temperature

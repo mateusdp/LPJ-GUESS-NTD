@@ -1,84 +1,209 @@
 
-                          LPJ-GUESS 4.0.1 Release Notes
+                          LPJ-GUESS 4.1 Release Notes
                           ===========================
 
-These are the most important changes you'll notice when switching from
-LPJ-GUESS 3.0 to 4.0. Apart from this, numerous bugfixes, adjustments and
-technical improvements have been made. 
-For a full history, refer to the Subversion history.
+These are the most important changes you'll notice when switching from 
+LPJ-GUESS 4.0 to 4.1. Apart from this, numerous bugfixes, adjustments 
+and technical improvements have been made. For a full history, refer 
+to the Subversion history.
 
-* Change of forcing dataset and change to center-gridcell coordinates.
-  - Change of forcing dataset from CRU to CRU-NCEP, with resulting changes to 
-    FastArchive header files, and to input model.
-  - Longitude/latitude coordinates in gridlists and data files should now assumed 
-    to refer to gridcell centre, instead of south-west corner.
-  - Values in CRU_NCEP FastArchive files stored as decimal numbers at suitable 
-    precision.
-  - Interim CRU_NCEP dataset for 1901-2015 substituted with CRU precipitation 
-    for all but the last year due to issues with currently available release 
-    of CRU-NCEP. Care is advised in interpretation of simulation results for
-    2015 due to a potential discontinuity in precipitation at the start of this 
-    year. 
-  - For reasons of subversion code storage, the file name cru_TS30.cpp was kept, 
-    although the forcing data is no longer CRU TS.
- 
-* Support for multiple land cover fractions and land use in each gridcell 
-  including croplands, pastures, managed forests in addition to climate-driven 
-  potential vegetation (PNV) as in earlier model versions. Net and gross land 
-  cover change are supported as alternatives, switchable from the instruction 
-  file (see guessdoc.doc). Available management options: cropland (detailed 
-  sowing, harvest, irrigation, rotations, tillage, residue management and, for 
-  the C-N version, also N-fertiliser amendment functions), pasture (yearly 
-  cutting), managed forest (continuous cover forestry).
-  - Crop PFT's differ from PNV PFT's in that they have: sowing, 
-    daily allocation (separate versions with and without N limitation) with 
-    phenology coupled to leaf development, irrigation, harvest, and tillage.
-  - Basic functionality for pasture and managed forest (harvest).
-  - Crop phenology and allocation has separate functions for simulations with and 
-    without nitrogen limitation. When running with landcover and the C-only version,
-    include the crop_c.ins file instead of crop_n.ins, and replace land-use files.
-  - Stand type definition in instruction file for different land cover/management 
-    types, specifying establishment rules (e.g. PFT selections), irrigation, 
-    covercrop, forestry harvest type (continuous or clearcut) and rotations.
-  - Management type definition in instruction file used for stand types with 
-    rotations.
-  - Monitoring of C and N balance for each year and over the historic simulation 
-    period. If there are any imbalances, a warning will be written to the log-file. 
-  - Litter transfer to soil on same day as phenological turnover for crop PFT's.
+* Nitrogen transformations
+  A more detailed formulation of soil nitrogen processes within the soil. 
+  NH4 and NO3 are now modelled explicitly together with the release of
+  nitrogen trace gases.
+  - Nitrogen leaching is now simulated for NO3 only. Due to this, the
+    simulated N-leaching was reduced substantially, which prompted for 
+    a change in how leaching was calculated in the model (added to trunk
+    in an earlier separate commit r8182 "Reintegrated V4.1-RETUNED 
+    PARAMETERS").
+  - Possibility to read manure fraction of total nitrogen addition from
+    an external file. 
+  - Two more files with N fluxes from the soil and N pools in the soil 
+    were added. 
+    Also added in this version are two more columns in seasonality.out: 
+    GDD5 (growing degree days above 5degC) and tcmin_20 (minimum 
+    temperature for the coldest month); these make it possible to evaluate 
+    the establishment rules. The seasonality file is now also output
+     whether the runlanduse switch in the ins-file is set to true or false. 
+* BLAZE & SIMFIRE
+  The wildfire model BLAZE (BLAZe induced land-atmosphere flux Estimator, 
+  including the burned area simulator SIMFIRE) for computing burned area 
+  on a daily basis and computing the fluxes between live biomass and 
+  litter pools and the atmosphere for C and N. 
+  BLAZE/SIMFIRE requires the new weather generator GWGEN (described below),
+  and the following additional inputs:
+  - new meteorological variables: relative humidity (or specific humidity 
+    and pressure) and 10m horizontal windspeed,
+  - the fast-archive SimfireInput.bin containing the HYDE 3.1 global 
+    population dataset and monthly global fire-climatology.
+* The Global WeatherGENerator (GWGEN, Sommer and Kaplan 2017) has replaced the 
+  existing simple weather generator (INTERP) as standard. It produces daily
+  values from monthly input of: mean temperature, daily temperature range,
+  precipitation, solar downward short-wave radiation, 10m wind, relative 
+  humidity (the two latter are new in version 4.1).
+  - The old generator is still included in the model, and can be chosen by 
+    setting the instruction file parameter 'weathergenerator' to 'INTERP'.
+  - In the LPJ-GUESS Windows graphical shell, the demo and getclim input 
+    models run with the old fire model GLOBFIRM only, not BLAZE, because of
+    the additional inputs that BLAZE and SIMFIRE require (see BLAZE/SIMFIRE
+    above).
+* Soil input
+ -  New soil input module, which reads more detailed soil properties from 
+    textfile via the new soilinput module, instead of from the soil-code 
+    lookup table. This makes obsolete the input of soil code from function
+    searchcru(). If you are using CRU-input input module, then the soil 
+    input needs to be on the same resolution as the CRU-NCEP files.
+* Updates to soil temperature and hydrology calculations
+  - Soil class - introduced to store soil temperature and water content 
+    (wcont variable) in 15 layers of 10 cm depth.
+  - Soil temperature - numerical calculation that used includes phase 
+    change,     with explicit active layer depths. Soil water below the 
+    wilting point can be frozen. The calculations use five hydrologically 
+    inactive padding layers below the 15 soil layers to bring the total 
+    soil depth to 49.5m. The numerical algorithm largely follows Wania 
+    et al. (2009a).
+  - Soil properties - each layer's physical properties (thermal, hydraulic,
+    porosity) can be scaled between mineral and organic by setting 
+    iforganicsoilproperties  to 1 in the .ins files. It is set to 0 
+    by default.
+  - Snow – a simple, fixed-density multilayer snow scheme is used in 
+    the soil temperature calculations. It tends to results in higher 
+    winter soil temperatures compared to the previous snowpack scheme.
+  - Hydrology – we use the same algorithm as Gerten et al. (2004) but 
+    updated to take into account the 15 soil layers. The hydrology 
+    routine is no longer a function. Instead, we now update the patch 
+    hydrology by calling a new hydrology class member function in the 
+    Soil class.
+  - The Peatland gridcell fraction is used if ifpeatland set to 1 in 
+    landcover.ins and a Peatland land use file column exists. 
+  - For the main references, please see commenting in soil.cpp and 
+    soilmethane.cpp.
+  - The implementations of member functions  of the class Soil have 
+    been moved from guess.cpp to soil.cpp. The declarations of these 
+    class member functions  and of Soil member variables are however 
+    still retained in guess.h in order to keep important classes in 
+    guess.h. The file soil.h contains only definitions of constants.
+* High-latitude peatlands: hydrology and PFTs
+  - High latitude PFTs - tall and short shrubs (evergreen and 
+    deciduous), and low tundra PFTs, follow Wolf et al. (2008).
+  - High latitude peatlands - follow the same hydrology as described in 
+    Wania et al. (2009a, 2009b). Water table fluctuates in the acrotelm 
+    (top 30cm) and the bottom 1.2m is assumed to be saturated.
+  - High latitude peatland PFTs - graminoids, mosses and low shrubs 
+    (evergreen and deciduous), with inundation and water table 
+    restrictions on their productivity following Wania et al. (2009b),
+    and sent to the photosynthesis routine in the PhotosynthesisStresses 
+    structure (see further below).
+  - Note that some of the BNS (e.g. Larch spp.) PFT parameter values 
+    differ slightly in arctic.ins and global.ins. In particular:
+    phengdd5ramp 50    ! global.ins has 100
+    root_beta 0.938    ! global.ins has 0.982    
+    greff_min 0.06     ! global.ins has 0.09. 0.06 is the intermediate_shade_tolerant value
+    These changes were needed for a reasonable representation of BNS 
+    in competition with the high-latitude PFTs in arctic.ins, such as 
+    shrubs. They favour BNS by accelerating leaf phenology development 
+    in spring, by concentrating roots in the unfrozen surface layers
+    of the soil, and by reducing mortality slightly when growth 
+    efficiency is low.	
+* Methane dynamics
+  - High latitude methane emission fluxes and pathways follow Wania 
+    et al. (2010).
+  - Other methane emission fluxes, e.g. tropical, follow Spahni et 
+    al. (2011) and are calculated using a simple scaling of 
+    heterotrophic respiration.
+  - Global wetlands - two new wetland grass PFTs were added.
+* Retuned parameters
+  For LPJ-GUESS version 4.1, a parameterisation was performed. The aim 
+  of the calibration was to better represent biome distributions and shifts 
+  as well as global values of e.g. NPP, NEE and fire emissions. Also 
+  N-leaching and N2O emissions were considered in the parameterisation, 
+  as well as fire and arctic-PFT distributions and productivity and CH4 
+  emissions.
+  - Instruction-file pft parameter greff_min of IBS was changed from 
+    0.08 to 0.135.
+  - No tuning was performed for PFT's in the separate European PFT 
+    instruction file (europe.ins). This will be done at a later stage. 
+    However, greff_min of Bet_pen and Bet_pub in europe.ins was changed
+    to be consistent with the change of IBS greff_min in global.ins.
+  - The default number of patches in the instruction file for global PFTs   
+    has been increased to 15 patches as a minimum recommendation. Users 
+    can change to as low as 5 patches to reduce run time, but should be 
+    aware that biome distributions will be affected to some degree. In 
+    particular, fire fluxes computed by BLAZE will change considerably 
+    when using 5 patches instead of 15 or more.
+* Improvements for landcover/land-use change
+  - New correction method for inconsistencies between net land cover  
+    fraction and gross transition input.
+  - Stand-specific output file names now include the name of the 
+    stand type instead of land cover type. 
+  - Improvement of land cover area fraction balance. Area shuffling 
+    between stand type within a landcover type is now avoided when 
+    possible; land-cover change is suppressed until soil pools have  
+    been resolved during spinup; 
+  - Direct use of landcover.ins without using crop.ins is now enabled.
+* Use of LPJ-GUESS version 4.1 to explore CO2 fertilisation
+  impacts on crop yields is not recommended. At present, yields increase 
+  by an unrealistically high level across all CFTs, which far exceeds 
+  results reported in Olin et al., 2015. Work is in progress to solve 
+  this issue and a patch may be provided in due course.
+* Monoterpene speciations
+  Speciated monoterpenes are now calculated, where the monoterpene storage 
+  fraction now depends on monoterpene species. Nine different monoterpene 
+  species are considered which are merged in two groups: endocyclic (TM1) 
+  and the rest (TM2); over Europe, only values for these 2 groups are 
+  available. 
+* New benchmarks
+  The new enchmarks panarctic, soil_temperature, wetland_global, 
+  and wetland_sites:
+  - panarctic: is for a domain north of 60N and should be used with 
+    arctic.ins.
+    Purpose: to assess high latitude PFT distributions and active layer 
+    depth distributions.
+  - soil_temperature: site runs for a limited number of cells with 
+    available soil temperature observations.
+    Purpose: to assess seasonal soil temperature performance.
+  - wetland_global: global simulation of wetland fluxes and vegetation
+    Purpose: to assess global CH4 emissions as well as CH4 emissions
+    from regional hotspots.
+  - wetland_sites: site simulations of wetland fluxes and vegetation.
+    Purpose: to evaluate against observed CH4 emissions.
+  The new benchmark fluxnet replaces the benchmarks euroflux and 
+  euroflux_globalpfts: sites, of at least 10 years of observations, 
+  were selected from the global Fluxnet gridlist. Fluxnet input files 
+  need to be supplied and pointed to by the pre-existing instruction 
+  file parameter "flux_dir". 
+  Biomass output, as well as fire-related benchmark output and nitrogen-
+  transformation output, has been added to the crop_global benchmark.
+  In several of the benchmarks, paths to reference data need to be 
+  provided in the postprocess.sh script.
+* Daily climate has been added as an output table. Enable output by 
+  adding parameter file_daily_climate in e.g. global.ins.
+  Seasonality.out is now a standard output file.             
+* Updates to  photosynthesis() function header to receive the new 
+  structs PhotosynthesisEnvironment and PhotosynthesisStresses. Some 
+  of the photosynthesis() function parameters were moved into these 
+  new structs. See the function comment in the code to see to which 
+  struct each parameter was moved.
+* Conditionals for function calls to features that are switched on/off 
+  by instruction file parameters (e.g. land cover and crop) have been 
+  moved from framework to the functions themselves.
+* NetCDF input: a few functions for gridlists were added, as well as a 
+  warning message from CMake if it does not find the NetCDF library.
+* CMake minimum version in CMakeLists.txt has been changed to 3.5.2 
+  (compatible back to 2.8.12).
+* LPJ-GUESS no longer supports 32 bit compilation. 64-bit (x64) 
+  compilation is required. (N.B. The same is true for the LPJ-GUESS 
+  graphical shell for MS Windows: x64 compilation of the model as a 
+  Windows dynamic-link library (DLL) is required since v4.0). See 
+  guessdoc.pdf for details.
+* The default standard submit script for parallel jobs (simba.tmpl) 
+  has changed from PBS/Torque to SLURM. A submit script for PBS/Torque 
+  is no longer actively maintained, and no longer provided as part of 
+  the LPJ-GUESS package. A legacy submit script for PBS/Torque can be 
+  found in the Release 4.0 package (old-version simba.tmpl).  
 
-* C to N ratios for root and sapwood are now effectively fixed at prescribed PFT 
-  target values, instead of varying in proportion to change in leaf C:N.
-  
-* Temperate needleleaved evergreen tree (TeNE) PFT enabled by default in the 
-  global.ins instruction file.
-
-* Calendar years instead of simulation years appear in output by default. Change 
-  by replacing date.get_calendar_year() with date.year on line 37 of 
-  CommonOutput::outannual (commonoutput.cpp).
-
-* New version of the LPJ-GUESS Windows Shell, with reinstated 3D visualisation of 
-  vegetation structure removed in version 3.0. 64-bit (x64) compilation of the  
-  model as a Windows dynamic-link library (DLL) is required. 
-
-* Soil texture now supports grid cell-specific sand, silt and clay fractions 
-  (specified in driver.cpp). Fractions were derived based on texture classes 
-  (Sitch et al. 2003) in soil triangle (except for organic soil, where global 
-  values from the fixed sand, silt and clay fractions, as e.g. in v3.0, were 
-  kept). Revert to fixed sand, silt and clay fractions  by adding the line 
-  "textured_soil 0" to the instruction files file to use fixed values from 
-  Parton et al.(1993)).
-  
-* The benchmarks euroflux and euroflux_globalpfts are currently being updated,
-  and are consequently temporarily removed from the release package. (They are 
-  however kept in the code repository for repository reasons: users downloading 
-  from the svn code repository should remove the catalogues before running the
-  benchmark suite.)
-  
-* The release version 4.0.1 contains bugfixes to release version 4.0. Mainly:
-  Nitrogen pools are now being balanced when running in carbon-only mode.
-  Bugfix for bug introduced in release version 4.0 causing RCP-scenario to start 
-  one decade too late.
-  Addition of missing crop-functional-types BVOC parameters.
+For detailed information of use of the new features, see the attached 
+reference documentation.
 
 Enquiries to Johan.Nord@nateko.lu.se.
 
