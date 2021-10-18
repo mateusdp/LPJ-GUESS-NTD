@@ -1,0 +1,6 @@
+build/
+
+doxygen/output/
+
+# Subversion folder
+.svn

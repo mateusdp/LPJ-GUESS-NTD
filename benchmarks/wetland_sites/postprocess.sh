@@ -15,7 +15,7 @@ function process {
 
     # Plot data
     gplot plot.txt -o methane.jpg -x Obs -y Modelled -scatter -sx 0 1000 -sy 0 1000 -eq -yt "Modelled methane flux\n(mg CH4 m-2 day-1)" -xt "Measured methane flux\n(mg CH4 m-2 day-1)" -t "Measured vs. Modelled methane flux"
-    describe_image methane.jpg "Measured vs. modelled methane flux. Unit: mg CH4 m-2 day-1" embed
+    describe_image methane.jpg "Measured vs. modelled methane flux. Unit: mg CH4 m-2 day-1"
 
     # cleanup
     rm modelled.txt mod.txt obs.txt tmp.txt

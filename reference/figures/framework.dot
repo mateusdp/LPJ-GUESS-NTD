@@ -2,7 +2,7 @@ digraph G {
 	fontname="oxygen mono"
 	splines = ortho;
 	node[shape=box, height=.3, width=2, fontsize=10, fontname="oxygen mono"];
-	edge[color=coral, arrowsize=.5];
+	edge[color=black, arrowsize=.5];
 	ranksep = 0.25;
 
 	subgraph cluster_gridcell {
@@ -31,26 +31,23 @@ digraph G {
 		getclimate ->
 		dailyaccounting_gridcell ->
 		daylengthinsoleet ->
+"crop_sowing_gridcell\n\nlandcover_dynamics\n\ngetmanagement\n\nmanage_forests" ->
 		dailyaccounting_stand ->
 		dailyaccounting_patch ->
-		crops ->
-		leaf_phenology ->
-		interception ->
-		initial_infiltration ->
-		canopy_exchange ->
-		soil_water ->
-		growth_daily ->
+"nfert\n\ncrop_sowing_patch\n\ncrop_phenology\n\nleaf_phenology\n\ninterception\n\ninitial_infiltration\n\ncanopy_exchange\n\nirrigation\n\nsoil_water\n\ngrowth_daily" ->
 		som_dynamics ->
+		methane_dynamics ->
+		blaze_driver ->
 		crop_rotation ->
 		outdaily;
-		som_dynamics -> dailyaccounting_patch[color=forestgreen];
+		blaze_driver -> dailyaccounting_patch[color=forestgreen];
 		crop_rotation -> dailyaccounting_stand[color=red];
 		outdaily -> getclimate[color=blue];
 	}
 
 	som_dynamics -> growth[constraint=false];
 	landcover_init -> getclimate[constraint=false];
-	growth -> crop_rotation[constraint=false];
+	growth -> methane_dynamics[constraint=false];
 	crop_rotation -> vegetation_dynamics[constraint=false];
 	outdaily -> outannual[constraint=false];
 	daylengthinsoleet -> landcover_dynamics[constraint=false];
