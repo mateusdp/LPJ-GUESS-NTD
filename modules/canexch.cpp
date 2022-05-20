@@ -6,7 +6,7 @@
 /// production, respiration and evapotranspiration.
 ///
 /// \author Ben Smith
-/// $Date: 2021-09-02 15:27:34 +0200 (Thu, 02 Sep 2021) $
+/// $Date: 2022-04-22 11:17:29 +0200 (Fri, 22 Apr 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1948,11 +1948,23 @@ void aet_water_stress(Patch& patch, Vegetation& vegetation, const Day& day) {
 			}
 
 			// Calculate supply (Eqn 24, Haxeltine & Prentice 1996)
-			if (patch.stand.landcover!=CROPLAND || ppft.cropphen->growingseason)
+			if (patch.stand.landcover != CROPLAND ){
 				ppft.wsupply_leafon = pft.emax * wr;
-			else
-				ppft.wsupply_leafon = 0.0;
-			ppft.wsupply = ppft.wsupply_leafon * ppft.phen;
+				ppft.wsupply = ppft.wsupply_leafon * ppft.phen;
+			}
+			else {  // crop specific water supply
+				// Temporarily removed the scaling with fpc due to 
+				// too high water stress for young crops. (r10394)
+				// TODO: Make the water supply dependant on root allocation
+				if (ppft.cropphen->growingseason) {
+					ppft.wsupply_leafon = pft.emax * wr;
+					ppft.wsupply = ppft.wsupply_leafon;
+				}
+				else {
+					ppft.wsupply_leafon = 0.0;
+					ppft.wsupply = 0.0;
+				}
+			}
 		}
 
 		ppft.wstress = ppft.wsupply < patch.wdemand && !negligible(ppft.phen) && !(pft.phenology==CROPGREEN && !largerthanzero(patch.wdemand-ppft.wsupply, -10));

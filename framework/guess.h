@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2021-09-30 16:23:14 +0200 (Thu, 30 Sep 2021) $
+/// $Date: 2022-04-22 11:17:29 +0200 (Fri, 22 Apr 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1048,6 +1048,9 @@ public:
 public:
 	/// constructor function: initialises gridcell member
 	Climate(Gridcell& gc):gridcell(gc) {
+
+		var_prec = 0.0;
+		var_temp = 0.0;
 
 		aprec = 0.0;
 		aprec_lastyear = 0.0;
