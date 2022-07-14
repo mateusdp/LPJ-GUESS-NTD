@@ -3,7 +3,7 @@
 /// \brief LPJ-GUESS Combined Modular Framework
 ///
 /// \author Ben Smith
-/// $Date: 2021-10-10 10:58:01 +0200 (Sun, 10 Oct 2021) $
+/// $Date: 2022-07-01 16:54:16 +0200 (Fri, 01 Jul 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1191,6 +1191,7 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 	leafndemand_store = 0.0;
 	rootndemand_store = 0.0;
 
+	n_opt_isabovelim      = false;
 	nstress           = false;
 
 	// additional initialisation

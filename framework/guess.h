@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2022-04-22 11:17:29 +0200 (Fri, 22 Apr 2022) $
+/// $Date: 2022-07-01 16:54:16 +0200 (Fri, 01 Jul 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -2648,6 +2648,8 @@ public:
 	double cmass_veg;
 	/// total nitrogen in compartments before growth
 	double nmass_veg;
+	/// whether individual optimal leaf nitrogen is above allowed limit
+	bool n_opt_isabovelim;
 	/// whether individual subject to nitrogen stress
 	bool nstress;
 	/// daily leaf nitrogen demand calculated from Vmax (kgN/m2)

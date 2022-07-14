@@ -6,7 +6,7 @@
 /// production, respiration and evapotranspiration.
 ///
 /// \author Ben Smith
-/// $Date: 2022-04-22 11:17:29 +0200 (Fri, 22 Apr 2022) $
+/// $Date: 2022-07-01 16:54:16 +0200 (Fri, 01 Jul 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -986,7 +986,8 @@ void nstore_usage(Vegetation& vegetation) {
 				indiv.nmass_root    += root_ndemand;
 				indiv.nstore_labile -= root_ndemand;
 
-				indiv.nstress = false;
+				// nitrogen stressed photosynthesis is allowed only if optimal leaf nitrogen is above allowed level 
+				indiv.nstress = indiv.n_opt_isabovelim;
 			}
 			else {
 
@@ -1011,13 +1012,13 @@ void nstore_usage(Vegetation& vegetation) {
 				}
 
 				// nitrogen stressed photosynthesis is allowed only when nitrogen limitation is turned on
-				indiv.nstress = ifnlim;
+				indiv.nstress = ifnlim && date.year > freenyears;
 				
 			}
 		}
 		else
-			// photosynthesis will not be nitrogen stresses
-			indiv.nstress = false;
+			// photosynthesis will not be nitrogen stresses unless optimal leaf N is above maximum limit
+			indiv.nstress = indiv.n_opt_isabovelim;
 
 		vegetation.nextobj();
 	}
@@ -1053,6 +1054,9 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// Rescaler of nitrogen uptake
 		indiv.fnuptake = 1.0;
 
+		// Assume that optimal leaf nitrogen isn't above allowed limit
+		indiv.n_opt_isabovelim = false;
+
 		// Starts with no nitrogen stress
 		indiv.nstress = false;
 
@@ -1079,6 +1083,9 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			// Can not have higher nitrogen concentration than minimum leaf C:N ratio
 			if (indiv.cmass_leaf_today() / leafoptn < indiv.pft.cton_leaf_min) {
 				leafoptn = indiv.cmass_leaf_today() / indiv.pft.cton_leaf_min;
+
+				// Optimal leaf N above limit -> always N limitation on Vmax
+				indiv.n_opt_isabovelim = ifnlim && date.year > freenyears;
 			}
 			// Can not have lower nitrogen concentration than maximum leaf C:N ratio
 			else if (indiv.cmass_leaf_today() / leafoptn > indiv.pft.cton_leaf_max) {
