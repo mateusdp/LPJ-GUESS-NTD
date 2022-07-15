@@ -5,6 +5,8 @@
 /// Vegetation-atmosphere exchange of H2O and CO2 via
 /// production, respiration and evapotranspiration.
 ///
+/// Acclimated Respiration update, author Mateus Dantas, 2022-07-05
+///
 /// \author Ben Smith
 /// $Date: 2023-01-31 13:02:50 +0100 (Tue, 31 Jan 2023) $
 ///
@@ -2368,6 +2370,114 @@ void respiration(double gtemp_air, double gtemp_soil, lifeformtype lifeform,
 	else fail ("Canopy exchange function respiration: unknown life form");
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////
+// ACCLIMATED AUTOTROPHIC RESPIRATION
+// Internal function (do not call directly from framework)
+
+void respiration_acclimated(double gtemp_air, double gtemp_soil, double airtemp, double soiltemp, lifeformtype lifeform,
+	double cton_sap, double cton_root,
+	double cmass_sap, double cmass_root_today, double assim, double& resp) {
+
+	// DESCRIPTION
+	// Same function as above, but includes a respiration acclimation function based on
+	// the work by Thum et al. (2019) and Atkin et al. (2014).
+	// This function substitutes the respcoeff parameter as is important for tropical PFTs.
+	// Is activated by the "acclimated_respiration" parameter in the instruction file.
+
+	// INPUT PARAMETERS
+	// gtemp_air  = respiration temperature response incorporating damping of Q10
+	//              response due to temperature acclimation (Eqn 11, Lloyd & Taylor
+	//              1994); Eqn B2 below
+	// gtemp_soil = as gtemp_air given soil temperature
+	// airtemp = patch air temperature
+	// soiltemp = patch soil temperature
+	// lifeform   = PFT life form class (TREE or GRASS)
+	// cton_sap   = PFT sapwood C:N ratio
+	// cton_root  = PFT root C:N ratio
+	// phen       = vegetation phenological state (fraction of potential leaf cover)
+	// cmass_sap  = sapwood C biomass on grid cell area basis (kgC/m2)
+	// cmass_root = fine root C biomass on grid cell area basis (kgC/m2)
+	// assim      = net assimilation on grid cell area basis (kgC/m2/day)
+
+	// OUTPUT PARAMETER
+	// resp       = sum of maintenance and growth respiration on grid cell area basis
+	//              (kgC/m2/day)
+
+	// guess2008 - following a comment by Annett Wolf, the following parameter value was changed:
+	// const double K=0.0548; // OLD value
+	const double K = 0.095218;  // NEW parameter value in respiration equations
+								// See the comment after Eqn (4) below.
+
+	double resp_sap;    // sapwood respiration (kg/m2/day)
+	double resp_root;   // root respiration (kg/m2/day)
+	double resp_growth; // growth respiration (kg/m2/day)
+
+						// Acclimated respiration
+
+						// from (7) in the previous function, we have:												
+						//  (7) R_pft = respcoeff_pft * k * c_mass / cton * g(T)
+						// We then substitute respcoeff_pft for the function f(Tacc) to have
+						//  (8) R_acc = f(T_acc) * k * c_mass / cton * g(T)
+						// Where Tacc is the running average of air (airtemp) or soil temperature (soiltemp) , and f(T_acc) being
+						//  (9) f(T_acc) = f_maint_rate_ref * pow(10, f_resp_acc * (T_acc - T_acc_ref)
+						
+						// and the parameters:
+						// f_maint_rate_ref = 1.0 (fine roots and leaves) or 0.25 (wood)	Sprugel et al. (1996)
+						// f_resp_acc = -0.008	Sprugel et al. (1996)
+						// T_acc_ref = 10.15	Sprugel et al. (1996)
+						
+
+
+
+	if (lifeform == TREE) {
+
+		// Sapwood respiration (Eqn 7)
+		// respcoeff parameter substituted by acclimation function
+
+		resp_sap = 0.25 * pow(10, (-0.008 * (airtemp - 10.15))) * K * cmass_sap / cton_sap * gtemp_air;
+
+		// Root respiration (Eqn 7)
+		// Assumed that root phenology follows leaf phenology
+		// respcoeff parameter substituted by acclimation function
+
+		resp_root = 1.0 * pow(10, (-0.008 * (soiltemp - 10.15))) * K * cmass_root_today / cton_root * gtemp_soil;
+
+		// Growth respiration = 0.25 ( GPP - maintenance respiration)
+
+		resp_growth = (assim - resp_sap - resp_root) * 0.25;
+
+		// guess2008 - disallow negative growth respiration
+		// (following a comment (060823) from Annett Wolf)
+		if (resp_growth < 0.0) resp_growth = 0.0;
+
+		// Total respiration is sum of maintenance and growth respiration
+
+		resp = resp_sap + resp_root + resp_growth;
+	}
+	else if (lifeform == GRASS || lifeform == MOSS) {
+
+		// Root respiration
+		// respcoeff parameter substituted by acclimation function
+
+		resp_root = 1.0 * pow(10, (-0.008 * (soiltemp - 10.15))) * K * cmass_root_today / cton_root * gtemp_soil;
+
+		// Growth respiration (see above)
+
+		resp_growth = (assim - resp_root) * 0.25;
+
+		// guess2008 - disallow negative growth respiration
+		// (following a comment (060823) from Annett Wolf)
+		if (resp_growth < 0.0) resp_growth = 0.0;
+
+		// Total respiration (see above)
+
+		resp = resp_root + resp_growth;
+	}
+	else fail("Canopy exchange function respiration: unknown life form");
+}
+
+
 /// Net Primary Productivity
 /** Includes BVOC calculations \see bvoc.cpp
  */
@@ -2461,9 +2571,15 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 			cton_root = pft.cton_root_avr;
 		}
 
-		respiration(gtemp, patch.soil.gtemp, indiv.pft.lifeform,
-			indiv.pft.respcoeff, cton_sap, cton_root,
-			indiv.cmass_sap, cmass_root, assim, resp);
+		//Acclimated or standard respiration
+		if(param["acclimated_respiration"].num)
+			respiration_acclimated(gtemp, patch.soil.gtemp, temp, patch.soil.get_soil_temp_25(), indiv.pft.lifeform,
+				cton_sap, cton_root,
+				indiv.cmass_sap, cmass_root, assim, resp);
+		else
+			respiration(gtemp, patch.soil.gtemp, indiv.pft.lifeform,
+				indiv.pft.respcoeff, cton_sap, cton_root,
+				indiv.cmass_sap, cmass_root, assim, resp);
 
 		// Convert to averages for this period for accounting purposes
 		assim /= date.subdaily;
@@ -2707,6 +2823,10 @@ void canopy_exchange(Patch& patch, Climate& climate) {
 //
 // LPJF refers to the original FORTRAN implementation of LPJ as described by Sitch
 //   et al 2001
+// Atkin, O.K., Meir, P., and Turnbull, M.H.: Improving representation of leaf respiration 
+//	 in large - scale predictive climate–vegetation mod - els, New Phytologist, 202, 
+//   743–748, https ://doi.org/10.1111/nph.12686, 
+//   https://nph.onlinelibrary.wiley.com/doi/abs/10.1111/nph.12686, 2014.
 // Collatz, GJ, Ball, JT, Grivet C & Berry, JA 1991 Physiological and
 //   environmental regulation of stomatal conductance, photosynthesis and
 //   transpiration: a model that includes a laminar boundary layer. Agricultural
@@ -2758,6 +2878,9 @@ void canopy_exchange(Patch& patch, Climate& climate) {
 // Sprugel, DG, Ryan MG, Renee Brooks, J, Vogt, KA & Martin, TA (1996) Respiration
 //   from the organ level to the stand. In: Smith, WK & Hinckley, TM (eds),
 //   Physiological Ecology of Coniferous Forests.
+// Thum, T. Caldararu, S., Engel, J., Kern, M., Pallandt, M., Schnur, R., Yu, L., Zaehle, S. (2019)
+//   A new model of the coupled carbon, nitrogen, and phosphorus cycles in the terrestrial biosphere (QUINCY v1.0; revision 1996).
+//   Geoscientific Model Development, 12, 4781–4802. doi:10.5194/gmd-2019-49
 // Wania, R., Ross, I., & Prentice, I.C. (2009a) Integrating peatlands and permafrost 
 //   into a dynamic global vegetation model: I. Evaluation and sensitivity of physical 
 //   land surface processes. Global Biogeochemical Cycles, 23, GB3014, doi:10.1029/2008GB003412
