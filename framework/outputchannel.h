@@ -254,6 +254,28 @@ inline double limited_cton(double cmass, double nmass) {
 }
 
 
+/// Help function to prepare C:P values for output
+/** Avoids division by zero and limits the results to a maximum
+*  value to avoid inf or values large enough to ruin the alignment
+*  in the output.
+*
+*  If both cmass and pmass is 0, the function returns 0.
+*/
+inline double limited_ctop(double cmass, double pmass) {
+	const double MAX_CTOP = 10000;
+
+	if (pmass > 0.0) {
+		return min(MAX_CTOP, cmass / pmass);
+	}
+	else if (cmass > 0.0) {
+		return MAX_CTOP;
+	}
+	else {
+		return 0.0;
+	}
+}
+
+
 }
 
 #endif // LPJ_GUESS_OUTPUT_CHANNEL_H

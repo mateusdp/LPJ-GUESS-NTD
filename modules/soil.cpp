@@ -39,6 +39,9 @@ void Soil::init_states() {
 	aorgNleach = 0.0;
 	anfix = 0.0;
 	aminleach = 0.0;
+	aorgPleach = 0.0;
+	apwtr = 0.0;
+	aminpleach = 0.0;
 
 	lKorg = lKpeat = lKmin = lKwater = lKice = lKair = 0.0;
 
@@ -51,6 +54,9 @@ void Soil::init_states() {
 		fnuptake_mean[mth] = 0.0;
 		morgleach_mean[mth] = 0.0;
 		mminleach_mean[mth] = 0.0;
+		fpuptake_mean[mth] = 0.0;
+		morgPleach_mean[mth] = 0.0;
+		mminpleach_mean[mth] = 0.0;
 	}
 
 	std::fill_n(dwcontupper, Date::MAX_YEAR_LENGTH, 0.0);
@@ -85,18 +91,29 @@ void Soil::init_states() {
 	N2_mass = 0.0;
 	NH4_mass = 0.0;
 	NO3_mass = 0.0;
+	pmass_labile = 0.0;
 	NH4_input = 0.0;
 	NO3_input = 0.0;
+	pmass_labile_input = 0.0;
 	anmin = 0.0;
 	animmob = 0.0;
 	aminleach = 0.0;
+	apmin = 0.0;
+	apimmob = 0.0;
+	aminpleach = 0.0;
 	aorgNleach = 0.0;
+	aorgPleach = 0.0;
 	aorgCleach = 0.0;
 	anfix = 0.0;
 	anfix_calc = 0.0;
 	anfix_mean = 0.0;
+	apwtr = 0.0;
+	apwtr_mean = 0.0;
+	apdep = 0.0;
+	apdep_mean = 0.0;
 	snowpack_NH4_mass = 0.0;
 	snowpack_NO3_mass = 0.0;
+	snowpack_pmass_labile = 0.0;
 	labile_carbon = 0.0;
 	labile_carbon_w = 0.0;
 	labile_carbon_d = 0.0;
@@ -3928,24 +3945,38 @@ void Soil::serialize(ArchiveStream& arch) {
 		& N2_mass
 		& NH4_mass
 		& NO3_mass
+		& pmass_labile
 		& NH4_input
 		& NO3_input
+		& pmass_labile_input
 		& anmin
 		& animmob
 		& aminleach
+		& apmin
+		& apimmob
+		& aminpleach
+		& aorgPleach
 		& aorgNleach
 		& aorgCleach
 		& anfix
 		& anfix_calc
 		& anfix_mean
+		& apwtr
+		& apwtr_mean
+		& apdep
+		& apdep_mean
 		& snowpack_NH4_mass
 		& snowpack_NO3_mass
+		& snowpack_pmass_labile
 		& solvesomcent_beginyr
 		& solvesomcent_endyr
 		& solvesom
 		& fnuptake_mean
+		& fpuptake_mean
 		& morgleach_mean
 		& mminleach_mean
+		& morgPleach_mean
+		& mminpleach_mean
 		& labile_carbon
 		& pH;
 }

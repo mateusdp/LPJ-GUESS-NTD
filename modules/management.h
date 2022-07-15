@@ -39,6 +39,8 @@ void yield_crop(Individual& indiv);
 void yield_pasture(Individual& indiv, double cmass_leaf_inc);
 /// Determines amount of nitrogen applied today
 void nfert(Patch& patch);
+/// Determines amount of phosphorus applied today
+void pfert(Patch& patch);
 /// Updates crop rotation status
 void crop_rotation(Stand& stand);
 /// Determines cutting intensity before wood harvest
@@ -70,6 +72,16 @@ struct Harvest_CN {
 	double nstore_longterm;
 	double nstore_labile;
 	double max_n_storage;
+	double pmass_leaf;
+	double pmass_root;
+	double pmass_sap;
+	double pmass_heart;
+	double pmass_ho;
+	double pmass_agpool;
+	double pmass_dead_leaf;
+	double pstore_longterm;
+	double pstore_labile;
+	double max_p_storage;
 
 	double cmass_litter_leaf;
 	double cmass_litter_root;
@@ -79,19 +91,27 @@ struct Harvest_CN {
 	double nmass_litter_root;
 	double nmass_litter_sap;
 	double nmass_litter_heart;
+	double pmass_litter_leaf;
+	double pmass_litter_root;
+	double pmass_litter_sap;
+	double pmass_litter_heart;
 	double acflux_harvest;
 	double anflux_harvest;
+	double apflux_harvest;
 	double cmass_harvested_products_slow;
 	double nmass_harvested_products_slow;
+	double pmass_harvested_products_slow;
 
 	Harvest_CN() {
 
 		cmass_leaf = cmass_root = cmass_sap = cmass_heart = cmass_debt = cmass_ho = cmass_agpool = cmass_stem = cmass_dead_leaf = debt_excess = 0.0;
 		nmass_leaf = nmass_root = nmass_sap = nmass_heart = nmass_ho = nmass_agpool = nmass_dead_leaf = nstore_longterm = nstore_labile = max_n_storage = 0.0;
+		pmass_leaf = pmass_root = pmass_sap = pmass_heart = pmass_ho = pmass_agpool = pmass_dead_leaf = pstore_longterm = pstore_labile = max_p_storage = 0.0;
 		cmass_litter_leaf = cmass_litter_root = cmass_litter_sap = cmass_litter_heart = 0.0;
 		nmass_litter_leaf = nmass_litter_root = nmass_litter_sap = nmass_litter_heart = 0.0;
-		acflux_harvest = anflux_harvest = 0.0;
-		cmass_harvested_products_slow = nmass_harvested_products_slow = 0.0;
+		pmass_litter_leaf = pmass_litter_root = pmass_litter_sap = pmass_litter_heart = 0.0;
+		acflux_harvest = anflux_harvest = apflux_harvest = 0.0;
+		cmass_harvested_products_slow = nmass_harvested_products_slow = pmass_harvested_products_slow = 0.0;
 	}
 
 	/// Copies C and N values from individual and patchpft tp struct.
@@ -140,10 +160,22 @@ struct Harvest_CN {
 		nstore_labile = indiv.nstore_labile;
 		max_n_storage = indiv.max_n_storage;
 
+		pmass_leaf = indiv.pmass_leaf;
+		pmass_root = indiv.pmass_root;
+		pmass_sap = indiv.pmass_sap;
+		pmass_heart = indiv.pmass_heart;
+		pstore_longterm = indiv.pstore_longterm;
+		pstore_labile = indiv.pstore_labile;
+		max_p_storage = indiv.max_p_storage;
+
 		if(indiv.pft.landcover == CROPLAND) {
 			nmass_ho = indiv.cropindiv->nmass_ho;
 			nmass_agpool = indiv.cropindiv->nmass_agpool;
 			nmass_dead_leaf = indiv.cropindiv->nmass_dead_leaf;
+
+			pmass_ho = indiv.cropindiv->pmass_ho;
+			pmass_agpool = indiv.cropindiv->pmass_agpool;
+			pmass_dead_leaf = indiv.cropindiv->pmass_dead_leaf;
 		}
 
 		if(copy_dead_C) {
@@ -158,9 +190,15 @@ struct Harvest_CN {
 			nmass_litter_sap = ppft.nmass_litter_sap;
 			nmass_litter_heart = ppft.nmass_litter_heart;
 
+			pmass_litter_leaf = ppft.pmass_litter_leaf;
+			pmass_litter_root = ppft.pmass_litter_root;
+			pmass_litter_sap = ppft.pmass_litter_sap;
+			pmass_litter_heart = ppft.pmass_litter_heart;
+
 			// acflux_harvest and anflux_harvest only for output
 			cmass_harvested_products_slow = ppft.cmass_harvested_products_slow;
 			nmass_harvested_products_slow = ppft.nmass_harvested_products_slow;
+			pmass_harvested_products_slow = ppft.pmass_harvested_products_slow;
 		}
 	}
 
@@ -205,10 +243,21 @@ struct Harvest_CN {
 		indiv.nstore_longterm = nstore_longterm;
 		indiv.nstore_labile = nstore_labile;
 
+		indiv.pmass_leaf = pmass_leaf;
+		indiv.pmass_root = pmass_root;
+		indiv.pmass_sap = pmass_sap;
+		indiv.pmass_heart = pmass_heart;
+		indiv.pstore_longterm = pstore_longterm;
+		indiv.pstore_labile = pstore_labile;
+
 		if(indiv.pft.landcover == CROPLAND) {
 			indiv.cropindiv->nmass_ho = nmass_ho;
 			indiv.cropindiv->nmass_agpool = nmass_agpool;
 			indiv.cropindiv->nmass_dead_leaf = nmass_dead_leaf;
+
+			indiv.cropindiv->pmass_ho = pmass_ho;
+			indiv.cropindiv->pmass_agpool = pmass_agpool;
+			indiv.cropindiv->pmass_dead_leaf = pmass_dead_leaf;
 		}
 
 		ppft.cmass_litter_leaf = cmass_litter_leaf;
@@ -219,10 +268,15 @@ struct Harvest_CN {
 		ppft.nmass_litter_root = nmass_litter_root;
 		ppft.nmass_litter_sap = nmass_litter_sap;
 		ppft.nmass_litter_heart = nmass_litter_heart;
+		ppft.pmass_litter_leaf = pmass_litter_leaf;
+		ppft.pmass_litter_root = pmass_litter_root;
+		ppft.pmass_litter_sap = pmass_litter_sap;
+		ppft.pmass_litter_heart = pmass_litter_heart;
 
 		if(!lc_change) {
 			patch.fluxes.report_flux(Fluxes::HARVESTC, acflux_harvest);	// Put into gridcell.acflux_landuse_change instead at land use change
 			patch.fluxes.report_flux(Fluxes::HARVESTN, anflux_harvest);	// Put into gridcell.anflux_landuse_change instead at land use change
+			patch.fluxes.report_flux(Fluxes::HARVESTP, apflux_harvest);	// Put into gridcell.apflux_landuse_change instead at land use change
 		}
 
 //		indiv.report_flux(Fluxes::NPP, debt_excess);
@@ -230,6 +284,7 @@ struct Harvest_CN {
 
 		ppft.cmass_harvested_products_slow = cmass_harvested_products_slow;
 		ppft.nmass_harvested_products_slow = nmass_harvested_products_slow;
+		ppft.pmass_harvested_products_slow = pmass_harvested_products_slow;
 	}
 };
 

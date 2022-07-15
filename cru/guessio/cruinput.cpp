@@ -306,6 +306,19 @@ bool CRUInput::getclimate(Gridcell& gridcell) {
 		                           mNHxdrydep, mNOydrydep,
 								   mNHxwetdep, mNOywetdep);
 
+		// Phosphorus deposition
+		if(date.day == 0 && date.year == 0)
+			get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), climate.mpdep);
+
+		// Divide pdep into dry and wet
+		double mpdrydep[12], mpwetdep[12];
+
+		for (int m = 0; m < 12; m++) {
+			mpdrydep[m] = climate.mpdep[m] / 2.0;
+
+			mpwetdep[m] = climate.mpdep[m] / 2.0;
+		}
+
 		if (date.year < nyear_spinup) {
 
 			// During spinup period
@@ -422,6 +435,10 @@ bool CRUInput::getclimate(Gridcell& gridcell) {
 		distribute_ndep(mNHxdrydep, mNOydrydep,
 						mNHxwetdep, mNOywetdep,
 						dprec,dNH4dep,dNO3dep);
+
+		// Distribute P deposition
+		distribute_pdep(mpdrydep, mpwetdep,
+						dprec, dpdep);
 	}
 
 	// Send environmental values for today to framework
@@ -435,6 +452,9 @@ bool CRUInput::getclimate(Gridcell& gridcell) {
 	// Nitrogen deposition
 	gridcell.dNH4dep = dNH4dep[date.day];
 	gridcell.dNO3dep = dNO3dep[date.day];
+
+	// Phosphorus deposition
+	gridcell.dpdep = dpdep[date.day];
 
 	// Tmin, Tmax for BLAZE
 	// initialise first

@@ -156,11 +156,17 @@ extern bool ifcentury;
 /// whether plant growth limited by available N
 extern bool ifnlim;
 
+/// whether plant growth limited by available P
+extern bool ifplim;
+
 /// number of years to allow spinup without nitrogen limitation
 extern int freenyears;
 
 /// fraction of nitrogen relocated by plants from roots and leaves
 extern double nrelocfrac;
+
+/// fraction of phosphorus relocated by plants from roots and leaves
+extern double prelocfrac;
 
 /// first term in nitrogen fixation eqn (Cleveland et al 1999)
 extern double nfix_a;
@@ -257,6 +263,15 @@ extern bool readNman;
 
 /// Whether to read N fertilization (stand tyoe level) from input file
 extern bool readNfert_st;
+
+/// Whether to read P fertilization from input file
+extern bool readPfert;
+
+/// Whether to read manure P fertilization from input file
+extern bool readPman;
+
+/// Whether to read P fertilization (stand tyoe level) from input file
+extern bool readPfert_st;
 
 /// Whether to print multiple stands within a land cover type (except cropland) separately
 extern bool printseparatestands;

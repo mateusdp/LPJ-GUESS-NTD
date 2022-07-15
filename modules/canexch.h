@@ -26,6 +26,7 @@ void photosynthesis(const PhotosynthesisEnvironment& ps_env,
 					const Pft& pft,
 					double lambda, 
 					double nactive, 
+					double pactive,
 					double vm,
 					PhotosynthesisResult& result);
 

@@ -28,11 +28,14 @@ void interp_monthly_totals_conserve(const double* mvals, double* dvals,
 void distribute_ndep(const double* mNH4dry, const double* mNO3dry, 
 	const double* mNH4wet, const double* mNO3wet,
 	const double* dprec, double* dNH4dep, double* dNO3dep);
+void distribute_pdep(const double* mpdry, const double* mpwet,
+	const double* dprec, double* dpdep);
 void prdaily(double* mval_prec, double* dval_prec, double* mval_wet, long& seed, bool truncate = true);
 void dailyaccounting_gridcell(Gridcell& gridcell);
 void dailyaccounting_stand(Stand& stand);
 void dailyaccounting_patch(Patch& patch);
 void respiration_temperature_response(double temp,double& gtemp);
 void daylengthinsoleet(Climate& climate);
+void get_monthly_pdep(double gridlat, double gridlong, double mpdep[12]);
 
 #endif // LPJ_GUESS_DRIVER_H

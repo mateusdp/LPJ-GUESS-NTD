@@ -1220,6 +1220,69 @@ void nfert_crop(Patch& patch) {
 	patch.anfert += patch.dnfert;
 }
 
+/// Function that determines amount of phosphorus applied today. Crop-specific, pft-based.
+void pfert_crop(Patch& patch) {
+
+	Gridcell& gridcell = patch.stand.get_gridcell();
+
+	patch.dpfert = 0.0;
+
+	pftlist.firstobj();
+	// Loop through PFTs
+	while (pftlist.isobj) {
+
+		Pft& pft = pftlist.getobj();
+		Patchpft& patchpft = patch.pft[pft.id];
+		Gridcellpft& gridcellpft = gridcell.pft[pft.id];
+
+		if (patch.stand.pft[pft.id].active && pft.phenology == CROPGREEN) {
+
+			cropphen_struct& ppftcrop = *(patchpft.get_cropphen());
+			if (!ppftcrop.growingseason) {
+				pftlist.nextobj();
+				continue;
+			}
+
+			double pfert = pft.P_appfert;
+			double mineral = 1.0;
+			if (gridcellpft.Pfert_read >= 0.0) {
+				pfert = gridcellpft.Pfert_read;
+				if (gridcellpft.Pfert_man_read > 0.0) {
+					mineral = 1.0 - gridcellpft.Pfert_man_read;
+				}
+
+			}
+			if (!ppftcrop.fertilised[0] && ppftcrop.dev_stage > 0.0) {
+				// Fertiliser application at dev_stage = 0, sowing.
+				patch.dpfert = pfert * mineral * (1.0 - pft.fertrate[0] - pft.fertrate[1]);
+				patch.fluxes.report_flux(Fluxes::PFERT, pfert * mineral * (1.0 - pft.fertrate[0] - pft.fertrate[1]));
+				ppftcrop.fertilised[0] = true;
+				if (mineral<1.0) {
+					patch.soil.sompool[SOILMETA].pmass += pfert * (1.0 - mineral) * 0.5;
+					patch.soil.sompool[SOILMETA].cmass += pfert * (1.0 - mineral) * 610.6792 * 0.25; //Check this, C:P ratio of an SLA of 15.51 m2/kgC (same which leads to a C:N of 30)
+					patch.soil.sompool[SOILSTRUCT].pmass += pfert * (1.0 - mineral) * 0.5;
+					patch.soil.sompool[SOILSTRUCT].cmass += pfert * (1.0 - mineral) * 610.6792 * 0.75;
+					patch.fluxes.report_flux(Fluxes::MANUREC, -pfert * (1.0 - mineral) * 610.6792);
+					patch.anfert += pfert * (1.0 - mineral);
+					patch.fluxes.report_flux(Fluxes::MANUREP, pfert * (1.0 - mineral));
+				}
+			}
+			else if (!ppftcrop.fertilised[1] && ppftcrop.dev_stage > pft.fert_stages[0]) {
+				patch.dpfert = pfert * mineral * pft.fertrate[0];
+				patch.fluxes.report_flux(Fluxes::PFERT, pfert * mineral * pft.fertrate[0]);
+				ppftcrop.fertilised[1] = true;
+			}
+			else if (!ppftcrop.fertilised[2] && ppftcrop.dev_stage > pft.fert_stages[1]) {
+				patch.dpfert = pfert * mineral * (pft.fertrate[1]);
+				patch.fluxes.report_flux(Fluxes::PFERT, pfert * mineral * pft.fertrate[1]);
+				ppftcrop.fertilised[2] = true;
+			}
+		}
+		pftlist.nextobj();
+	}
+	patch.apfert += patch.dpfert;
+}
+
 /// Function that determines amount of nitrogen applied today.
 void nfert(Patch& patch) {
 
@@ -1242,6 +1305,30 @@ void nfert(Patch& patch) {
 	}
 	patch.dnfert = nfert / date.year_length();
 	patch.anfert += patch.dnfert;
+}
+
+/// Function that determines amount ofphosphorus applied today.
+void pfert(Patch& patch) {
+
+	Stand& stand = patch.stand;
+	StandType& st = stlist[stand.stid];
+	Gridcell& gridcell = stand.get_gridcell();
+
+	if (stand.landcover == CROPLAND) {
+		pfert_crop(patch);
+		return;
+	}
+
+	// General code for applying phosphorus to other land cover types, an equal amount every day.
+	double pfert;
+	if (gridcell.st[st.id].pfert >= 0.0) {	// todo: management type variable (mt.nfert)
+		pfert = gridcell.st[st.id].pfert;
+	}
+	else {
+		pfert = 0.0;
+	}
+	patch.dpfert = pfert / date.year_length();
+	patch.apfert += patch.dpfert;
 }
 
 /// Updates crop rotation status

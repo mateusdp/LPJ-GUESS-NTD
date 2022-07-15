@@ -325,6 +325,77 @@ void distribute_ndep(const double* mNH4dry,const double* mNO3dry,
 	}
 }
 
+/// Distributes a single month of P deposition values
+/** The dry component is simply spread out over all days, the
+*  wet deposition is distributed over days with precipitation
+*  (or evenly over all days if there is no precipitation).
+*
+*  \see distribute_pdep
+*
+*  \param NH4dry      Dry NH4 deposition (monthly mean of daily deposition)
+*  \param NO3dry      Dry NO3 deposition (monthly mean of daily deposition)
+*  \param NH4wet      Wet NH4 deposition (monthly mean of daily deposition)
+*  \param NO3wet      Wet NO3 deposition (monthly mean of daily deposition)
+*  \param time_steps  Number of days in the month
+*  \param dprec       Array of precipitation values
+*  \param dNH4dep     Output, total NH4 deposition for each day
+*  \param dNO3dep     Output, total NO3 deposition for each day
+*/
+void distribute_pdep_single_month(double pdry, double pwet,
+	int time_steps,
+	const double* dprec,
+	double* dpdep) {
+
+	// First count number of days with precipitation
+	int raindays = 0;
+
+	for (int i = 0; i < time_steps; i++) {
+		if (!negligible(dprec[i])) {
+			raindays++;
+		}
+	}
+
+	// Distribute the values
+	for (int i = 0; i < time_steps; i++) {
+
+		// ndry is included in all days
+		dpdep[i] = pdry;
+
+		if (raindays == 0) {
+			dpdep[i] += pwet;
+		}
+		else if (!negligible(dprec[i])) {
+			dpdep[i] += (pwet*time_steps) / raindays;
+		}
+	}
+}
+
+/// Distributes monthly mean P deposition values to daily values
+/** \see distribute_ndep_single_month for details about how the
+*  distribution is done.
+*
+*  \param mndry Monthly means of daily dry N deposition
+*  \param mnwet Monthly means of daily wet N deposition
+*  \param dprec Daily precipitation data
+*  \param dNH4dep Output, total NH4 deposition for each day
+*  \param dNO3dep Output, total NO3 deposition for each day
+*/
+void distribute_pdep(const double* mpdry, const double* mpwet,
+	const double* dprec,
+	double* dpdep) {
+
+	Date date;
+	int start_of_month = 0;
+
+	for (int m = 0; m < 12; m++) {
+		distribute_pdep_single_month(mpdry[m], mpwet[m],
+			date.ndaymonth[m],
+			dprec + start_of_month, dpdep + start_of_month);
+
+		start_of_month += date.ndaymonth[m];
+	}
+}
+
 /// Distribution of monthly precipitation totals to quasi-daily values
 /** \param mval_prec  total rainfall (mm) for month
  *  \param dval_prec  actual rainfall (mm) for each day of year
@@ -472,17 +543,24 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 		gridcell.aNO3dep  = 0.0;
 		climate.aprec = 0.0;
 
+		// reset annual phosphorus input variables
+		gridcell.apdep = 0.0;
+
 		// reset gridcell-level harvest fluxes
 		gridcell.landcover.acflux_landuse_change=0.0;
 		gridcell.landcover.acflux_harvest_slow=0.0;
 		gridcell.landcover.anflux_landuse_change=0.0;
 		gridcell.landcover.anflux_harvest_slow=0.0;
+		gridcell.landcover.apflux_landuse_change = 0.0;
+		gridcell.landcover.apflux_harvest_slow = 0.0;
 
 		for(int i=0;i<NLANDCOVERTYPES;i++) {
 			gridcell.landcover.acflux_landuse_change_lc[i]=0.0;
 			gridcell.landcover.acflux_harvest_slow_lc[i]=0.0;
 			gridcell.landcover.anflux_landuse_change_lc[i]=0.0;
 			gridcell.landcover.anflux_harvest_slow_lc[i]=0.0;
+			gridcell.landcover.apflux_landuse_change_lc[i] = 0.0;
+			gridcell.landcover.apflux_harvest_slow_lc[i] = 0.0;
 		}
 
 		if (date.year == 0) {
@@ -497,6 +575,7 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 			pftlist.firstobj();
 			while (pftlist.isobj) {
 				gridcell.pft[pftlist.getobj().id].Km = pftlist.getobj().km_volume * gridcell.soiltype.wtot;
+				gridcell.pft[pftlist.getobj().id].Kmp = pftlist.getobj().kmp_volume * gridcell.soiltype.wtot;
 				pftlist.nextobj();
 			}
 		}
@@ -520,6 +599,11 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 				patch.soil.aorgCleach = 0.0;
 				patch.soil.aminleach = 0.0;
 				patch.anfert = 0.0;
+				patch.apfert = 0.0;
+				patch.soil.apwtr = 0.0;
+				patch.soil.apdep = 0.0;
+				patch.soil.aorgPleach = 0.0;
+				patch.soil.aminpleach = 0.0;
 				patch.managed_this_year = false;
 				patch.plant_this_year = false;
 				stand.nextobj();
@@ -563,6 +647,10 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 	// Sum annual nitrogen addition to system
 	gridcell.aNH4dep += gridcell.dNH4dep;
 	gridcell.aNO3dep += gridcell.dNO3dep;
+
+	// Sum annual phosphorus addition to system
+	//gridcell.apdep += 0.000018 / date.year_length();
+	gridcell.apdep += gridcell.dpdep;
 
 	// Save yesterday's mean temperature for the last month
 	mtemp_last = climate.mtemp;
@@ -1088,6 +1176,56 @@ void daylengthinsoleet(Climate& climate) {
 	else hn=acos(-uu / vv); // Eqn 25
 	// Calculate total EET (equilibrium evapotranspiration) for this day, mm/day
 	climate.eet = 2.0 * (s / (s + gamma) / lambda) * (uu * hn + vv * sin(hn)) * K;	// Eqn 26;
+}
+
+
+void get_monthly_pdep(double gridlat, double gridlong, double mpdep[12]) {
+
+	xtring file_pdep = param["file_pdep"].str;
+
+	bool eof = false;
+	double id, lon, lat, pdep1, pdep2, pdep3, pdep4, pdep5, pdep6, pdep7, pdep8, pdep9, pdep10, pdep11, pdep12, gridiff, gridifftemp, difref;
+
+	//ypdep = 0.0;
+	gridiff = 1000.0;
+	difref = 10.0;
+
+	//read phosphorus depostion values
+	FILE* in_pdep = fopen(file_pdep, "r");
+	eof = false;
+	int j = 0;
+	while (!eof) {
+
+		// Read next record in file
+		eof = !readfor(in_pdep, "f, f, f, f, f, f, f, f, f, f, f, f, f, f, f", &id, &lon, &lat, &pdep1, &pdep2, &pdep3, &pdep4, &pdep5, &pdep6, &pdep7, &pdep8, &pdep9, &pdep10, &pdep11, &pdep12);
+
+		if (!eof) { // ignore blank lines at end (if any)
+
+			gridifftemp = pow(pow(lon - gridlong, 2), 0.5) + pow(pow(lat - gridlat, 2), 0.5);
+
+			//if (lon == gridlong && lat == gridlat)
+			if (gridifftemp < difref && gridifftemp < gridiff) {
+				mpdep[0] = pdep1;
+				mpdep[1] = pdep2;
+				mpdep[2] = pdep3;
+				mpdep[3] = pdep4;
+				mpdep[4] = pdep5;
+				mpdep[5] = pdep6;
+				mpdep[6] = pdep7;
+				mpdep[7] = pdep8;
+				mpdep[8] = pdep9;
+				mpdep[9] = pdep10;
+				mpdep[10] = pdep11;
+				mpdep[11] = pdep12;
+				gridiff = gridifftemp;
+			}
+			j++;
+
+		}
+
+	}
+
+	fclose(in_pdep);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
