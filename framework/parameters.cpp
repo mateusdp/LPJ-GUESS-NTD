@@ -71,6 +71,8 @@ bool ifrainonwetdaysonly;
 
 bool ifbvoc;
 
+bool acclimated_respiration;
+
 // Arctic and wetland options
 bool iftwolayersoil;				// Use the original LPJ-GUESS v4 soil scheme, or not. If true, override many of the switches below. 
 bool ifmultilayersnow;				// Whether to use the simple multilayer snow scheme (1), or not (0)
@@ -515,6 +517,9 @@ void plib_declarations(int id,xtring setname) {
 
 		declareitem("ifbvoc",&ifbvoc,1,CB_NONE,
 			"Whether or not BVOC calculations are performed (0,1)");
+
+		declareitem("acclimated_respiration", &acclimated_respiration, 1, CB_NONE,
+			"Activation of acclimated respiration, function substituting the respcoeff values (0,1)");
 
 		declareitem("iftwolayersoil", &iftwolayersoil, 1, CB_NONE,
 			"Use the original LPJ-GUESS v4 soil scheme, or not (0,1)"); //COMMENT STEFAN, same here, better to define "not"
@@ -1288,6 +1293,7 @@ void plib_callback(int callback) {
 		
 		if (!itemparsed("ifbvoc")) badins("ifbvoc");
 		
+		if (!itemparsed("acclimated_respiration")) badins("acclimated_respiration");
 
 		if (!itemparsed("iftwolayersoil")) badins("iftwolayersoil");
 		if (!itemparsed("ifmultilayersnow")) badins("ifmultilayersnow");

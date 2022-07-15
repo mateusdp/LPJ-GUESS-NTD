@@ -318,6 +318,9 @@ extern bool ifrainonwetdaysonly;
 /// whether BVOC calculations are included
 extern bool ifbvoc;
 
+/// activation of acclimated respiration
+extern bool acclimated_respiration;
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // Arctic and wetland inputs
 
