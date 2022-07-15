@@ -47,7 +47,9 @@ void PhotosynthesisResult::serialize(ArchiveStream& arch) {
 		& vm
 		& je
 		& nactive_opt
-		& vmaxnlim;
+		& vmaxnlim
+		& pactive_opt
+		& vmaxplim;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,7 +258,8 @@ void Vegetation::serialize(ArchiveStream& arch) {
 
 void LitterSolveSOM::serialize(ArchiveStream& arch) {
 	arch & clitter
-		& nlitter;
+		& nlitter
+		& plitter;
 }
 
 
@@ -344,6 +347,11 @@ void Patchpft::serialize(ArchiveStream& arch) {
 		& nmass_litter_sap
 		& nmass_litter_heart
 		& nmass_harvested_products_slow
+		& pmass_litter_leaf
+		& pmass_litter_root
+		& pmass_litter_sap
+		& pmass_litter_heart
+		& pmass_harvested_products_slow
 		& swindow
 		& water_deficit_y
 		& inund_count
@@ -413,6 +421,10 @@ Patch::Patch(int i,Stand& s,Soiltype& st):
 	dnfert = 0.0;
 	anfert = 0.0;
 	nharv = 0;
+	pdemand = 0.0;
+	dpfert = 0.0;
+	apfert = 0.0;
+
 	for (int i = 0; i < NYEARAAET; i++) {
 		aaet_5.add(0.0);
 	}
@@ -596,7 +608,7 @@ double Patch::ncont(double scale_indiv, bool luc) {
 double Patch::water_content() {
 
 	double water_content = 0.0;
-	
+
 	for (int lyr = soil.IDX; lyr < NLAYERS; lyr++) {
 		water_content += (soil.Frac_ice[lyr] + soil.Frac_water[lyr] + soil.Fpwp_ref[lyr]) * soil.Dz[lyr];
 	}
@@ -604,6 +616,42 @@ double Patch::water_content() {
 	water_content += soil.snowpack;
 
 	return water_content;
+}
+
+/// P content of patch
+/**
+*  INPUT PARAMETERS
+*
+*  \param scale_indiv  		scaling factor for living P
+*  \param luc 					down-scales living P (used in P balance tests)
+*/
+double Patch::pcont(double scale_indiv, bool luc) {
+
+	double pcont = 0.0;
+
+	pcont += soil.pmass_labile;
+	pcont += soil.snowpack_pmass_labile;
+
+	for (int i = 0; i<NSOMPOOL; i++)
+		pcont += soil.sompool[i].pmass;
+
+	for (int i = 0; i<npft; i++) {
+		Patchpft& ppft = pft[i];
+		pcont += ppft.pmass_litter_leaf;
+		pcont += ppft.pmass_litter_root;
+		pcont += ppft.pmass_litter_sap;
+		pcont += ppft.pmass_litter_heart;
+		pcont += ppft.pmass_harvested_products_slow;
+	}
+
+	for (unsigned int i = 0; i<vegetation.nobj; i++) {
+
+		Individual& indiv = vegetation[i];
+		pcont += indiv.pcont(scale_indiv, luc);
+	}
+
+	return pcont;
+
 }
 
 /// C flux of patch
@@ -668,6 +716,25 @@ double Patch::water_flux() {
 	wflux += abaserunoff;
 
 	return wflux;
+}
+
+/// P flux of patch
+double Patch::pflux() {
+
+	double pflux = 0.0;
+
+	pflux += -stand.get_gridcell().apdep;
+	pflux += -apfert;
+	pflux += -soil.apwtr;
+	pflux += soil.aminpleach;
+	pflux += soil.aorgPleach;
+	pflux += fluxes.get_annual_flux(Fluxes::HARVESTP);
+	pflux += fluxes.get_annual_flux(Fluxes::SEEDP);
+	pflux += fluxes.get_annual_flux(Fluxes::P_FIRE);
+	pflux += fluxes.get_annual_flux(Fluxes::P_SOIL);
+
+	return pflux;
+
 }
 
 
@@ -888,15 +955,19 @@ void Stand::set_management() {
 	ManagementType& mt = get_current_management();
 
 	// Move variables to stand ?
-	if(!readNfert_st)
+	if (!readNfert_st)
 		gridcell->st[stid].nfert = mt.nfert;
+
+	if (!readPfert_st)
+		gridcell->st[stid].pfert = mt.pfert;
+
 	gridcell->st[stid].diam_cut_low = mt.diam_cut_low;
 
-	if(mt.hydrology == IRRIGATED) {
-		isirrigated = true;					
+	if (mt.hydrology == IRRIGATED) {
+		isirrigated = true;
 	}
 	else {
-		isirrigated = false;					
+		isirrigated = false;
 	}
 
 	pftlist.firstobj();
@@ -904,13 +975,13 @@ void Stand::set_management() {
 		Pft& pftx = pftlist.getobj();
 		Standpft& standpft = pft[pftx.id];
 
-		if(mt.hydrology == IRRIGATED) {
+		if (mt.hydrology == IRRIGATED) {
 			standpft.irrigated = true;
 		}
-		else {	
+		else {
 			standpft.irrigated = false;
 		}
-		pftlist.nextobj();			
+		pftlist.nextobj();
 	}
 
 	bool restrictpfts = (mt.planting_system != "");
@@ -932,7 +1003,7 @@ void Stand::set_management() {
 	while (pftlist.isobj) {
 		Pft& pftx = pftlist.getobj();
 
-		if(!restrictpfts && pftx.landcover == landcover
+		if (!restrictpfts && pftx.landcover == landcover
 			|| !restrictpfts && naturalveg && pftx.landcover == NATURAL // Allow all natural pft:s to grow in e.g. forests
 			|| naturalgrass && pftx.landcover == NATURAL && pftx.lifeform == GRASS // Allow natural grass pft:s to grow in e.g. forests
 			|| pftx.landcover == landcover && landcover == FOREST && pftx.lifeform == GRASS) { // Always allow forest grass pft:s to grow in forests
@@ -940,11 +1011,11 @@ void Stand::set_management() {
 			pft[pftx.id].active = true;
 			pft[pftx.id].reestab = true;
 			// If restrictpfts = false, plant all tree pft:s after clearcut
-			if(pftx.lifeform == TREE)
+			if (pftx.lifeform == TREE)
 				pft[pftx.id].plant = true;
 			// Test case when PNV planted but not re-established
-			if(st.reestab == "NONE" || st.reestab == "") {
-				if(pftx.lifeform == TREE)
+			if (st.reestab == "NONE" || st.reestab == "") {
+				if (pftx.lifeform == TREE)
 					pft[pftx.id].reestab = false;
 			}
 		}
@@ -960,19 +1031,19 @@ void Stand::set_management() {
 	while (pftlist.isobj) {
 		Pft& pftx = pftlist.getobj();
 
-		for(unsigned int p = 0; p < nobj; p++) {
+		for (unsigned int p = 0; p < nobj; p++) {
 			Patch& patch = (*this)[p];
 			Vegetation& vegetation = patch.vegetation;
 			vegetation.firstobj();
 			while (vegetation.isobj) {
 				Individual& indiv = vegetation.getobj();
 				Patchpft& ppft = patch.pft[indiv.pft.id];
-				if(indiv.pft.id == pftx.id) {
-					if(clone_year == date.year) {
+				if (indiv.pft.id == pftx.id) {
+					if (clone_year == date.year) {
 						// vegetation C transferred during cloning (may be harvested below)
 						double stand_frac = get_gridcell_fraction();
-						get_gridcell().landcover.acflux_cloned_lc[lc_origin] +=  indiv.ccont() * stand_frac / (double)nobj;
-						get_gridcell().landcover.acflux_cloned_lc[landcover] -=  indiv.ccont() * stand_frac / (double)nobj;
+						get_gridcell().landcover.acflux_cloned_lc[lc_origin] += indiv.ccont() * stand_frac / (double)nobj;
+						get_gridcell().landcover.acflux_cloned_lc[landcover] -= indiv.ccont() * stand_frac / (double)nobj;
 					}
 				}
 				vegetation.nextobj();
@@ -981,8 +1052,8 @@ void Stand::set_management() {
 		pftlist.nextobj();
 	}
 
-	if(mt.cutfirstyear) {
-		for(unsigned int p = 0; p < nobj; p++) {
+	if (mt.cutfirstyear) {
+		for (unsigned int p = 0; p < nobj; p++) {
 			Patch& patch = (*this)[p];
 			Vegetation& vegetation = patch.vegetation;
 			vegetation.firstobj();
@@ -991,7 +1062,7 @@ void Stand::set_management() {
 				// and during rotation when cutfirstyear != 0.
 				Individual& indiv = vegetation.getobj();
 				Patchpft& ppft = patch.pft[indiv.pft.id];
-				if(indiv.pft.lifeform == TREE) {
+				if (indiv.pft.lifeform == TREE) {
 					ppft.cmass_wood_clearcut += check_harvest_cmass(indiv, true);
 					ppft.cmass_harv_killed += indiv.ccont();
 					harvest_wood(indiv, 1.0, indiv.pft.harv_eff, indiv.pft.res_outtake, 0.1, clone_year == date.year);
@@ -999,7 +1070,7 @@ void Stand::set_management() {
 					indiv.vegetation.killobj();
 				}
 				else {
-					if(mt.killgrass_at_cc) {
+					if (mt.killgrass_at_cc) {
 						kill_remaining_vegetation(indiv);
 						indiv.vegetation.killobj();
 					}
@@ -1014,8 +1085,9 @@ void Stand::set_management() {
 		}
 	}
 
+
 	// Allow unselected individuals to stay alive if cutfirstyear_unsel is false after rotation or cloning
-	for(unsigned int p = 0; p < nobj; p++) {
+	for (unsigned int p = 0; p < nobj; p++) {
 		Patch& patch = (*this)[p];
 		Vegetation& vegetation = patch.vegetation;
 		vegetation.firstobj();
@@ -1024,93 +1096,282 @@ void Stand::set_management() {
 			pft[indiv.pft.id].active = true;
 			vegetation.nextobj();
 		}
-	}
 
-	if(!restrictpfts)
-		return;
+		/*if(pftid > -1) {
+			if (!readNfert)
+				gridcell->pft[pftid].Nfert_read = mt0.nfert;
+			if (!readPfert)
+				gridcell->pft[pftid].Pfert_read = mt0.pfert;
+			if (!readsowingdates)
+				pft[pftid].sdate_force = mt0.sdate;
+			if (!readharvestdates)
+				pft[pftid].hdate_force = mt0.hdate;
 
-	if(mt.planting_system == "MONOCULTURE") {
-		
-		int id = pftlist.getpftid(mt.pftname);
+		}*/
 
-		if(id >=0) {
 
-			if(landcover == CROPLAND) {
-				pft[id].active = true;
 
-				// Only crop or first crop in rotation
-				if(first_year == date.year) {
-					// Set crop cycle dates to default values only for first crop in a rotation for a new stand.
-					for(unsigned int p = 0; p < nobj; p++) {
 
-						Gridcellpft& gcpft = get_gridcell().pft[id]; 
-						Patchpft& ppft = (*this)[p].pft[id];
+		if (!restrictpfts)
+			return;
 
-						ppft.set_cropphen()->sdate = gcpft.sdate_default;
-						ppft.set_cropphen()->hlimitdate = gcpft.hlimitdate_default;
-				
-						if(pftlist[id].phenology == ANY)
-							ppft.set_cropphen()->growingseason = true;
-						else if(pftlist[id].phenology == CROPGREEN) {
-							ppft.set_cropphen()->eicdate = Date::stepfromdate(ppft.get_cropphen()->sdate, -15);
+		if (mt.planting_system == "MONOCULTURE") {
+
+			int id = pftlist.getpftid(mt.pftname);
+
+			if (id >= 0) {
+
+				if (landcover == CROPLAND) {
+					pft[id].active = true;
+
+					// Only crop or first crop in rotation
+					if (first_year == date.year) {
+						// Set crop cycle dates to default values only for first crop in a rotation for a new stand.
+						for (unsigned int p = 0; p < nobj; p++) {
+
+							Gridcellpft& gcpft = get_gridcell().pft[id];
+							Patchpft& ppft = (*this)[p].pft[id];
+
+							ppft.set_cropphen()->sdate = gcpft.sdate_default;
+							ppft.set_cropphen()->hlimitdate = gcpft.hlimitdate_default;
+
+							if (pftlist[id].phenology == ANY)
+								ppft.set_cropphen()->growingseason = true;
+							else if (pftlist[id].phenology == CROPGREEN) {
+								ppft.set_cropphen()->eicdate = Date::stepfromdate(ppft.get_cropphen()->sdate, -15);
+							}
 						}
 					}
+					// At crop rotation
+					else {
+						pftid = id;
+					}
+
+					Standpft& standpft = pft[pftid];
+					Gridcellpft& gridcellpft = gridcell->pft[pftid];
+
+					if (mt.hydrology == IRRIGATED) {
+						standpft.irrigated = true;
+					}
+					else {
+						standpft.irrigated = false;
+					}
+
+					if (!readNfert)
+						gridcellpft.Nfert_read = mt.nfert;
+					if (!readPfert)
+						gridcellpft.Pfert_read = mt.pfert;
+					if (!readsowingdates)
+						standpft.sdate_force = mt.sdate;
+					if (!readharvestdates)
+						standpft.hdate_force = mt.hdate;
 				}
-				// At crop rotation
 				else {
-					pftid = id;
-				}
+					// Reset and set new values for planting and reestablishment for all pft:s
+					pftlist.firstobj();
+					while (pftlist.isobj) {
+						Pft& pftx = pftlist.getobj();
+						Standpft& spft = pft[pftx.id];
 
-				Standpft& standpft = pft[pftid];
-				Gridcellpft& gridcellpft = gridcell->pft[pftid];
+						if (pftx.lifeform == TREE) {
+							pft[pftx.id].plant = false;
+							pft[pftx.id].reestab = false;
 
-				if(mt.hydrology == IRRIGATED) {
-					standpft.irrigated = true;
-				}
-				else {	
-					standpft.irrigated = false;
-				}
+							if (st.reestab == "ALL") {
+								// Options here are only relevant when using both FOREST and NATURAL tree pfts and they need to be
+								// distiguished in their abilities to re-establish when outside the monoculture when naturalveg is "ALL" 
+								// (e.g. in the case of planted exotic FOREST pfts).
+								// 1. reestablishment by both forest and natural pfts
+								// if(pftx.landcover == landcover || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
+								// 2. Reestablishment outside the monoculture only by natural pfts (when naturalveg "ALL") to avoid 
+								// reestablishment of exotic trees everywhere.
+								if (pftx.landcover == landcover && st.naturalveg != "ALL" || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
+									pft[pftx.id].active = true;
+									pft[pftx.id].reestab = true;
+								}
+							}
+							if (mt.cutfirstyear_unsel) {
+								for (unsigned int p = 0; p < nobj; p++) {
+									Patch& patch = (*this)[p];
+									Vegetation& vegetation = patch.vegetation;
+									vegetation.firstobj();
+									while (vegetation.isobj) {
+										Individual& indiv = vegetation.getobj();
+										Patchpft& ppft = patch.pft[indiv.pft.id];
+										if (indiv.pft.id == pftx.id && pftx.id != id) {
+											// cut at cloning (LUC) or at rotation
+											ppft.cmass_harv_killed += indiv.ccont();
+											harvest_wood(indiv, 1.0, indiv.pft.harv_eff, indiv.pft.res_outtake, 0, clone_year == date.year);
+											// frac_cut=1, harv_eff=0.9, res_outtake_twig=0.4, res_outtake_coarse_root=0
+											indiv.vegetation.killobj();
+										}
+										else {
+											vegetation.nextobj();
+										}
+									}
+								}
+							}
+						}
+						pftlist.nextobj();
+					}
 
-				if(!readNfert)
-					gridcellpft.Nfert_read = mt.nfert;
-				if(!readsowingdates)
-					standpft.sdate_force = mt.sdate;
-				if(!readharvestdates)
-					standpft.hdate_force = mt.hdate;
+					// Set parameters for pft in monoculture
+					pft[id].active = true;
+
+					pft[id].plant = true;
+					if (st.reestab == "RESTRICTED") {
+						pft[id].reestab = true;
+					}
+
+					pft[id].plantdensity = mt.plantdensity_pft;
+				}
 			}
-			else {
-				// Reset and set new values for planting and reestablishment for all pft:s
+			else if (!mt.fallow) {	// Absence of pftname only in cropland fallow management type.
+				fail("Stand type %d pft %s not in pftlist; set to include 1 in instruction file !\n", stid, (char*)mt.pftname);
+			}
+		}
+		else if (mt.planting_system == "SELECTION") {
+
+			if (landcover == CROPLAND) {
+				fail("planting system SELECTION not available for CROPLAND stands\n");
+			}
+
+			if (mt.selection != "") {
+
+				set_selection_params();
+
+				bool included_pft = false;
 				pftlist.firstobj();
 				while (pftlist.isobj) {
 					Pft& pftx = pftlist.getobj();
-					Standpft& spft = pft[pftx.id];
 
-					if(pftx.lifeform == TREE) {
+					if (mt.pftinselection((const char*)pftx.name)) {
+						pft[pftx.id].active = true;
+
+						if (st.reestab == "NONE" || st.reestab == "") {
+							pft[pftx.id].reestab = false;
+						}
+						else {
+							pft[pftx.id].reestab = true;
+						}
+						if (pftx.lifeform == TREE)
+							pft[pftx.id].plant = true;
+
+						included_pft = true;
+					}
+					else if (pftx.lifeform == TREE) {	// Whether grass is allowed is specified in the generic code above
+
 						pft[pftx.id].plant = false;
 						pft[pftx.id].reestab = false;
 
-						if(st.reestab == "ALL") {
+						if (st.reestab == "ALL") {
 							// Options here are only relevant when using both FOREST and NATURAL tree pfts and they need to be
-							// distiguished in their abilities to re-establish when outside the monoculture when naturalveg is "ALL" 
+							// distiguished in their abilities to re-establish when outside the selection when naturalveg is "ALL" 
 							// (e.g. in the case of planted exotic FOREST pfts).
-							// 1. reestablishment by both forest and natural pfts
+							// 1. Reestablishment by both forest and natural pfts
 							// if(pftx.landcover == landcover || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
-							// 2. Reestablishment outside the monoculture only by natural pfts (when naturalveg "ALL") to avoid 
+							// 2. Reestablishment outside the selection only by natural pfts (when naturalveg "ALL") to avoid 
 							// reestablishment of exotic trees everywhere.
-							if(pftx.landcover == landcover && st.naturalveg != "ALL" || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
+							if (pftx.landcover == landcover && st.naturalveg != "ALL" || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
 								pft[pftx.id].active = true;
 								pft[pftx.id].reestab = true;
 							}
 						}
-						if(mt.cutfirstyear_unsel) {
-							for(unsigned int p = 0; p < nobj; p++) {
+						if (mt.cutfirstyear_unsel) {
+							for (unsigned int p = 0; p < nobj; p++) {
 								Patch& patch = (*this)[p];
 								Vegetation& vegetation = patch.vegetation;
 								vegetation.firstobj();
 								while (vegetation.isobj) {
 									Individual& indiv = vegetation.getobj();
 									Patchpft& ppft = patch.pft[indiv.pft.id];
-									if(indiv.pft.id == pftx.id && pftx.id != id) {
+									if (indiv.pft.id == pftx.id) {
+										// Cut at cloning (LUC) or at rotation
+										ppft.cmass_harv_killed += indiv.ccont();
+										harvest_wood(indiv, 1.0, indiv.pft.harv_eff, indiv.pft.res_outtake, 0, clone_year == date.year);
+										// frac_cut=1, harv_eff=0.9, res_outtake_twig=0.4, res_outtake_coarse_root=0
+										indiv.vegetation.killobj();
+									}
+									else {
+										vegetation.nextobj();
+									}
+								}
+							}
+						}
+					}
+					pftlist.nextobj();
+				}
+
+				if (!included_pft)
+					fail("Set all PFTs in selection to include 1 in instruction file !\n");
+			}
+			else {
+				dprintf("Warning: stand type %d planting selection not defined !\n", stid);
+			}
+		}
+		else if (mt.planting_system != "") {
+
+			// Planting systems (pft selections) defined here
+
+
+			// Functional tree pft classes
+
+			// Special case when both FOREST and NATURAL pfts used, but only FOREST pfts planted
+			const bool natural_reestab_not_plant = false;
+
+			pftlist.firstobj();
+			while (pftlist.isobj) {
+				Pft& pftx = pftlist.getobj();
+
+
+				if (pftx.lifeform == TREE && (pftx.landcover == landcover || st.naturalveg == "ALL" && pftx.landcover == NATURAL)) {
+
+					if (mt.planting_system == "NEEDLELEAF_EVERGREEN" &&
+						pftx.leafphysiognomy == NEEDLELEAF && pftx.phenology == EVERGREEN ||
+						mt.planting_system == "NEEDLELEAF_DECIDUOUS" &&
+						pftx.leafphysiognomy == NEEDLELEAF && pftx.phenology == SUMMERGREEN ||
+						mt.planting_system == "BROADLEAF_EVERGREEN" &&
+						pftx.leafphysiognomy == BROADLEAF && pftx.phenology == EVERGREEN ||
+						mt.planting_system == "BROADLEAF_DECIDUOUS" &&
+						pftx.leafphysiognomy == BROADLEAF && (pftx.phenology == SUMMERGREEN || pftx.phenology == RAINGREEN)
+						&& pftx.crownarea_max > 10) {
+
+						pft[pftx.id].active = true;
+						if (pftx.landcover == landcover || !natural_reestab_not_plant)
+							pft[pftx.id].plant = true;
+
+						if (!(st.reestab == "NONE" || st.reestab == "")) {
+							// Options here are only relevant when using both FOREST and NATURAL tree pfts and they need to be
+							// distiguished in their abilities to re-establish within the forest class when naturalveg is "ALL" 
+							// (e.g. in the case of planted exotic FOREST pfts).
+							// 1. Reestablishment within the forest class by both forest and natural pfts (no conditional)
+							// 2. Reestablishment within the forest class only by natural pfts (when naturalveg "ALL") to avoid 
+							// reestablishment of exotic FOREST trees everywhere.
+							if (pftx.landcover == landcover && st.naturalveg != "ALL" || st.naturalveg == "ALL" && pftx.landcover == NATURAL)
+								pft[pftx.id].reestab = true;
+						}
+					}
+					else {
+
+						if (st.reestab == "ALL") {
+							// 1. Reestablishment outside the forest class by both forest and natural pfts (no conditional)
+							// 2. Reestablishment outside the forest class only by natural pfts (when naturalveg "ALL") to  
+							// avoid reestablishment of exotic FOREST trees everywhere.
+							if (pftx.landcover == landcover && st.naturalveg != "ALL" || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
+								pft[pftx.id].active = true;
+								pft[pftx.id].reestab = true;
+							}
+						}
+
+						if (mt.cutfirstyear_unsel && pftx.lifeform == TREE) {
+							for (unsigned int p = 0; p < nobj; p++) {
+								Patch& patch = (*this)[p];
+								Vegetation& vegetation = patch.vegetation;
+								vegetation.firstobj();
+								while (vegetation.isobj) {
+									Individual& indiv = vegetation.getobj();
+									Patchpft& ppft = patch.pft[indiv.pft.id];
+									if (indiv.pft.id == pftx.id) {
 										// cut at cloning (LUC) or at rotation
 										ppft.cmass_harv_killed += indiv.ccont();
 										harvest_wood(indiv, 1.0, indiv.pft.harv_eff, indiv.pft.res_outtake, 0, clone_year == date.year);
@@ -1124,180 +1385,9 @@ void Stand::set_management() {
 							}
 						}
 					}
-					pftlist.nextobj();			
-				}
-
-				// Set parameters for pft in monoculture
-				pft[id].active = true;
-
-				pft[id].plant = true;
-				if(st.reestab == "RESTRICTED") {
-					pft[id].reestab = true;
-				}
-
-				pft[id].plantdensity = mt.plantdensity_pft;
-			}
-		}
-		else if(!mt.fallow) {	// Absence of pftname only in cropland fallow management type.
-			fail("Stand type %d pft %s not in pftlist; set to include 1 in instruction file !\n", stid, (char*)mt.pftname);
-		}
-	}
-	else if(mt.planting_system == "SELECTION") {
-
-		if(landcover == CROPLAND) {
-			fail("planting system SELECTION not available for CROPLAND stands\n");
-		}
-
-		if(mt.selection != "") {
-
-			set_selection_params();
-
-			bool included_pft = false;
-			pftlist.firstobj();
-			while (pftlist.isobj) {
-				Pft& pftx = pftlist.getobj();
-
-				if(mt.pftinselection((const char*)pftx.name)) {
-					pft[pftx.id].active = true;
-
-					if(st.reestab == "NONE" || st.reestab == "") {
-						pft[pftx.id].reestab = false;
-					}
-					else {
-						pft[pftx.id].reestab = true;
-					}
-					if(pftx.lifeform == TREE)
-						pft[pftx.id].plant = true;
-
-					included_pft = true;
-				}
-				else if(pftx.lifeform == TREE) {	// Whether grass is allowed is specified in the generic code above
-
-					pft[pftx.id].plant = false;
-					pft[pftx.id].reestab = false;
-
-					if(st.reestab == "ALL") {
-						// Options here are only relevant when using both FOREST and NATURAL tree pfts and they need to be
-						// distiguished in their abilities to re-establish when outside the selection when naturalveg is "ALL" 
-						// (e.g. in the case of planted exotic FOREST pfts).
-						// 1. Reestablishment by both forest and natural pfts
-						// if(pftx.landcover == landcover || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
-						// 2. Reestablishment outside the selection only by natural pfts (when naturalveg "ALL") to avoid 
-						// reestablishment of exotic trees everywhere.
-						if(pftx.landcover == landcover && st.naturalveg != "ALL" || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
-							pft[pftx.id].active = true;
-							pft[pftx.id].reestab = true;
-						}
-					}
-					if(mt.cutfirstyear_unsel) {
-						for(unsigned int p = 0; p < nobj; p++) {
-							Patch& patch = (*this)[p];
-							Vegetation& vegetation = patch.vegetation;
-							vegetation.firstobj();
-							while (vegetation.isobj) {
-								Individual& indiv = vegetation.getobj();
-								Patchpft& ppft = patch.pft[indiv.pft.id];
-								if(indiv.pft.id == pftx.id) {
-									// Cut at cloning (LUC) or at rotation
-									ppft.cmass_harv_killed += indiv.ccont();
-									harvest_wood(indiv, 1.0, indiv.pft.harv_eff, indiv.pft.res_outtake, 0, clone_year == date.year);
-									// frac_cut=1, harv_eff=0.9, res_outtake_twig=0.4, res_outtake_coarse_root=0
-									indiv.vegetation.killobj();
-								}
-								else {
-									vegetation.nextobj();
-								}
-							}
-						}
-					}
 				}
 				pftlist.nextobj();
 			}
-
-			if(!included_pft)
-				fail("Set all PFTs in selection to include 1 in instruction file !\n");
-		}
-		else {
-			dprintf("Warning: stand type %d planting selection not defined !\n", stid);
-		}
-	}
-	else if(mt.planting_system != "") {
-
-		// Planting systems (pft selections) defined here
-
-
-		// Functional tree pft classes
-
-		// Special case when both FOREST and NATURAL pfts used, but only FOREST pfts planted
-		const bool natural_reestab_not_plant = false;
-
-		pftlist.firstobj();
-		while (pftlist.isobj) {
-			Pft& pftx = pftlist.getobj();
-
-			if(pftx.lifeform == TREE && (pftx.landcover == landcover || st.naturalveg == "ALL" && pftx.landcover == NATURAL)) {
-
-				if(mt.planting_system == "NEEDLELEAF_EVERGREEN" &&
-					pftx.leafphysiognomy == NEEDLELEAF && pftx.phenology == EVERGREEN ||
-					mt.planting_system == "NEEDLELEAF_DECIDUOUS" &&
-					pftx.leafphysiognomy == NEEDLELEAF && pftx.phenology == SUMMERGREEN ||
-					mt.planting_system == "BROADLEAF_EVERGREEN" &&
-					pftx.leafphysiognomy == BROADLEAF && pftx.phenology == EVERGREEN ||
-					mt.planting_system == "BROADLEAF_DECIDUOUS" &&
-					pftx.leafphysiognomy == BROADLEAF && (pftx.phenology == SUMMERGREEN || pftx.phenology == RAINGREEN)
-					 && pftx.crownarea_max > 10) {
-
-					pft[pftx.id].active = true;
-					if(pftx.landcover == landcover || !natural_reestab_not_plant)					
-						pft[pftx.id].plant = true;
-
-					if(!(st.reestab == "NONE" || st.reestab == "")) {
-						// Options here are only relevant when using both FOREST and NATURAL tree pfts and they need to be
-						// distiguished in their abilities to re-establish within the forest class when naturalveg is "ALL" 
-						// (e.g. in the case of planted exotic FOREST pfts).
-						// 1. Reestablishment within the forest class by both forest and natural pfts (no conditional)
-						// 2. Reestablishment within the forest class only by natural pfts (when naturalveg "ALL") to avoid 
-						// reestablishment of exotic FOREST trees everywhere.
-						if(pftx.landcover == landcover && st.naturalveg != "ALL" || st.naturalveg == "ALL" && pftx.landcover == NATURAL)
-							pft[pftx.id].reestab = true;
-					}
-				}
-				else {
-					
-					if(st.reestab == "ALL") {
-						// 1. Reestablishment outside the forest class by both forest and natural pfts (no conditional)
-						// 2. Reestablishment outside the forest class only by natural pfts (when naturalveg "ALL") to  
-						// avoid reestablishment of exotic FOREST trees everywhere.
-						if(pftx.landcover == landcover && st.naturalveg != "ALL" || st.naturalveg == "ALL" && pftx.landcover == NATURAL) {
-							pft[pftx.id].active = true;
-							pft[pftx.id].reestab = true;
-						}
-					}
-
-					if(mt.cutfirstyear_unsel && pftx.lifeform == TREE) {
-						for(unsigned int p = 0; p < nobj; p++) {
-							Patch& patch = (*this)[p];
-							Vegetation& vegetation = patch.vegetation;
-							vegetation.firstobj();
-							while (vegetation.isobj) {
-								Individual& indiv = vegetation.getobj();
-								Patchpft& ppft = patch.pft[indiv.pft.id];
-								if(indiv.pft.id == pftx.id) {
-									// cut at cloning (LUC) or at rotation
-									ppft.cmass_harv_killed += indiv.ccont();
-									harvest_wood(indiv, 1.0, indiv.pft.harv_eff, indiv.pft.res_outtake, 0, clone_year == date.year);
-									// frac_cut=1, harv_eff=0.9, res_outtake_twig=0.4, res_outtake_coarse_root=0
-									indiv.vegetation.killobj();
-								}
-								else {
-									vegetation.nextobj();
-								}
-							}
-						}
-					}
-				}
-			}
-			pftlist.nextobj();
 		}
 	}
 }
@@ -1366,6 +1456,16 @@ double Stand::water_content() {
 	return water_content;
 }
 
+double Stand::pcont(double scale_indiv) {
+
+	double pcont = 0.0;
+
+	for (unsigned int p = 0; p < nobj; p++)
+		pcont += (*this)[p].pcont(scale_indiv) / nobj;
+
+	return pcont;
+}
+
 double Stand::cflux() {
 
 	double cflux = 0.0;
@@ -1386,6 +1486,7 @@ double Stand::nflux() {
 	return nflux;
 }
 
+
 double Stand::water_flux() {
 
 	double water_flux = 0.0;
@@ -1394,6 +1495,16 @@ double Stand::water_flux() {
 		water_flux += (*this)[p].water_flux() / nobj;
 
 	return water_flux;
+}
+
+double Stand::pflux() {
+
+	double pflux = 0.0;
+
+	for (unsigned int p = 0; p < nobj; p++)
+		pflux += (*this)[p].pflux() / nobj;
+
+	return pflux;
 }
 
 /// Returns true if stand is true high-latitude peatland stand, as opposed to a wetland < PEATLAND_WETLAND_LATITUDE_LIMIT N
@@ -1537,6 +1648,9 @@ void cropindiv_struct::serialize(ArchiveStream& arch) {
 		& nmass_ho
 		& nmass_agpool
 		& nmass_dead_leaf
+		& pmass_ho
+		& pmass_agpool
+		& pmass_dead_leaf
 		& isintercropgrass;
 }
 
@@ -1563,6 +1677,7 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 	aphen             = 0.0;
 	deltafpc          = 0.0;
 
+	//Nitrogen
 	nmass_leaf        = 0.0;
 	nmass_leaf_luc    = 0.0;
 	nmass_root        = 0.0;
@@ -1598,6 +1713,42 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 
 	n_opt_isabovelim      = false;
 	nstress           = false;
+
+	//Phosphorus
+	pmass_leaf = 0.0;
+	pmass_root = 0.0;
+	pmass_sap = 0.0;
+	pmass_heart = 0.0;
+	ctop_leaf_aopt = 0.0;
+	ctop_leaf_aavr = 0.0;
+	ctop_status = 0.0;
+	cmass_veg = 0.0;
+	pmass_veg = 0.0;
+	pmass_tot_luc = 0.0;
+
+	pactive = 0.0;
+	pextin = 1.0;
+	pstore_longterm = 0.0;
+	pstore_labile = 0.0;
+	pdemand = 0.0;
+	fpuptake = 1.0;
+	apuptake = 0.0;
+	max_p_storage = 0.0;
+	scale_p_storage = 0.0;
+
+	leafpdemand = 0.0;
+	rootpdemand = 0.0;
+	sappdemand = 0.0;
+	storepdemand = 0.0;
+	leaffpdemand = 0.0;
+	rootfpdemand = 0.0;
+	sapfpdemand = 0.0;
+	storefpdemand = 0.0;
+	leafpdemand_store = 0.0;
+	rootpdemand_store = 0.0;
+
+	p_opt_isabovelim = false;
+	pstress = false;
 
 	// additional initialisation
 	age               = 0.0;
@@ -1712,6 +1863,25 @@ void Individual::serialize(ArchiveStream& arch) {
 		& cmass_veg
 		& nmass_veg
 
+		& pmass_leaf
+		& pmass_root
+		& pmass_sap
+		& pmass_heart
+		& pactive
+		& pextin
+		& pstore_longterm
+		& pstore_labile
+		& pdemand
+		& fpuptake
+		& apuptake
+		& max_p_storage
+		& scale_p_storage
+		& avmaxplim
+		& ctop_leaf_aopt
+		& ctop_leaf_aavr
+		& ctop_status
+		& pmass_veg
+
 		& photosynthesis
 		& nstress
 		& leafndemand
@@ -1724,6 +1894,18 @@ void Individual::serialize(ArchiveStream& arch) {
 		& storefndemand
 		& leafndemand_store
 		& rootndemand_store
+		
+		& pstress
+		& leafpdemand
+		& rootpdemand
+		& sappdemand
+		& storepdemand
+		& leaffpdemand
+		& rootfpdemand
+		& sapfpdemand
+		& storefpdemand
+		& leafpdemand_store
+		& rootpdemand_store
 		& nday_leafon;
 
 	if (pft.landcover==CROPLAND)
@@ -1787,6 +1969,30 @@ void nstore_adjust(double& cmass_leaf,double& cmass_root, double& nmass_leaf, do
 	nmass_root += root_ndemand;
 }
 
+/// Help function for reduce_biomass(), partitions pstore into leaves and roots
+/**
+*  As leaf and roots can have a very low P concentration after growth and allocation,
+*  P in pstore() is split between them to sastify relationship between their average C:P ratios
+*/
+void pstore_adjust(double& cmass_leaf, double& cmass_root, double& pmass_leaf, double& pmass_root,
+	double pstore, double ctop_leaf, double ctop_root) {
+
+	// (1) cmass_leaf / ((nmass_leaf + leaf_ndemand) * cton_leaf) = cmass_root / ((nmass_root + root_ndemand) * cton_root)
+	// (2) leaf_ndemand + root_ndemand = nstore
+
+	// (1) + (2) leaf_ndemand = (cmass_leaf * ratio (nmass_root + nstore) - cmass_root * nmass_leaf) / (cmass_root + cmass_leaf * ratio)
+	//
+	// where ratio = cton_root / cton_leaf
+
+	double ratio = ctop_root / ctop_leaf;
+
+	double leaf_pdemand = (cmass_leaf * ratio * (pmass_root + pstore) - cmass_root * pmass_leaf) / (cmass_root + cmass_leaf * ratio);
+	double root_pdemand = pstore - leaf_pdemand;
+
+	pmass_leaf += leaf_pdemand;
+	pmass_root += root_pdemand;
+}
+
 void Individual::reduce_biomass(double mortality, double mortality_fire) {
 
 	// This function needs to be modified if a new lifeform is added,
@@ -1832,6 +2038,7 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 			report_flux(Fluxes::RA, -debt_excess);
 		}
 
+		//N
 		double nmass_leaf_litter = mortality * nmass_leaf;
 		double nmass_root_litter = mortality * nmass_root;
 
@@ -1854,10 +2061,34 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 		ppft.nmass_litter_sap   += mortality_non_fire * nmass_sap;
 		ppft.nmass_litter_heart += mortality_non_fire * nmass_heart;
 
+		//P
+		double pmass_leaf_litter = mortality * pmass_leaf;
+		double pmass_root_litter = mortality * pmass_root;
+
+		if (pft.landcover == CROPLAND) {
+			if (pft.aboveground_ho)
+				pmass_leaf_litter += mortality * cropindiv->pmass_ho;
+			else
+				pmass_root_litter += mortality * cropindiv->pmass_ho;
+
+			pmass_leaf_litter += mortality * cropindiv->pmass_agpool;
+		}
+
+		// stored P is partioned out to leaf and root biomass as new tissue after growth might have extremely low
+		// P content (to get closer to relationship between compartment averages (ctop_leaf, ctop_root, ctop_sap))
+		pstore_adjust(cmass_leaf_litter, cmass_root_litter, pmass_leaf_litter, pmass_root_litter,
+			mortality * pstore(), pft.ctop_leaf_avr, pft.ctop_root_avr);
+
+		ppft.pmass_litter_leaf += pmass_leaf_litter * mortality_non_fire / mortality;
+		ppft.pmass_litter_root += pmass_root_litter;
+		ppft.pmass_litter_sap += mortality_non_fire * pmass_sap;
+		ppft.pmass_litter_heart += mortality_non_fire * pmass_heart;
+
 		// Flux to atmosphere from burned above-ground biomass
 
 		double cflux_fire = mortality_fire * (cmass_leaf_litter / mortality + cmass_wood());
 		double nflux_fire = mortality_fire * (nmass_leaf_litter / mortality + nmass_wood());
+		double pflux_fire = mortality_fire * (pmass_leaf_litter / mortality + pmass_wood());
 
 		report_flux(Fluxes::FIREC,    cflux_fire);
 
@@ -1891,9 +2122,18 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 		nmass_heart     *= remaining;
 		nstore_longterm *= remaining;
 		nstore_labile   *= remaining;
+
+		pmass_leaf *= remaining;
+		pmass_root *= remaining;
+		pmass_sap *= remaining;
+		pmass_heart *= remaining;
+		pstore_longterm *= remaining;
+		pstore_labile *= remaining;
 		if (pft.landcover==CROPLAND) {
 			cropindiv->nmass_ho *= remaining;
 			cropindiv->nmass_agpool *= remaining;
+			cropindiv->pmass_ho *= remaining;
+			cropindiv->pmass_agpool *= remaining;
 		}
 	}
 }
@@ -1923,6 +2163,31 @@ double Individual::cton_leaf(bool use_phen /* = true*/) const {
 	}
 }
 
+double Individual::ctop_leaf(bool use_phen /* = true*/) const {
+
+	Stand& stand = vegetation.patch.stand;
+
+	if (stand.is_true_crop_stand() && !negligible(cmass_leaf_today()) && !negligible(pmass_leaf)) {
+		return cmass_leaf_today() / pmass_leaf;
+	}
+	else if (!stand.is_true_crop_stand() && !negligible(cmass_leaf) && !negligible(pmass_leaf)) {
+		if (use_phen) {
+			if (!negligible(phen)) {
+				return cmass_leaf_today() / pmass_leaf;
+			}
+			else {
+				return pft.ctop_leaf_avr;
+			}
+		}
+		else {
+			return cmass_leaf / pmass_leaf;
+		}
+	}
+	else {
+		return pft.ctop_leaf_max;
+	}
+}
+
 double Individual::cton_root(bool use_phen /* = true*/) const {
 
 	if (!negligible(cmass_root) && !negligible(nmass_root)) {
@@ -1943,6 +2208,26 @@ double Individual::cton_root(bool use_phen /* = true*/) const {
 	}
 }
 
+double Individual::ctop_root(bool use_phen /* = true*/) const {
+
+	if (!negligible(cmass_root) && !negligible(pmass_root)) {
+		if (use_phen) {
+			if (!negligible(cmass_root_today())) {
+				return max(pft.ctop_root_avr * pft.ctop_leaf_min / pft.ctop_leaf_avr, cmass_root_today() / pmass_root);
+			}
+			else {
+				return pft.ctop_root_avr;
+			}
+		}
+		else {
+			return max(pft.ctop_root_avr * pft.ctop_leaf_min / pft.ctop_leaf_avr, cmass_root / pmass_root);
+		}
+	}
+	else {
+		return pft.ctop_root_max;
+	}
+}
+
 double Individual::cton_sap() const {
 
 	if (pft.lifeform == TREE) {
@@ -1950,6 +2235,19 @@ double Individual::cton_sap() const {
 			return max(pft.cton_sap_avr * pft.cton_leaf_min / pft.cton_leaf_avr, cmass_sap / nmass_sap);
 		else
 			return pft.cton_sap_max;
+	}
+	else {
+		return 1.0;
+	}
+}
+
+double Individual::ctop_sap() const {
+
+	if (pft.lifeform == TREE) {
+		if (!negligible(cmass_sap) && !negligible(pmass_sap))
+			return max(pft.ctop_sap_avr * pft.ctop_leaf_min / pft.ctop_leaf_avr, cmass_sap / pmass_sap);
+		else
+			return pft.ctop_sap_max;
 	}
 	else {
 		return 1.0;
@@ -2057,6 +2355,52 @@ double Individual::ncont(double scale_indiv, bool luc) const {
 	return ncont;
 }
 
+/// P content of individual
+/**
+*  INPUT PARAMETERS
+*
+*  \param scale_indiv  		scaling factor for living P
+*  \param luc 					down-scales living P (used in C balance tests)
+*/
+double Individual::pcont(double scale_indiv, bool luc) const {
+
+	double pcont = 0.0;
+
+	if (luc) {
+
+		pcont += pmass_leaf - pmass_leaf_luc * (1.0 - scale_indiv);
+		pcont += pmass_root - pmass_root_luc * (1.0 - scale_indiv);
+		pcont += pmass_sap - pmass_sap_luc * (1.0 - scale_indiv);
+		pcont += pmass_heart - pmass_heart_luc * (1.0 - scale_indiv);
+		pcont += pstore_longterm - pstore_longterm_luc * (1.0 - scale_indiv);
+		pcont += pstore_labile - pstore_labile_luc * (1.0 - scale_indiv);
+	}
+	else {
+		pcont += pmass_leaf * scale_indiv;
+		pcont += pmass_root * scale_indiv;
+		pcont += pmass_sap * scale_indiv;
+		pcont += pmass_heart * scale_indiv;
+		pcont += pstore_longterm * scale_indiv;
+		pcont += pstore_labile * scale_indiv;
+	}
+
+	if (pft.landcover == CROPLAND) {
+
+		if (luc) {
+			pcont += cropindiv->pmass_ho - cropindiv->nmass_ho_luc * (1.0 - scale_indiv);
+			pcont += cropindiv->pmass_agpool - cropindiv->nmass_agpool_luc * (1.0 - scale_indiv);
+			pcont += cropindiv->pmass_dead_leaf - cropindiv->nmass_dead_leaf_luc * (1.0 - scale_indiv);
+		}
+		else {
+			pcont += cropindiv->pmass_ho * scale_indiv;
+			pcont += cropindiv->pmass_agpool * scale_indiv;
+			pcont += cropindiv->pmass_dead_leaf * scale_indiv;
+		}
+	}
+
+	return pcont;
+}
+
 /// Whether grass growth is uninterrupted by crop growth.
 bool Individual::continous_grass() const {
 
@@ -2087,6 +2431,17 @@ double Individual::ndemand_storage(double cton_leaf_opt) {
 		storendemand = max(0.0, min(anpp * scale_n_storage / cton_leaf(), max_n_storage) - nstore());
 
 	return storendemand;
+}
+
+double Individual::pdemand_storage(double ctop_leaf_opt) {
+
+	if (vegetation.patch.stand.is_true_crop_stand() && ifplim)	// only CROPGREEN, only ifplim ?
+																// analogous with root demand
+		storepdemand = max(0.0, cropindiv->grs_cmass_stem / (ctop_leaf_opt * pft.ctop_stem_avr / pft.ctop_leaf_avr) - cropindiv->pmass_agpool);
+	else
+		storepdemand = max(0.0, min(anpp * scale_p_storage / ctop_leaf(), max_p_storage) - pstore());
+
+	return storepdemand;
 }
 
 /// Checks C mass and zeroes any negative value, balancing by adding to npp and reducing respiration
@@ -2215,6 +2570,78 @@ double Individual::check_N_mass() {
 	return negative_nmass;
 }
 
+/// Checks P mass and zeroes any negative value, balancing by reducing P mass of other organs and (if needed)
+double Individual::check_P_mass() {
+
+	if (pft.landcover != CROPLAND && pft.landcover != PASTURE)
+		return 0;
+
+	double negative_pmass = 0.0;
+
+	if (pmass_leaf < 0.0) {
+		negative_pmass -= pmass_leaf;
+		if (cropindiv)
+			cropindiv->ypmass_leaf -= pmass_leaf;
+		pmass_leaf = 0.0;
+	}
+	if (pmass_root < 0.0) {
+		negative_pmass -= pmass_root;
+		if (cropindiv)
+			cropindiv->ynmass_root -= pmass_root;
+		pmass_root = 0.0;
+	}
+	if (cropindiv) {
+		if (cropindiv->pmass_ho < 0.0) {
+			negative_pmass -= cropindiv->pmass_ho;
+			cropindiv->ypmass_ho -= cropindiv->pmass_ho;
+			cropindiv->pmass_ho = 0.0;
+		}
+		if (cropindiv->pmass_agpool < 0.0) {
+			negative_pmass -= cropindiv->pmass_agpool;
+			cropindiv->ypmass_agpool -= cropindiv->pmass_agpool;
+			cropindiv->pmass_agpool = 0.0;
+		}
+		if (cropindiv->pmass_dead_leaf < 0.0) {
+			negative_pmass -= cropindiv->pmass_dead_leaf;
+			cropindiv->ypmass_dead_leaf -= cropindiv->pmass_dead_leaf;
+			cropindiv->pmass_dead_leaf = 0.0;
+		}
+	}
+	if (pstore_labile < 0.0) {
+		negative_pmass -= pstore_labile;
+		pstore_labile = 0.0;
+	}
+	if (pstore_longterm < 0.0) {
+		negative_pmass -= pstore_longterm;
+		pstore_longterm = 0.0;
+	}
+
+	if (largerthanzero(negative_pmass, -14)) {
+		double pos_pmass = pcont();
+		if (pos_pmass > negative_pmass) {
+			pmass_leaf -= negative_pmass * pmass_leaf / pos_pmass;
+			pmass_root -= negative_pmass * pmass_root / pos_pmass;
+			if (cropindiv) {
+				cropindiv->pmass_ho -= negative_pmass * cropindiv->nmass_ho / pos_pmass;
+				cropindiv->pmass_agpool -= negative_pmass * cropindiv->pmass_agpool / pos_pmass;
+				cropindiv->pmass_dead_leaf -= negative_pmass * cropindiv->pmass_dead_leaf / pos_pmass;
+			}
+		}
+		else {
+			vegetation.patch.stand.get_gridcell().landcover.apflux_landuse_change -= (negative_pmass - pos_pmass) * vegetation.patch.stand.get_gridcell_fraction();
+			pmass_leaf = 0.0;
+			pmass_root = 0.0;
+			if (cropindiv) {
+				cropindiv->pmass_ho = 0.0;
+				cropindiv->pmass_agpool = 0.0;
+				cropindiv->pmass_dead_leaf = 0.0;
+			}
+		}
+	}
+
+	return negative_pmass;
+}
+
 /// Whether resetting of grs_cmass and turnover (if has_daily_turnover() returns true) of continuous grass is to be done this day.
 bool Individual::is_turnover_day() const {
 
@@ -2265,6 +2692,23 @@ void Individual::save_nmass_luc() {
 		cropindiv->nmass_dead_leaf_luc = cropindiv->nmass_dead_leaf;
 	}
 	nmass_tot_luc = ncont();
+}
+
+/// Save pmass-values on first day of the year of land cover change in expanding stands
+void Individual::save_pmass_luc() {
+	pmass_leaf_luc = pmass_leaf;
+	pmass_root_luc = pmass_root;
+	pmass_sap_luc = pmass_sap;
+	pmass_heart_luc = pmass_heart;
+	pstore_longterm_luc = pstore_longterm;
+	pstore_labile_luc = pstore_labile;
+
+	if (cropindiv) {
+		cropindiv->pmass_ho_luc = cropindiv->pmass_ho;
+		cropindiv->pmass_agpool_luc = cropindiv->pmass_agpool;
+		cropindiv->pmass_dead_leaf_luc = cropindiv->pmass_dead_leaf;
+	}
+	pmass_tot_luc = pcont();
 }
 
 /// Gets the individual's daily cmass_leaf value
@@ -2397,6 +2841,9 @@ void Individual::kill(bool harvest /* = false */) {
 	double nharvest_flux = 0.0;
 	double nharvested_products_slow = 0.0;
 
+	double pharvest_flux = 0.0;
+	double pharvested_products_slow = 0.0;
+
 	double harv_eff = 0.0;
 	double harvest_slow_frac = 0.0;
 	double res_outtake = 0.0;
@@ -2525,10 +2972,10 @@ void Individual::kill(bool harvest /* = false */) {
 		}
 	}
 
-	// Nitrogen always return to soil litter
+	// Nitrogen and Phosphorus always return to soil litter
 	if (pft.lifeform == TREE) {
 
-		double nlitter_sap, nlitter_heart, nwood_harvest;
+		double nlitter_sap, nlitter_heart, nwood_harvest, plitter_sap, plitter_heart, pwood_harvest;
 
 		// Transfer nitrogen storage to sapwood nitrogen litter/harvest
 		partition_wood_biomass(nmass_sap + nstore(), nmass_heart,
@@ -2536,44 +2983,69 @@ void Individual::kill(bool harvest /* = false */) {
 		                       nlitter_sap, nlitter_heart,
 		                       nwood_harvest, nharvested_products_slow);
 
+		// Transfer phosphorus storage to sapwood phosphorus litter/harvest
+		partition_wood_biomass(pmass_sap + pstore(), pmass_heart,
+			harv_eff, harvest_slow_frac, res_outtake,
+			plitter_sap, plitter_heart,
+			pwood_harvest, pharvested_products_slow);
+
 		ppft.nmass_litter_sap   += nlitter_sap;
 		ppft.nmass_litter_heart += nlitter_heart;
 
+		ppft.pmass_litter_sap += plitter_sap;
+		ppft.pmass_litter_heart += plitter_heart;
+
 		nharvest_flux += nwood_harvest;
+		pharvest_flux += pwood_harvest;
 	}
 	else {
-		// Transfer nitrogen storage to root nitrogen litter
+		// Transfer nitrogen and phosphorus storage to root nitrogen and phosphorus litter
 		ppft.nmass_litter_root += nstore();
+		ppft.pmass_litter_root += pstore();
 	}
 
 	// Leaf: remove residue outtake and send the rest to litter
 	ppft.nmass_litter_leaf += nmass_leaf * (1 - res_outtake);
 	nharvest_flux          += nmass_leaf * res_outtake;
+	ppft.pmass_litter_leaf += pmass_leaf * (1 - res_outtake);
+	pharvest_flux += pmass_leaf * res_outtake;
 
 	// Root: all goes to litter
 	ppft.nmass_litter_root += nmass_root;
+	ppft.pmass_litter_root += pmass_root;
 
 	if (pft.landcover == CROPLAND) {
 		if (pft.aboveground_ho) {
 			ppft.nmass_litter_leaf+=cropindiv->nmass_ho * (1 - res_outtake);
 			nharvest_flux += cropindiv->nmass_ho * res_outtake;
+			ppft.pmass_litter_leaf += cropindiv->pmass_ho * (1 - res_outtake);
+			pharvest_flux += cropindiv->pmass_ho * res_outtake;
 		}
-		else
-			ppft.nmass_litter_root+=cropindiv->nmass_ho;
+		else {
+			ppft.nmass_litter_root += cropindiv->nmass_ho;
+			ppft.pmass_litter_root += cropindiv->pmass_ho;
+		}
 
 		ppft.nmass_litter_leaf+=cropindiv->nmass_agpool * (1 - res_outtake);
 		nharvest_flux += cropindiv->nmass_agpool * res_outtake;
 		ppft.nmass_litter_leaf += cropindiv->nmass_dead_leaf * (1 - res_outtake);
 		nharvest_flux          += cropindiv->nmass_dead_leaf * res_outtake;
+
+		ppft.pmass_litter_leaf += cropindiv->pmass_agpool * (1 - res_outtake);
+		pharvest_flux += cropindiv->pmass_agpool * res_outtake;
+		ppft.pmass_litter_leaf += cropindiv->pmass_dead_leaf * (1 - res_outtake);
+		pharvest_flux += cropindiv->pmass_dead_leaf * res_outtake;
 	}
 
 	// Report harvest fluxes
 	report_flux(Fluxes::HARVESTC, charvest_flux);
 	report_flux(Fluxes::HARVESTN, nharvest_flux);
+	report_flux(Fluxes::HARVESTP, pharvest_flux);
 
 	// Add to biomass depositories for long-lived products
 	ppft.cmass_harvested_products_slow += charvested_products_slow;
 	ppft.nmass_harvested_products_slow += nharvested_products_slow;
+	ppft.pmass_harvested_products_slow += pharvested_products_slow;
 }
 
 double Individual::wscal_mean() const {
@@ -2588,6 +3060,7 @@ double Individual::wscal_mean() const {
 void Gridcellpft::serialize(ArchiveStream& arch) {
 	arch & addtw
 		& Km
+		& Kmp
 		& autumnoccurred
 		& springoccurred
 		& vernstartoccurred
@@ -2607,6 +3080,7 @@ void Gridcellpft::serialize(ArchiveStream& arch) {
 		& sdate_force
 		& hdate_force
 		& Nfert_read
+		& Pfert_read
 		& hlimitdate_default
 		& wintertype
 		& swindow
@@ -2624,6 +3098,7 @@ void Gridcellst::serialize(ArchiveStream& arch) {
 		& nstands
 		& distinterval_st
 		& diam_cut_low
+		& pfert
 		& nfert;
 }
 
@@ -2653,6 +3128,8 @@ Landcover::Landcover() {
 	anflux_wood_harvest_orig = 0.0;
 	anflux_clearing = 0.0;
 	anflux_clearing_orig = 0.0;
+	apflux_harvest_slow = 0.0;
+	apflux_landuse_change = 0.0;
 
 	for (int i=0; i<NLANDCOVERTYPES; i++) {
 
@@ -2668,6 +3145,10 @@ Landcover::Landcover() {
 		anflux_landuse_change_lc[i] = 0.0;
 		anflux_wood_harvest_lc[i] = 0.0;
 		anflux_clearing_lc[i] = 0.0;
+		apflux_wood_harvest_lc[i] = 0.0;
+		apflux_clearing_lc[i] = 0.0;
+		apflux_harvest_slow_lc[i] = 0.0;
+		apflux_landuse_change_lc[i] = 0.0;
 
 		for(int j=0;j<NLANDCOVERTYPES;j++) {
 			frac_transfer[i][j] = 0.0;
@@ -2773,6 +3254,7 @@ double Gridcell::ncont() {
 	return ncont;
 }
 
+
 double Gridcell::water_content() {
 
 	double water_content = 0.0;
@@ -2784,6 +3266,18 @@ double Gridcell::water_content() {
 	}
 
 	return water_content;
+}
+
+double Gridcell::pcont() {
+
+	double pcont = 0.0;
+
+	for (unsigned int s = 0; s < nbr_stands(); s++) {
+		Stand& stand = (*this)[s];
+		pcont += stand.pcont() * stand.get_gridcell_fraction();
+	}
+
+	return pcont;
 }
 
 double Gridcell::cflux() {
@@ -2831,6 +3325,21 @@ double Gridcell::water_flux() {
 	}
 
 	return water_flux;
+}
+
+double Gridcell::pflux() {
+
+	double pflux = 0.0;
+
+	for (unsigned int s = 0; s < nbr_stands(); s++) {
+		Stand& stand = (*this)[s];
+		pflux += stand.pflux() * stand.get_gridcell_fraction();
+	}
+
+	pflux += landcover.apflux_landuse_change;
+	pflux += landcover.apflux_harvest_slow;
+
+	return pflux;
 }
 
 void Gridcell::serialize(ArchiveStream& arch) {
@@ -2906,13 +3415,17 @@ unsigned int Gridcell::nbr_stands() const {
 void Sompool::serialize(ArchiveStream& arch) {
 	arch & cmass
 		& nmass
+		& pmass
 		& cdec
 		& ndec
+		& pdec
 		& delta_cmass
 		& delta_nmass
+		& delta_pmass
 		& ligcfrac
 		& fracremain
 		& ntoc
+		& ptoc
 		& litterme
 		& fireresist
 		& mfracremain_mean;
@@ -2938,7 +3451,16 @@ void MassBalance::serialize(ArchiveStream& arch) {
 		& water_cont
 		& cflux
 		& nflux
-		& water_flux;
+		& water_flux
+		& pcont_zero
+		& pcont_zero_scaled
+		& pflux_zero
+		& ccont
+		& ncont
+		& pcont
+		& cflux
+		& nflux
+		& pflux;
 }
 
 /// Should be used together with check_indiv()
@@ -2967,6 +3489,13 @@ void MassBalance::init_indiv(Individual& indiv) {
 	ncont_zero += patch.ncont(0.0);
 	ncont_zero_scaled += patch.ncont(0.0);
 	nflux_zero = patch.nflux();
+
+	pcont_zero = indiv.pcont();
+	pcont_zero_scaled = indiv.pcont(scale, true);
+	// Add soil P
+	pcont_zero += patch.pcont(0.0);
+	pcont_zero_scaled += patch.pcont(0.0);
+	pflux_zero = patch.pflux();
 }
 
 bool MassBalance::check_indiv_C(Individual& indiv, bool check_harvest) {
@@ -3021,13 +3550,39 @@ bool MassBalance::check_indiv_N(Individual& indiv, bool check_harvest) {
 	return balance;
 }
 
+bool MassBalance::check_indiv_P(Individual& indiv, bool check_harvest) {
+
+	bool balance = true;
+
+	Patch& patch = indiv.vegetation.patch;
+	Stand& stand = patch.stand;
+	if (!stand.is_true_crop_stand())
+		return balance;
+	Gridcell& gridcell = stand.get_gridcell();
+	double pcont = indiv.pcont();
+	pcont += patch.pcont(0.0);
+	double pflux = patch.pflux();
+
+	if (check_harvest && patch.isharvestday)
+		pcont_zero = pcont_zero_scaled;
+
+	if (date.year >= nyear_spinup && !negligible(pcont - pcont_zero + pflux - pflux_zero, -14)) {
+		dprintf("\nStand %d Patch %d Indiv %d P balance year %d day %d: %.10f\n", patch.stand.id, patch.id, indiv.id, date.year, date.day, pcont - pcont_zero + pflux - pflux_zero);
+		dprintf("P pool change: %.14f\n", pcont - pcont_zero);
+		dprintf("P flux: %.14f\n\n", pflux - pflux_zero);
+		balance = false;
+	}
+
+	return balance;
+}
+
 /// Should be preceded by init_indiv()
 /** check_harvest must be true if growth_daily() is tested
  *  canopy_exchange() and growth_daily() and functions in between cannot be tested separately
  */
 bool MassBalance::check_indiv(Individual& indiv, bool check_harvest) {
 
-	return check_indiv_C(indiv, check_harvest) && check_indiv_N(indiv, check_harvest);
+	return check_indiv_C(indiv, check_harvest) && check_indiv_N(indiv, check_harvest) && check_indiv_P(indiv, check_harvest);
 }
 
 /// Should be used together with check_patch() e.g. in framework()
@@ -3056,6 +3611,13 @@ void MassBalance::init_patch(Patch& patch) {
 
 	water_cont_zero = patch.water_content();
 	water_flux_zero = patch.water_flux();
+
+	pcont_zero = patch.pcont();
+	pcont_zero_scaled = patch.pcont(scale, true);
+	pflux_zero = patch.pflux();
+
+	if (stand.get_gridcell_fraction())
+		pflux_zero += gridcell.landcover.apflux_harvest_slow / stand.get_gridcell_fraction();
 }
 
 bool MassBalance::check_patch_C(Patch& patch, bool check_harvest) {
@@ -3121,6 +3683,30 @@ bool MassBalance::check_patch_water(Patch& patch) {
 		dprintf("\nStand %d Patch %d Water balance year %d day %d: %.9f\n", patch.stand.id, patch.id, date.year, date.day, water_content - water_cont_zero + water_flux - water_flux_zero);
 		dprintf("Water pool change: %.10f\n", water_content - water_cont_zero);
 		dprintf("Water flux: %.10f\n\n", water_flux - water_flux_zero);
+	}
+}
+
+bool MassBalance::check_patch_P(Patch& patch, bool check_harvest) {
+
+	bool balance = true;
+
+	Stand& stand = patch.stand;
+	//if (!stand.is_true_crop_stand())
+	//	return balance;
+	Gridcell& gridcell = stand.get_gridcell();
+	double pcont = patch.pcont();
+	double pflux = patch.pflux();
+
+	if (stand.get_gridcell_fraction())
+		pflux += gridcell.landcover.apflux_harvest_slow / stand.get_gridcell_fraction();
+
+	if (check_harvest && patch.isharvestday)
+		pcont_zero = pcont_zero_scaled;
+
+	if (date.year >= nyear_spinup && !negligible(pcont - pcont_zero + pflux - pflux_zero, -14)) {
+		dprintf("\nStand %d Patch %d P balance year %d day %d: %.14f\n", patch.stand.id, patch.id, date.year, date.day, pcont - pcont_zero + pflux - pflux_zero);
+		dprintf("P pool change: %.14f\n", pcont - pcont_zero);
+		dprintf("P flux: %.14f\n\n", pflux - pflux_zero);
 		balance = false;
 	}
 
@@ -3133,8 +3719,7 @@ bool MassBalance::check_patch_water(Patch& patch) {
  *  (init_patch() must be before canopy_exchange() and check_patch() after growth_daily()
  */
 bool MassBalance::check_patch(Patch& patch, bool check_harvest) {
-
-	return check_patch_C(patch, check_harvest) && check_patch_N(patch, check_harvest) && check_patch_water(patch);
+	return check_patch_C(patch, check_harvest) && check_patch_N(patch, check_harvest) && check_patch_P(patch, check_harvest) && check_patch_water(patch);
 }
 
 void MassBalance::check_year_N(Gridcell& gridcell) {
@@ -3165,6 +3750,30 @@ void MassBalance::check_year_N(Gridcell& gridcell) {
 	}
 
 	ncont = ncont_year;
+}
+
+
+void MassBalance::check_year_P(Gridcell& gridcell) {
+
+	double pcont_year = gridcell.pcont();
+	double pflux_year = gridcell.pflux();
+
+	if (date.year == start_year) {
+		pcont_zero = pcont_year;
+	}
+	else {
+
+		pflux += pflux_year;
+
+		// P balance check:
+		if (!negligible(pcont_year - pcont + pflux_year, -9)) {
+			dprintf("\n(%.2f, %.2f): P balance year %d: %.9f\n", gridcell.get_lon(), gridcell.get_lat(), date.year, pcont_year - pcont + pflux_year);
+			dprintf("P pool change: %.9f\n", pcont_year - pcont);
+			dprintf("P flux: %.9f\n", pflux_year);
+		}
+	}
+
+	pcont = pcont_year;
 }
 
 
@@ -3228,8 +3837,11 @@ void MassBalance::check_year(Gridcell& gridcell) {
 
 	check_year_C(gridcell);
 
-	if (ifcentury) 
+	if (ifcentury) {
 		check_year_N(gridcell);
+		/*if(ifplim)
+			check_year_P(gridcell);*/
+	}
 
 	check_year_water(gridcell);
 
@@ -3262,6 +3874,13 @@ void MassBalance::check_period(Gridcell& gridcell) {
 		dprintf("\nWARNING: (%.2f, %.2f): Period water balance: %.5f\n", gridcell.get_lon(), gridcell.get_lat(), water_cont - water_cont_zero + water_flux);
 		dprintf("Water pool change: %.6f\n", water_cont - water_cont_zero);
 		dprintf("Water fluxes: %.6f\n", water_flux);
+	}
+
+	// P balance check:
+	if (!negligible(pcont - pcont_zero + pflux, -9)) {
+		dprintf("\nWARNING: (%.2f, %.2f): Period P balance: %.10f\n", gridcell.get_lon(), gridcell.get_lat(), pcont - pcont_zero + pflux);
+		dprintf("P pool change: %.10f\n", pcont - pcont_zero);
+		dprintf("P fluxes: %.10f\n", pflux);
 	}
 }
 

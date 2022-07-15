@@ -2759,7 +2759,7 @@ void nfert_crop(Patch& patch) {
 	patch.anfert += patch.dnfert;
 }
 
-/// Function that determines amount of nitrogen applied today. General, both StandType-based and Pft-based, calling function nfert_crop().
+/// Function that determines amount of phosphorus applied today. Crop-specific, pft-based. General, both StandType-based and Pft-based, calling function nfert_crop().
 /** INPUT PARAMETERS
  *  \param patch					reference to a Patch
  *									Stand (accessed from patch) public members:
@@ -2775,6 +2775,70 @@ void nfert_crop(Patch& patch) {
  *  \param patch					reference to a Patch containing the following public members:
  *   - dnfert 						nitrogen fertilization today (kgN/m2)
  */
+
+void pfert_crop(Patch& patch) {
+
+	Gridcell& gridcell = patch.stand.get_gridcell();
+
+	patch.dpfert = 0.0;
+
+	pftlist.firstobj();
+	// Loop through PFTs
+	while (pftlist.isobj) {
+
+		Pft& pft = pftlist.getobj();
+		Patchpft& patchpft = patch.pft[pft.id];
+		Gridcellpft& gridcellpft = gridcell.pft[pft.id];
+
+		if (patch.stand.pft[pft.id].active && pft.phenology == CROPGREEN) {
+
+			cropphen_struct& ppftcrop = *(patchpft.get_cropphen());
+			if (!ppftcrop.growingseason) {
+				pftlist.nextobj();
+				continue;
+			}
+
+			double pfert = pft.P_appfert;
+			double mineral = 1.0;
+			if (gridcellpft.Pfert_read >= 0.0) {
+				pfert = gridcellpft.Pfert_read;
+				if (gridcellpft.Pfert_man_read > 0.0) {
+					mineral = 1.0 - gridcellpft.Pfert_man_read;
+				}
+
+			}
+			if (!ppftcrop.fertilised[0] && ppftcrop.dev_stage > 0.0) {
+				// Fertiliser application at dev_stage = 0, sowing.
+				patch.dpfert = pfert * mineral * (1.0 - pft.fertrate[0] - pft.fertrate[1]);
+				patch.fluxes.report_flux(Fluxes::PFERT, pfert * mineral * (1.0 - pft.fertrate[0] - pft.fertrate[1]));
+				ppftcrop.fertilised[0] = true;
+				if (mineral<1.0) {
+					patch.soil.sompool[SOILMETA].pmass += pfert * (1.0 - mineral) * 0.5;
+					patch.soil.sompool[SOILMETA].cmass += pfert * (1.0 - mineral) * 610.6792 * 0.25; //Check this, C:P ratio of an SLA of 15.51 m2/kgC (same which leads to a C:N of 30)
+					patch.soil.sompool[SOILSTRUCT].pmass += pfert * (1.0 - mineral) * 0.5;
+					patch.soil.sompool[SOILSTRUCT].cmass += pfert * (1.0 - mineral) * 610.6792 * 0.75;
+					patch.fluxes.report_flux(Fluxes::MANUREC, -pfert * (1.0 - mineral) * 610.6792);
+					patch.anfert += pfert * (1.0 - mineral);
+					patch.fluxes.report_flux(Fluxes::MANUREP, pfert * (1.0 - mineral));
+				}
+			}
+			else if (!ppftcrop.fertilised[1] && ppftcrop.dev_stage > pft.fert_stages[0]) {
+				patch.dpfert = pfert * mineral * pft.fertrate[0];
+				patch.fluxes.report_flux(Fluxes::PFERT, pfert * mineral * pft.fertrate[0]);
+				ppftcrop.fertilised[1] = true;
+			}
+			else if (!ppftcrop.fertilised[2] && ppftcrop.dev_stage > pft.fert_stages[1]) {
+				patch.dpfert = pfert * mineral * (pft.fertrate[1]);
+				patch.fluxes.report_flux(Fluxes::PFERT, pfert * mineral * pft.fertrate[1]);
+				ppftcrop.fertilised[2] = true;
+			}
+		}
+		pftlist.nextobj();
+	}
+	patch.apfert += patch.dpfert;
+}
+
+/// Function that determines amount of nitrogen applied today.
 void nfert(Patch& patch) {
 
 	Stand& stand = patch.stand;
@@ -2799,62 +2863,91 @@ void nfert(Patch& patch) {
 	patch.fluxes.report_flux(Fluxes::NFERT, patch.dnfert);
 }
 
+
+/// Function that determines amount ofphosphorus applied today.
+void pfert(Patch& patch) {
+
+	Stand& stand = patch.stand;
+	StandType& st = stlist[stand.stid];
+	Gridcell& gridcell = stand.get_gridcell();
+
+	if (stand.landcover == CROPLAND) {
+		pfert_crop(patch);
+		return;
+	}
+
+	// General code for applying phosphorus to other land cover types, an equal amount every day.
+	double pfert;
+	if (gridcell.st[st.id].pfert >= 0.0) {	// todo: management type variable (mt.nfert)
+		pfert = gridcell.st[st.id].pfert;
+	}
+	else {
+		pfert = 0.0;
+	}
+	patch.dpfert = pfert / date.year_length();
+	patch.apfert += patch.dpfert;
+}
+
+
 // Decides when to apply forest management rotation status by calling stand.rotate()
 /** Sets new forest management variables by calling stand.rotate() on st.mtstartyear[m]
- *  \param stand					reference to a Stand containing the following public members:
- *   - landcover		   			type of landcover
- *   - current_rot		   			current management rotation item
- *									Patch (accessed from looping through stand) containing the following public members:
- *   - clearcut_this_year			whether patch has been clearcut this year
- *									StandType (accessed from Stand) public members:
- *   - rotation_wait_for_cc			whether to wait for clearcut before moving to next ManagementType in a forestry rotation
- *   - mtstartyear[]				start of the managements in a rotation cycle (calendar year)
- *									Rotation (accessed from stand) public members:
- *   - nmanagements					number of managements in rotation
- *									ManagementType (accessed from Stand) public members:
- *   - harvest_system				whether clear-cut or continuous cutting schemes are selected
- *  INPUT/OUTPUT PARAMETERS
- *  \param stand					reference to a Stand containing the following public members:
- *   - nyears_in_rotation		   	number of years passed in current rotation item
- */
+*  \param stand					reference to a Stand containing the following public members:
+*   - landcover		   			type of landcover
+*   - current_rot		   			current management rotation item
+*									Patch (accessed from looping through stand) containing the following public members:
+*   - clearcut_this_year			whether patch has been clearcut this year
+*									StandType (accessed from Stand) public members:
+*   - rotation_wait_for_cc			whether to wait for clearcut before moving to next ManagementType in a forestry rotation
+*   - mtstartyear[]				start of the managements in a rotation cycle (calendar year)
+*									Rotation (accessed from stand) public members:
+*   - nmanagements					number of managements in rotation
+*									ManagementType (accessed from Stand) public members:
+*   - harvest_system				whether clear-cut or continuous cutting schemes are selected
+*  INPUT/OUTPUT PARAMETERS
+*  \param stand					reference to a Stand containing the following public members:
+*   - nyears_in_rotation		   	number of years passed in current rotation item
+*/
 void forest_rotation(Stand& stand) {
 
 	StandType& st = stlist[stand.stid];
 	ManagementType& mt = stand.get_current_management();
 
-	if(stand.landcover != FOREST || st.rotation.nmanagements < 2)
+	if (stand.landcover != FOREST || st.rotation.nmanagements < 2)
 		return;
 
 	stand.nyears_in_rotation++;
 
 	bool clearcut = false;
 	double cmass_wood = 0.0;
-	for(unsigned int p = 0; p < stand.nobj; p++) {
-			if(stand[p].clearcut_this_year)
-				clearcut = true;
-			cmass_wood += stand[p].cmass_wood();	// don't wait for clearcut to rotate if no trees are alive
+	for (unsigned int p = 0; p < stand.nobj; p++) {
+		if (stand[p].clearcut_this_year)
+			clearcut = true;
+		cmass_wood += stand[p].cmass_wood();	// don't wait for clearcut to rotate if no trees are alive
 	}
 
 	bool rotate_at_cc = st.rotation_wait_for_cc && mt.harvest_system == "CLEARCUT";
 
-	for(int m=0;m<st.rotation.nmanagements;m++) {
+	for (int m = 0; m<st.rotation.nmanagements; m++) {
 		bool rotate_now = false;
-		if(rotate_at_cc) {
-			if(st.mtstartyear[m] > -1 && st.mtstartyear[m] <= date.get_calendar_year() && clearcut
+		if (rotate_at_cc) {
+			if (st.mtstartyear[m] > -1 && st.mtstartyear[m] <= date.get_calendar_year() && clearcut
 				|| st.mtstartyear[m] == date.get_calendar_year() && !cmass_wood) {
 				rotate_now = true;
 			}
 		}
-		else if(st.mtstartyear[m] == date.get_calendar_year()) {
+		else if (st.mtstartyear[m] == date.get_calendar_year()) {
 			rotate_now = true;
 		}
-		if(rotate_now && m != stand.current_rot) {
+		if (rotate_now && m != stand.current_rot) {
 			stand.rotate(m);
 		}
 	}
 }
 
 // Decides when to apply crop management rotation status by calling stand.rotate()
+
+/// Updates crop rotation status
+
 /** Sets new crop management variables, typically on harvest day
  *  \param stand					reference to a Stand containing the following public members:
  *   - landcover		   			type of landcover

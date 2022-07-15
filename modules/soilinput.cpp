@@ -280,6 +280,15 @@ SoilInput::SoilProperties SoilInput::get_lpj(coord c) {
 	soiltype.soil_OC = 0.05;
 	soiltype.soilC = 0.0; // default value (kgC/m2)
 	soiltype.porosity = data[soilcode][11];
+	
+	// Phosphorus soil data
+	// FIXED FOR AMAZON FACE AT THE MOMENT
+	/*soiltype.kplab = 0.010;
+	soiltype.spmax = 0.145;
+	soiltype.pwtr = 0.000003;*/
+	soiltype.kplab = data[soilcode][12];
+	soiltype.spmax = data[soilcode][13];
+	soiltype.pwtr = data[soilcode][14];
 	return soiltype;
 }
 
@@ -308,6 +317,7 @@ SoilInput::SoilProperties SoilInput::get_lpj_organic_soil() {
 }
 
 // Get and set soil properties based on mineral soil input.
+// NO P DATA IN MINERAL SOIL INPUT
 SoilInput::SoilProperties SoilInput::get_mineral(coord c) {
 	coord C = find_closest_point(searchradius_soil, c);
 	SoilDataMineral& soil = mineral_map[C];
@@ -362,7 +372,7 @@ SoilInput::SoilProperties SoilInput::get_mineral(coord c) {
 	else {
 		soiltype.porosity = Theta_s;
 	}
-	
+
 	return soiltype;
 }
 
@@ -421,6 +431,12 @@ void SoilInput::get_soil_mineral(double lon, double lat, Gridcell& gridcell) {
 	soiltype.water_below_wp = soilprop.wilting_point;
 	soiltype.porosity = soilprop.porosity;
 	soiltype.mineral_frac = 1.0 - soiltype.organic_frac - soiltype.porosity;
+
+	// Phosphorus soil data
+	// FIXED FOR AMAZON FACE AT THE MOMENT
+	soiltype.kplab = soilprop.kplab;
+	soiltype.spmax = soilprop.spmax;
+	soiltype.pwtr = soilprop.pwtr;
 
 	if (!ifcentury) {
 		// override the default SOM years with 70-80% of the spin-up period
@@ -728,6 +744,15 @@ void soil_parameters(Soiltype& soiltype, int soilcode) {
 	soiltype.water_below_wp = data[soilcode][5];
 	soiltype.porosity = data[soilcode][11];
 	soiltype.mineral_frac = 1.0 - soiltype.organic_frac - soiltype.porosity;
+
+	// Phosphorus soil data
+	// FIXED FOR AMAZON FACE AT THE MOMENT
+	/*soiltype.kplab = 0.010;
+	soiltype.spmax = 0.145;
+	soiltype.pwtr = 0.000003;*/
+	soiltype.kplab = data[soilcode][12];
+	soiltype.spmax = data[soilcode][13];
+	soiltype.pwtr = data[soilcode][14];
 
 	if (!ifcentury) {
 		// override the default SOM years with 70-80% of the spin-up period

@@ -1053,10 +1053,24 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 	                           mNHxdrydep, mNOydrydep,
 							   mNHxwetdep, mNOywetdep);
 
+	// Phosphorus deposition
+	double gridcell_mpdep[12];
+	get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), gridcell_mpdep);
+	// Divide pdep into dry and wet
+	double mpdrydep[12], mpwetdep[12];
+	for (int m = 0; m < 12; m++) {
+		mpdrydep[m] = gridcell_mpdep[m] / 2.0;
+		mpwetdep[m] = gridcell_mpdep[m] / 2.0;
+	}
+
 	// Distribute N deposition
 	distribute_ndep(mNHxdrydep, mNOydrydep,
 					mNHxwetdep, mNOywetdep,
 					dprec,dNH4dep,dNO3dep);
+
+	// Distribute P deposition
+	distribute_pdep(mpdrydep, mpwetdep,
+		dprec, dpdep);
 }
 
 void CFInput::getlandcover(Gridcell& gridcell) {
@@ -1094,6 +1108,9 @@ bool CFInput::getclimate(Gridcell& gridcell) {
 	// Nitrogen deposition
 	gridcell.dNH4dep = dNH4dep[date.day];
 	gridcell.dNO3dep = dNO3dep[date.day];
+
+	// Phosphorus deposition
+	gridcell.dpdep = dpdep[date.day];
 
 	// bvoc
 	if(ifbvoc){

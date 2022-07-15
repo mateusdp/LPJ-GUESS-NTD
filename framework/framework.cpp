@@ -94,9 +94,11 @@ void simulate_day(Gridcell& gridcell, InputModule* input_module) {
 			// Update daily soil drivers including soil temperature
 			dailyaccounting_patch(patch);
 
-			// Determine nitrogen fertilisation amount 
-			if(run_landcover)
+			// Determine nitrogen and/or phosphorusfertilisation amount 
+			if (run_landcover) {
 				nfert(patch);
+				pfert(patch);
+			}
 
 			// Calculate crop sowing dates
 			crop_sowing_patch(patch);
@@ -187,9 +189,9 @@ int framework(const CommandLineArguments& args) {
 
 	print_logfile_heading();
 
-	// Nitrogen limitation
-	if (ifnlim && !ifcentury) {
-		fail("\n\nIf nitrogen limitation is switched on then century soil module also needs to be switched on!");
+	// Nitrogen or phosphorus limitation
+	if ((ifnlim || ifplim) && !ifcentury) {
+		fail("\n\nIf nitrogen or phosphorus limitation is switched on then century soil module also needs to be switched on!");
 	}
 
 	// bvoc

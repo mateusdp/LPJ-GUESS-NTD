@@ -193,6 +193,9 @@ private:
 	/// Daily N deposition for one year
 	double dNH4dep[Date::MAX_YEAR_LENGTH],dNO3dep[Date::MAX_YEAR_LENGTH];
 
+	// Daily P deposition for one year
+	double dpdep[Date::MAX_YEAR_LENGTH];
+
 	/// Minimum temperature for current gridcell and current year (deg C)
 	double dmin_temp[Date::MAX_YEAR_LENGTH];
 

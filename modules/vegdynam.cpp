@@ -331,6 +331,13 @@ void establishment_lpj(Stand& stand,Patch& patch) {
 				indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr /
 					((indiv.pft.regen.cmass_leaf + indiv.pft.regen.cmass_root +
 					indiv.pft.regen.cmass_sap +	indiv.pft.regen.cmass_heart) * est_pft);
+
+			indiv.max_p_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.pft.ctop_leaf_avr;
+			if (!indiv.alive)
+				indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr /
+				((indiv.pft.regen.cmass_leaf + indiv.pft.regen.cmass_root +
+					indiv.pft.regen.cmass_sap + indiv.pft.regen.cmass_heart) * est_pft);
+
 		}
 		else if (((indiv.pft.lifeform==GRASS || indiv.pft.lifeform==MOSS) && indiv.pft.phenology!=CROPGREEN) &&
 			establish(patch, stand.get_climate(), indiv.pft)) {
@@ -358,6 +365,11 @@ void establishment_lpj(Stand& stand,Patch& patch) {
 			if (!indiv.alive)
 				indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr /
 					((indiv.pft.regen.cmass_leaf + indiv.pft.regen.cmass_root) * est_pft);
+
+			indiv.max_p_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.pft.ctop_leaf_avr;
+			if (!indiv.alive)
+				indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr /
+				((indiv.pft.regen.cmass_leaf + indiv.pft.regen.cmass_root) * est_pft);
 		}
 
 		// Update allometry to account for changes in average individual biomass
@@ -575,10 +587,16 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						if(indiv.pft.phenology == CROPGREEN) {
 							indiv.max_n_storage = CMASS_SEED / indiv.pft.cton_leaf_avr;
 							indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr / CMASS_SEED;
+
+							indiv.max_p_storage = CMASS_SEED / indiv.pft.ctop_leaf_avr;
+							indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr / CMASS_SEED;
 						}
 						else {
 							indiv.max_n_storage = indiv.cmass_root * indiv.pft.fnstorage / indiv.pft.cton_leaf_avr;
 							indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr / bminit;
+
+							indiv.max_p_storage = indiv.cmass_root * indiv.pft.fpstorage / indiv.pft.ctop_leaf_avr;
+							indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr / bminit;
 						}
 
 						// Establishment flux is not debited for 'new' Individual
@@ -722,6 +740,9 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						// Calculate storage pool size
 						indiv.max_n_storage = indiv.cmass_sap * indiv.pft.fnstorage / indiv.pft.cton_leaf_avr;
 						indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr / bminit;
+
+						indiv.max_p_storage = indiv.cmass_sap * indiv.pft.fpstorage / indiv.pft.ctop_leaf_avr;
+						indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr / bminit;
 
 						// Establishment flux is not debited for 'new' Individual
 						// objects - their carbon is debited in function growth()
@@ -1488,6 +1509,9 @@ void fire(Patch& patch,double& fireprob) {
 		patch.pft[p].nmass_litter_leaf  *= (1.0 - mort_fire);
 		patch.pft[p].nmass_litter_sap   *= (1.0 - mort_fire);
 		patch.pft[p].nmass_litter_heart *= (1.0 - mort_fire);
+		patch.pft[p].pmass_litter_leaf *= (1.0 - mort_fire);
+		patch.pft[p].pmass_litter_sap *= (1.0 - mort_fire);
+		patch.pft[p].pmass_litter_heart *= (1.0 - mort_fire);
 	}
 
 	// Soil litter
@@ -1516,10 +1540,17 @@ void fire(Patch& patch,double& fireprob) {
 
 	report_fire_nfluxes(patch, nflux_fire);
 
+	// CHECK FOR PHOSPHORUS FIRE ATMOSPHERIC FLUX RATIO? ASK MATT FORREST
+
 	patch.soil.sompool[SURFSTRUCT].nmass *= (1.0 - mort_fire_struct);
 	patch.soil.sompool[SURFMETA].nmass   *= (1.0 - mort_fire_meta);
 	patch.soil.sompool[SURFFWD].nmass    *= (1.0 - mort_fire_fwd);
 	patch.soil.sompool[SURFCWD].nmass    *= (1.0 - mort_fire_cwd);
+
+	patch.soil.sompool[SURFSTRUCT].pmass *= (1.0 - mort_fire_struct);
+	patch.soil.sompool[SURFMETA].pmass *= (1.0 - mort_fire_meta);
+	patch.soil.sompool[SURFFWD].pmass *= (1.0 - mort_fire_fwd);
+	patch.soil.sompool[SURFCWD].pmass *= (1.0 - mort_fire_cwd);
 }
 
 

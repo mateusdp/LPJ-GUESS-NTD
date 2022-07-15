@@ -43,8 +43,10 @@ bool ifcdebt;
 
 bool ifcentury;
 bool ifnlim;
+bool ifplim;
 int freenyears;
 double nrelocfrac;
+double prelocfrac;
 double nfix_a;
 double nfix_b;
 
@@ -128,6 +130,9 @@ bool readwoodharvest_frac = false;
 bool readwoodharvest_cmass = false;
 bool harvest_secondary_to_new_stand = true;
 bool harvest_burn_thin_trees = false;
+bool readPfert = false;
+bool readPman = false;
+bool readPfert_st = false;
 bool printseparatestands = false;
 bool iftillage = false;
 
@@ -486,6 +491,8 @@ void plib_declarations(int id,xtring setname) {
 
 		declareitem("nrelocfrac",&nrelocfrac,0.0,0.99,1,CB_NONE,
 			"Fractional nitrogen relocation from shed leaves & roots");
+		declareitem("prelocfrac", &prelocfrac, 0.0, 0.99, 1, CB_NONE,
+			"Fractional phosphorus relocation from shed leaves & roots");
 		declareitem("nfix_a",&nfix_a,0.0,0.4,1,CB_NONE,
 			"first term in nitrogen fixation eqn");
 		declareitem("nfix_b",&nfix_b,-10.0,10.,1,CB_NONE,
@@ -495,6 +502,8 @@ void plib_declarations(int id,xtring setname) {
 			"Whether to use CENTURY SOM dynamics (default standard LPJ)");
 		declareitem("ifnlim",&ifnlim,1,CB_NONE,
 			"Whether plant growth limited by available nitrogen");
+		declareitem("ifplim", &ifplim, 1, CB_NONE,
+			"Whether plant growth limited by available phosphorus");
 		declareitem("freenyears",&freenyears,0,1000,1,CB_NONE,
 			"Number of years to spinup without nitrogen limitation");
 		declareitem("ifntransform",&ifntransform,1,CB_NONE,
@@ -683,10 +692,17 @@ void plib_declarations(int id,xtring setname) {
 			"Reference Sapwood C:N mass ratio");
 		declareitem("nuptoroot",&ppft->nuptoroot,0.0,1.0,1,CB_NONE,
 			"Maximum nitrogen uptake per fine root");
+		declareitem("puptoroot", &ppft->puptoroot, 0.0, 1.0, 1, CB_NONE,
+			"Maximum phosphorus uptake per fine root");
 		declareitem("km_volume",&ppft->km_volume,0.0,10.0,1,CB_NONE,
 			"Michaelis-Menten kinetic parameters for nitrogen uptake");
+		declareitem("kmp_volume", &ppft->kmp_volume, 0.0, 10.0, 1, CB_NONE,
+			"Michaelis-Menten kinetic parameters for phosphorus uptake");
 		declareitem("fnstorage",&ppft->fnstorage,0.0,10.0,1,CB_NONE,
 			"fraction of sapwood (root for herbaceous pfts) that can be used as a nitrogen storage scalar");
+		//CURRENTLY FPSTORAGE SAME AS FNSTORAGE
+		declareitem("fpstorage", &ppft->fpstorage, 0.0, 10.0, 1, CB_NONE,
+			"fraction of sapwood (root for herbaceous pfts) that can be used as a phosphorus storage scalar");
 
 		declareitem("reprfrac",&ppft->reprfrac,0.0,1.0,1,CB_NONE,
 			"Fraction of NPP allocated to reproduction");
@@ -1479,11 +1495,13 @@ void plib_callback(int callback) {
 		if (!itemparsed("rootdistribution")) badins("rootdistribution");
 
 		if (!itemparsed("nrelocfrac")) badins("nrelocfrac");
+		if (!itemparsed("prelocfrac")) badins("prelocfrac");
 		if (!itemparsed("nfix_a")) badins("nfix_a");
 		if (!itemparsed("nfix_b")) badins("nfix_b");
 
 		if (!itemparsed("ifcentury")) badins("ifcentury");
 		if (!itemparsed("ifnlim")) badins("ifnlim");
+		if (!itemparsed("ifplim")) badins("ifplim");
 		if (!itemparsed("freenyears")) badins("freenyears");
 
 		if (nyear_spinup <= freenyears) {
@@ -1838,22 +1856,30 @@ void plib_callback(int callback) {
 			ppft = &pftlist.getobj();
 
 			if (ifcalcsla) {
-				if(!(ppft->phenology == CROPGREEN && run_landcover && ifnlim))
+				if(!(ppft->phenology == CROPGREEN && run_landcover && (ifnlim || ifplim)))
 					// Calculate SLA
 					ppft->initsla();
 			}
 
 			if (ifcalccton) {
-				if(!(ppft->phenology == CROPGREEN && run_landcover && ifnlim))
+				if(!(ppft->phenology == CROPGREEN && run_landcover && (ifnlim || ifplim)))
 					// Calculate leaf C:N ratio minimum
 					ppft->init_cton_min();
+					// Calculate leaf C:P ratio minimum
+					ppft->init_ctop_min();
 			}
 
 			// Calculate C:N ratio limits
 			ppft->init_cton_limits();
 
+			// Calculate C:P ratio limits
+			ppft->init_ctop_limits();
+
 			// Calculate nitrogen uptake strength dependency on root distribution
 			ppft->init_nupscoeff();
+
+			// Calculate phosphorus uptake strength dependency on root distribution
+			ppft->init_pupscoeff();
 
 			// Calculate regeneration characteristics for population mode
 			ppft->initregen();
@@ -1900,16 +1926,21 @@ void plib_callback(int callback) {
 			if (!itemparsed("emax")) badins("emax");
 			if (!itemparsed("respcoeff")) badins("respcoeff");
 
-			if (!ifcalcsla || (ppft->phenology == CROPGREEN && run_landcover && ifnlim))
+			if (!ifcalcsla || (ppft->phenology == CROPGREEN && run_landcover && (ifnlim || ifplim)))
 				if (!itemparsed("sla")) badins("sla");
-			if (!ifcalccton || (ppft->phenology == CROPGREEN && run_landcover && ifnlim))
+			if (!ifcalccton || (ppft->phenology == CROPGREEN && run_landcover && (ifnlim || ifplim))) {
 				if (!itemparsed("cton_leaf_min")) badins("cton_leaf_min");
+				if (!itemparsed("ctop_leaf_min")) badins("ctop_leaf_min");
+			}
 
 
 			if (!itemparsed("cton_root")) badins("cton_root");
 			if (!itemparsed("nuptoroot")) badins("nuptoroot");
+			if (!itemparsed("puptoroot")) badins("puptoroot");
 			if (!itemparsed("km_volume")) badins("km_volume");
+			if (!itemparsed("kmp_volume")) badins("kmp_volume");
 			if (!itemparsed("fnstorage")) badins("fnstorage");
+			if (!itemparsed("fpstorage")) badins("fpstorage");
 
 			if (!itemparsed("reprfrac")) badins("reprfrac");
 			if (!itemparsed("turnover_leaf")) badins("turnover_leaf");
@@ -2056,7 +2087,7 @@ void plib_callback(int callback) {
 								"Value required for leaflong when ifcalcsla enabled");
 					plibabort();
 				}
-				if (itemparsed("sla") && !(ppft->phenology == CROPGREEN && ifnlim))
+				if (itemparsed("sla") && !(ppft->phenology == CROPGREEN && (ifnlim || ifplim)))
 					sendmessage("Warning",
 								"Specified sla value not used when ifcalcsla enabled");
 			}
@@ -2073,6 +2104,10 @@ void plib_callback(int callback) {
 				if (itemparsed("cton_leaf_min") && !(ppft->phenology == CROPGREEN && ifnlim))
 					sendmessage("Warning",
 								"Specified cton_leaf_min value not used when ifcalccton enabled");
+				
+				if (itemparsed("ctop_leaf_min") && !(ppft->phenology == CROPGREEN && ifplim))
+					sendmessage("Warning",
+						"Specified ctop_leaf_min value not used when ifcalccton enabled");
 			}
 		}
 		else {

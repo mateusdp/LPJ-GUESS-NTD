@@ -542,12 +542,19 @@ class MassBalance : public Serializable  {
 	double ncont_zero_scaled;
 	double nflux;
 	double nflux_zero;
+	
+	double pcont;
+	double pcont_zero;
+	double pcont_zero_scaled;
+	double pflux;
+	double pflux_zero;
 
 	double water_cont;
 	double water_cont_zero;
 	double water_cont_zero_scaled;
 	double water_flux;
 	double water_flux_zero;
+
 
 public:
 	MassBalance() {
@@ -563,11 +570,19 @@ public:
 		ncont_zero_scaled = 0.0;
 		nflux = 0.0;
 		nflux_zero = 0.0;
+
+		pcont = 0.0;
+		pcont_zero = 0.0;
+		pcont_zero_scaled = 0.0;
+		pflux = 0.0;
+		pflux_zero = 0.0;
+
 		water_cont = 0.0;
 		water_cont_zero = 0.0;
 		water_cont_zero_scaled = 0.0;
 		water_flux = 0.0;
 		water_flux_zero = 0.0;
+
 	}
 
 	MassBalance(int start_yearX) {
@@ -583,11 +598,19 @@ public:
 		ncont_zero_scaled = 0.0;
 		nflux = 0.0;
 		nflux_zero = 0.0;
+
+		pcont = 0.0;
+		pcont_zero = 0.0;
+		pcont_zero_scaled = 0.0;
+		pflux = 0.0;
+		pflux_zero = 0.0;
+
 		water_cont = 0.0;
 		water_cont_zero = 0.0;
 		water_cont_zero_scaled = 0.0;
 		water_flux = 0.0;
 		water_flux_zero = 0.0;
+
 	}
 
 	void init(Gridcell& gridcell);
@@ -597,17 +620,24 @@ public:
 	bool check_indiv(Individual& indiv, bool check_harvest = false);
 	bool check_indiv_C(Individual& indiv, bool check_harvest = false);
 	bool check_indiv_N(Individual& indiv, bool check_harvest = false);
+	bool check_indiv_P(Individual& indiv, bool check_harvest = false);
 	
 	void init_patch(Patch& patch);
 	bool check_patch(Patch& patch, bool check_harvest = false);
 	bool check_patch_C(Patch& patch, bool check_harvest = false);
 	bool check_patch_N(Patch& patch, bool check_harvest = false);
+	bool check_patch_P(Patch& patch, bool check_harvest = false);
+
 	bool check_patch_water(Patch& patch);
 
-	void check_year(Gridcell& gridcell); // calls both check_year_C and check_year_N
+
+	void check_year(Gridcell& gridcell); // calls both check_year_C, check_year_N and check_year_P
 	void check_year_C(Gridcell& gridcell);
 	void check_year_N(Gridcell& gridcell);
+	void check_year_P(Gridcell& gridcell);
+
 	void check_year_water(Gridcell& gridcell);
+
 	void check_period(Gridcell& gridcell);
 
 	void serialize(ArchiveStream& arch);
@@ -659,6 +689,7 @@ struct PhotosynthesisResult : public Serializable {
 		je          = 0;
 		nactive_opt = 0.0;
 		vmaxnlim    = 1.0;
+		vmaxplim	= 1.0;
 	}
 
 	/// RuBisCO capacity (gC/m2/day)
@@ -680,8 +711,14 @@ struct PhotosynthesisResult : public Serializable {
 	/// optimal leaf nitrogen associated with photosynthesis (kgN/m2)
 	double nactive_opt;
 
+	/// optimal leaf phosphorus associated with photosynthesis (kgP/m2)
+	double pactive_opt;
+
 	/// nitrogen limitation on vm
 	double vmaxnlim;
+
+	/// phosphorus limitation on vm
+	double vmaxplim;
 
 	/// net C-assimilation (gross photosynthesis minus leaf respiration) (kgC/m2/day)
     double net_assimilation() const {
@@ -820,6 +857,7 @@ struct PhotosynthesisStresses {
 	void no_stress() {
 
 		ifnlimvmax = false;
+		ifplimvmax = false;
 		moss_ps_limit = 1.0;
 		graminoid_ps_limit = 1.0;
 		inund_stress = 1.0;
@@ -828,6 +866,9 @@ struct PhotosynthesisStresses {
 private:
 	/// whether nitrogen should limit Vmax
 	bool ifnlimvmax;
+
+	/// whether phosphorus should limit Vmax
+	bool ifplimvmax;
 
 	///  limit to moss photosynthesis. [0,1], where 1 means no limit
 	double moss_ps_limit;
@@ -840,9 +881,10 @@ private:
 
 public:
 	/// Set the stresses
-    void set(bool thisnlimvmax, double this_moss_ps_limit, double this_graminoid_ps_limit, double this_inund_stress) {
+    void set(bool thisnlimvmax, bool thisplimvmax, double this_moss_ps_limit, double this_graminoid_ps_limit, double this_inund_stress) {
 
 		ifnlimvmax = thisnlimvmax;
+		ifplimvmax = thisplimvmax;
 		moss_ps_limit = this_moss_ps_limit;
 		graminoid_ps_limit = this_graminoid_ps_limit;
 		inund_stress = this_inund_stress;
@@ -850,6 +892,10 @@ public:
 
 	bool get_ifnlimvmax() const {
 		return ifnlimvmax;	
+	}
+
+	bool get_ifplimvmax() const {
+		return ifplimvmax;
 	}
 
 	double get_moss_ps_limit() const {
@@ -918,6 +964,9 @@ public:
 
 	/// Insolation today, see also instype
 	double insol;
+
+	/// daily phosphorus deposition per month (kgP/m2/d)
+	double mpdep[12];
 
 	/// Type of insolation
 	/** This decides how to interpret the variable insol,
@@ -1258,8 +1307,16 @@ public:
 		NFERT,
 		/// Nitrogen flux to atmosphere from consumed harvested products (kgN/m2)
 		HARVESTN,
-		/// Nitrogen flux from atmosphere to vegetation associated with sowing (kgC/m2)
+		/// Nitrogen flux from atmosphere to vegetation associated with sowing (kgN/m2)
 		SEEDN,
+		/// Flux to vegetation associated with manure addition (kgP/m2)
+		MANUREP,
+		/// Flux to vegetation associated with P addition (kgP/m2) 
+		PFERT,
+		/// Phosphorus flux to atmosphere from consumed harvested products (kgP/m2)
+		HARVESTP,
+		/// Phosphorus flux from atmosphere to vegetation associated with sowing (kgP/m2)
+		SEEDP,
 		/// NH3 flux to atmosphere from fire
 		NH3_FIRE,
 		/// NOx flux to atmosphere from fire
@@ -1268,6 +1325,8 @@ public:
 		N2O_FIRE,
 		/// N2 flux to atmosphere from fire
 		N2_FIRE,
+		/// P flux to atmosphere from fire
+		P_FIRE,
 		//---- Soil N transformation -----
 		/// NH3 flux from soil (ntransform)
 		NH3_SOIL,
@@ -1277,6 +1336,8 @@ public:
 		N2O_SOIL,
 		/// N2 flux from soil (ntransform)
 		N2_SOIL,
+		/// P flux from soil
+		P_SOIL,
 		/// DOC flux from soil (ntransform)
 		DOC_FLUX,
 		/// Net nitrification (ntransform)
@@ -1539,10 +1600,16 @@ public:
 	int hdate;
 	/// Nitrogen fertilisation amount, unless Nfert_read read from file
 	double nfert;
+	/// Phosphorus fertilisation amount, unless Pfert_read read from file
+	double pfert;
+
 	/// Tillage factor (1.0 - 4.5)
 	double tillage_fact;
+
 	/// Whether grass is grown in fallow
 	bool fallow;
+
+	bool multicrop;
 
 	ManagementType() {
 
@@ -1618,13 +1685,31 @@ public:
 		nfert = -1.0;
 		tillage_fact = 1.0;
 		fallow = false;
+		pfert = -1.0;
+		fallow = false;
+		multicrop = false;
+	}
+
+	// Copy constructor
+	ManagementType(const ManagementType& from) {
+
+		name = from.name;
+		pftname = from.pftname;
+		hydrology = from.hydrology;
+		sdate = from.sdate;
+		hdate = from.hdate;
+		nfert = from.nfert;
+		pfert = from.pfert;
+		fallow = from.fallow;
 	}
 
 	bool is_managed() {
 
 		// Add new management parameters here
+
 		if(pftname != "" || planting_system != "" || selection != ""||  harvest_system != "" ||  hydrology == IRRIGATED 
 			|| fallow || relaxed_establishment || suppress_fire || suppress_disturbance || nfert > -1.0 || firstmanageyear < FAR_FUTURE_YEAR)
+
 			return true;
 		else
 			return false;
@@ -1912,9 +1997,36 @@ public:
 	/// fraction of sapwood (root for herbaceous pfts) that can be used as a nitrogen longterm storage scalar
 	double fnstorage;
 
+	/// minimum leaf C:P mass ratio allowed when phosphorus demand is determined
+	double ctop_leaf_min;
+	/// maximum leaf C:P mass ratio	allowed when phosphorus demand is determined
+	double ctop_leaf_max;
+	/// average leaf C:P mass ratio (between min and max)
+	double ctop_leaf_avr;
+	/// average fine root C:P mass ratio (connected cton_leaf_avr)
+	double ctop_root_avr;
+	/// maximum fine root C:P mass ratio (used when mass is negligible)
+	double ctop_root_max;
+	/// average sapwood C:P mass ratio (connected cton_leaf_avr)
+	double ctop_sap_avr;
+	/// maximum sapwood C:P mass ratio (used when mass is negligible)
+	double ctop_sap_max;
+	/// reference fine root C:P mass ratio
+	double ctop_root;
+	/// reference sapwood C:P mass ratio
+	double ctop_sap;
+	/// Maximum phosphorus uptake per fine root [kgP kgC-1 day-1]
+	double puptoroot;
+	/// coefficient to compensate for vertical distribution of fine root on phosphorus uptake
+	double pupscoeff;
+	/// fraction of sapwood (root for herbaceous pfts) that can be used as a phosphorus longterm storage scalar
+	double fpstorage;
+
 	/// Michaelis-Menten kinetic parameters
 	/** Half saturation concentration for N uptake [kgN l-1] (Rothstein 2000) */
 	double km_volume;
+	/** Half saturation concentration for P uptake [kgP l-1] (Silveira & Cardoso 2004) */
+	double kmp_volume;
 
 	/// fraction of NPP allocated to reproduction
 	double reprfrac;
@@ -2005,7 +2117,9 @@ public:
 
 	/// nitrogen fertilisation amount (kgN/m2/year)
 	double N_appfert;
-	/// 0 - 1 how much of the fertiliser is applied at the two fertdates, default 1.
+	/// the amount of P that is applied (kg P m-2)
+	double P_appfert;
+	/// 0 - 1 how much of the fertiliser is applied the first date, default 1.
 	double fertrate[2];
 	/// fertilisation dates relative to sowing date
 	int fertdates[2];
@@ -2032,6 +2146,8 @@ public:
 	double a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3;
 	double cton_stem_avr;
 	double cton_stem_max;
+	double ctop_stem_avr;
+	double ctop_stem_max;
 
 	/// Drought tolerance level (0 = very -> 1 = not at all) (unitless)
 	/** Used to implement drought-limited establishment */
@@ -2182,8 +2298,16 @@ public:
 	double frootend;
 	/// autumn/spring sowing of pft:s with tempautumn = 1
 	int forceautumnsowing;	//0 = NOFORCING,  1 = AUTUMNSOWING, 2 = SPRINGSOWING
+	/// N limited version of pft
+	bool nlim;
+	/// P limited version of pft
+	bool plim;
 
 	double avg_cton(const double& min, const double& max) {
+		return 2.0 / (1. / min + 1. / max);
+	}
+
+	double avg_ctop(const double& min, const double& max) {
 		return 2.0 / (1. / min + 1. / max);
 	}
 	// MEMBER FUNCTIONS
@@ -2195,6 +2319,8 @@ public:
 
 		std::fill_n(gdd0, Date::MAX_YEAR_LENGTH + 1, -1.0); // value<0 signifies "unknown"; see function phenology()
 
+		nlim = false;
+		plim = false;
 		root_beta = 0.0;
 
 		drought_tolerance = 0.0; // Default, means that the PFT will never be limited by drought.
@@ -2243,6 +2369,7 @@ public:
 		fert_stages[1] = 0.9;
 
 		N_appfert = 0.0;
+		P_appfert = 0.0;
 
 		T_vn_min=0.0;
 		T_vn_opt=0.0;
@@ -2275,7 +2402,7 @@ public:
 	void initsla() {
 
 		// SLA has to be supplied in the insfile for crops with N limitation
-		if (!(phenology == CROPGREEN && ifnlim)) {
+		if (!(phenology == CROPGREEN && (ifnlim || ifplim))) {
 
 			// Reich et al 1992, Table 1 (includes conversion x2.0 from m2/kg_dry_weight to
 			// m2/kgC)
@@ -2293,7 +2420,7 @@ public:
 	void init_cton_min() {
 
 		// cton_leaf_min has to be supplied in the insfile for crops with N limitation
-		if (!(phenology == CROPGREEN && ifnlim)) {
+		if (!(phenology == CROPGREEN && (ifnlim || ifplim))) {
 			// Reich et al 1992, Table 1 (includes conversion x500 from mg/g_dry_weight to
 			// kgN/kgC)
 
@@ -2304,10 +2431,26 @@ public:
 		}
 	}
 
+	/// Calculates minimum leaf C:P ratio given leaf longevity (actually sla here, maybe change in the future, also for C:N)
+	void init_ctop_min() {
+		// ctop_leaf_min has to be supplied in the insfile for crops with P limitation
+		if (!(phenology == CROPGREEN && (ifnlim || ifplim))) {
+			// Reich et al 1992, Table 1 (includes conversion x500 from mg/g_dry_weight to
+			// kgN/kgC)
+
+			if (leafphysiognomy == BROADLEAF)
+				//ctop_leaf_min = Calculation from leaflong??;
+				ctop_leaf_min = exp(8.63342 + log(sla) * -0.80936) / ((2.78 + 1.0) / 2.0); //Calculation from sla
+			else if (leafphysiognomy == NEEDLELEAF)
+				//ctop_leaf_min = Calculation from leaflong??;
+				ctop_leaf_min = exp(8.63342 + log(sla) * -0.80936) / ((2.78 + 1.0) / 2.0); //Calculation from sla
+		}
+	}
+
 	void init_cton_limits() {
 
 		// Fraction between min and max C:N ratio White et al. 2000
-		double frac_mintomax = (phenology == CROPGREEN && ifnlim) ? 5.0 : 2.78;	// Use value also without nlim ?
+		double frac_mintomax = (phenology == CROPGREEN && (ifnlim || ifplim)) ? 5.0 : 2.78;	// Use value also without nlim ?
 
 		// Fraction between leaf and root C:N ratio
 		double frac_leaftoroot = 1.16; // Friend et al. 1997
@@ -2351,6 +2494,53 @@ public:
 		cton_stem_avr = 1.0/(2.0*0.0068);
 	}
 
+	void init_ctop_limits() {
+
+		// Fraction between min and max C:N ratio White et al. 2000 SAME FOR P, MAKES SENSE?
+		double frac_mintomax = (phenology == CROPGREEN && (ifnlim || ifplim)) ? 5.0 : 2.78;	// Use value also without nlim ?
+
+																				// Fraction between leaf and root C:N ratio
+		double frac_leaftoroot = 1.16; // Friend et al. 1997
+
+									   // Fraction between leaf and sap wood C:N ratio
+		double frac_leaftosap = 6.9;   // Friend et al. 1997
+
+									   // Max leaf C:N ratio
+		ctop_leaf_max = ctop_leaf_min * frac_mintomax;
+
+		// Average leaf C:P ratio
+		ctop_leaf_avr = avg_ctop(ctop_leaf_min, ctop_leaf_max);
+
+		// Tighter C:P ratio range for roots and sapwood: picked out thin air
+		double frac_maxtomin = .9;
+
+		// Maximum fine root C:P ratio
+		ctop_root_max = ctop_leaf_max * frac_leaftoroot;
+
+		double ctop_root_min = ctop_root_max * frac_maxtomin;
+
+		// Average fine root C:P ratio
+		ctop_root_avr = avg_ctop(ctop_root_min, ctop_root_max);
+
+		// Maximum sap C:P ratio
+		ctop_sap_max = ctop_leaf_max * frac_leaftosap;
+
+		double ctop_sap_min = ctop_sap_max * frac_maxtomin;
+
+		// Average sap C:P ratio
+		ctop_sap_avr = avg_ctop(ctop_sap_min, ctop_sap_max);
+
+		if (lifeform == GRASS || lifeform == MOSS) {
+			respcoeff /= 2.0 * ctop_root / (ctop_root_avr + ctop_root_min);
+		}
+		else {
+			respcoeff /= ctop_root / (ctop_root_avr + ctop_root_min) +
+				ctop_sap / (ctop_sap_avr + ctop_sap_min);
+		}
+		ctop_stem_max = 1.0 / (2.0*0.0034); //Maize params
+		ctop_stem_avr = 1.0 / (2.0*0.0068);
+	}
+
 	/// Calculates coefficient to compensate for different vertical distribution of fine root on nitrogen uptake
 	void init_nupscoeff() {
 
@@ -2371,6 +2561,29 @@ public:
 		}
 
 		nupscoeff = rootdist_upper * upper_adv + rootdist_lower;
+
+	}
+
+	/// Calculates coefficient to compensate for different vertical distribution of fine root on phosphorus uptake
+	void init_pupscoeff() {
+
+		// Fraction fine root in upper soil layer should have higher possibility for mineralized nitrogen uptake
+		// Soil nitrogen profile is considered to have a exponential decline (Franzluebbers et al. 2009) giving
+		// an approximate advantage of 2 of having more roots in the upper soil layer
+		const double upper_adv = 2.0;
+
+		// Simple solution until we get C and N in all soil layers.
+		double rootdist_upper = 0.0;
+		double rootdist_lower = 0.0;
+
+		for (int sl = 0; sl < NSOILLAYER; sl++) {
+			if (sl < NSOILLAYER_UPPER)
+				rootdist_upper += rootdist[sl];
+			else
+				rootdist_lower += rootdist[sl];
+		}
+
+		pupscoeff = rootdist_upper * upper_adv + rootdist_lower;
 
 	}
 
@@ -2576,6 +2789,15 @@ struct cropindiv_struct : public Serializable {
 	/// today's increase of above-ground pool N biomass
 	double dnmass_agpool;
 
+	/// today's increase of leaf P biomass
+	double dpmass_leaf;
+	/// today's increase of root P biomass
+	double dpmass_root;
+	/// today's increase of harvestable organ P biomass
+	double dpmass_ho;
+	/// today's increase of above-ground pool P biomass
+	double dpmass_agpool;
+
 	///CARBON
 	/// daily updated whole plant C biomass, reset at harvest day
 	double grs_cmass_plant;
@@ -2668,6 +2890,41 @@ struct cropindiv_struct : public Serializable {
 	/// year's above-ground pool N biomass at time of harvest (cumulative if several harvest events)
 	double harv_nmass_agpool;
 
+	///PHOSPHORUS
+	/// phosphorus content of harvestable organs
+	double pmass_ho;
+	/// nitrogen content of above-ground pool
+	double pmass_agpool;
+	/// nitrogen content of dead leaves
+	double pmass_dead_leaf;
+
+	/// nitrogen content of harvestable organs saved on first day of land use change year
+	double pmass_ho_luc;
+	/// nitrogen content of above-ground pool saved on first day of land use change year
+	double pmass_agpool_luc;
+	/// nitrogen content of dead leaves saved on first day of land use change year
+	double pmass_dead_leaf_luc;
+
+	/// daily updated leaf N biomass, reset at day 0
+	double ypmass_leaf;
+	/// daily updated root N biomass, reset at day 0
+	double ypmass_root;
+	/// daily updated harvestable organ N biomass, reset at day 0
+	double ypmass_ho;
+	/// daily updated above-ground pool N biomass, reset at day 0
+	double ypmass_agpool;
+	/// daily updated dead leaf N biomass, reset at day 0
+	double ypmass_dead_leaf;
+
+	/// year's leaf N biomass at time of harvest (cumulative if several harvest events)
+	double harv_pmass_leaf;
+	/// year's root N biomass at time of harvest (cumulative if several harvest events)
+	double harv_pmass_root;
+	/// year's harvestable organ N biomass at time of harvest (cumulative if several harvest events)
+	double harv_pmass_ho;
+	/// year's above-ground pool N biomass at time of harvest (cumulative if several harvest events)
+	double harv_pmass_agpool;
+
 	/// dry weight crop yield harvested this year (cumulative if several harvest events), based on harv_cmass_xx
 	double harv_yield;
 
@@ -2675,6 +2932,8 @@ struct cropindiv_struct : public Serializable {
 	double cmass_ho_harvest[2];
 	/// harvestable organ N biomass at the last two harvest events this year
 	double nmass_ho_harvest[2];
+	/// harvestable organ P biomass at the last two harvest events this year
+	double pmass_ho_harvest[2];
 	/// dry weight crop yield at the last two harvest events this year
 	double yield_harvest[2];
 
@@ -2722,6 +2981,9 @@ struct cropindiv_struct : public Serializable {
 		nmass_ho=0.0;
 		nmass_agpool=0.0;
 		nmass_dead_leaf = 0.0;
+		pmass_ho = 0.0;
+		pmass_agpool = 0.0;
+		pmass_dead_leaf = 0.0;
 		ycmass_leaf=0.0;
 		ycmass_root=0.0;
 		ycmass_plant=0.0;
@@ -2757,6 +3019,25 @@ struct cropindiv_struct : public Serializable {
 		nmass_dead_leaf_luc = 0.0;
 		nmass_ho_harvest[0]=0.0;
 		nmass_ho_harvest[1]=0.0;
+
+		//Phosphorus
+		dpmass_leaf = 0.0;
+		dpmass_root = 0.0;
+		dpmass_ho = 0.0;
+		dpmass_agpool = 0.0;
+		ypmass_leaf = 0.0;
+		ypmass_root = 0.0;
+		ypmass_ho = 0.0;
+		ypmass_agpool = 0.0;
+		ypmass_dead_leaf = 0.0;
+		harv_pmass_leaf = 0.0;
+		harv_pmass_root = 0.0;
+		harv_pmass_root = 0.0;
+		harv_pmass_ho = 0.0;
+		harv_pmass_agpool = 0.0;
+		pmass_dead_leaf_luc = 0.0;
+		pmass_ho_harvest[0] = 0.0;
+		pmass_ho_harvest[1] = 0.0;
 
 		isprimarycrop=false;
 		isprimarycovegetation=false;
@@ -2816,6 +3097,15 @@ public:
 	/// Last year's cmass_wood value for calculation of period annual increment post mortality
 	double cmass_wood_old;
 
+	/// leaf P biomass on modelled area basis (kgP/m2)
+	double pmass_leaf;
+	/// root P biomass on modelled area basis (kgN/m2)
+	double pmass_root;
+	/// sap P biomass on modelled area basis (kgN/m2)
+	double pmass_sap;
+	/// heart P biomass on modelled area basis (kgN/m2)
+	double pmass_heart;
+
 	/// leaf N biomass on modelled area basis saved on first day of land use change year
 	double nmass_leaf_luc;
 	/// root N biomass on modelled area basis on first day of land use change year
@@ -2826,6 +3116,17 @@ public:
 	double nmass_heart_luc;
 	/// total N biomass on modelled area basis on first day of land use change year
 	double nmass_tot_luc;
+
+	/// leaf P biomass on modelled area basis saved on first day of land use change year
+	double pmass_leaf_luc;
+	/// root P biomass on modelled area basis on first day of land use change year
+	double pmass_root_luc;
+	/// sap P biomass on modelled area basis on first day of land use change year
+	double pmass_sap_luc;
+	/// heart P biomass on modelled area basis on first day of land use change year
+	double pmass_heart_luc;
+	/// total P biomass on modelled area basis on first day of land use change year
+	double pmass_tot_luc;
 
 	/// foliar projective cover (FPC) under full leaf cover as fraction of modelled area
 	double fpc;
@@ -2972,14 +3273,80 @@ public:
 	/// daily root nitrogen demand over possible uptake (storage demand)
 	double rootndemand_store;
 
+	/// leaf phosphorus that is photosyntetic active
+	double pactive;
+	/// Phosphorus extinction scalar
+	/** Scalar to account for leaf phosphorus not following the optimal light
+	* extinction, but is shallower.
+	*/
+	double pextin;
+	/// long-term storage of labile phosphorus
+	double pstore_longterm;
+	/// storage of labile phosphorus
+	double pstore_labile;
+	/// long-term storage of labile phosphorus saved on first day of land use change year
+	double pstore_longterm_luc;
+	/// storage of labile phosphorus saved on first day of land use change year
+	double pstore_labile_luc;
+	/// daily total phosphorus demand
+	double pdemand;
+	/// fraction of individual phosphorus demand available for uptake
+	double fpuptake;
+	/// annual phosphorus uptake
+	double apuptake;
+	/// maximum size of phosphorus storage
+	double max_p_storage;
+	/// scales annual npp to maximum phosphorus storage
+	double scale_p_storage;
+	/// annual phosphorus limitation on vmax
+	double avmaxplim;
+	/// annual optimal leaf C:P ratio
+	double ctop_leaf_aopt;
+	/// annual average leaf C:P ratio
+	double ctop_leaf_aavr;
+	/// plant mobile phosphorus status
+	double ctop_status;
+	/// total phosphorus in compartments before growth
+	double pmass_veg;
+	/// whether individual optimal leaf phosphorus is above allowed limit
+	bool p_opt_isabovelim;
+	/// whether individual subject to phosphorus stress
+	bool pstress;
+	/// daily leaf phosphorus demand calculated from Vmax (kgP/m2)
+	double leafpdemand;
+	/// daily root phosphorus demand based on leafpdemand
+	double rootpdemand;
+	/// daily sap wood phosphorus demand based on leafpdemand
+	double sappdemand;
+	/// daily labile phosphorus demand based on npp
+	double storepdemand;
+	/// daily harvestable organ phosphorus demand
+	double hopdemand;
+	/// leaf fraction of total phosphorus demand
+	double leaffpdemand;
+	/// root fraction of total phosphorus demand
+	double rootfpdemand;
+	/// sap fraction of total phosphorus demand
+	double sapfpdemand;
+	/// store fraction of total phosphorus demand
+	double storefpdemand;
+	/// daily leaf phosphorus demand over possible uptake (storage demand)
+	double leafpdemand_store;
+	/// daily root phosphorus demand over possible uptake (storage demand)
+	double rootpdemand_store;
+
 	/// The daily C lossed from leaves due to senescense, only crops.
 	double daily_cmass_leafloss;
 	/// The daily N lossed from leaves due to senescense, only crops.
 	double daily_nmass_leafloss;
+	/// The daily P lossed from leaves due to senescense, only crops.
+	double daily_pmass_leafloss;
 	/// The daily C lossed from roots due to senescense, only crops.
 	double daily_cmass_rootloss;
 	/// The daily N lossed from roots due to senescense, only crops.
 	double daily_nmass_rootloss;
+	/// The daily P lossed from roots due to senescense, only crops.
+	double daily_pmass_rootloss;
 
 	/// Number of days with non-negligible phenology this month
 	int nday_leafon;
@@ -3060,6 +3427,11 @@ public:
 		return nstore_longterm + nstore_labile;
 	}
 
+	/// Total storage of phosphorus
+	double pstore() const {
+		return pstore_longterm + pstore_labile;
+	}
+
 	/// Total carbon wood biomass
 	double cmass_wood() const {
 		return cmass_sap + cmass_heart - cmass_debt;
@@ -3070,10 +3442,17 @@ public:
 		return nmass_sap + nmass_heart;
 	}
 
+	/// Total phosphorus wood biomass
+	double pmass_wood() const {
+		return pmass_sap + pmass_heart;
+	}
+
 	/// Total carbon biomass
 	double ccont(double scale_indiv = 1.0, bool luc = false) const;
 	/// Total nitrogen biomass
 	double ncont(double scale_indiv = 1.0, bool luc = false) const;
+	/// Total phosphorus biomass
+	double pcont(double scale_indiv = 1.0, bool luc = false) const;
 
 	/// Whether grass growth is uninterrupted by crop growth.
 	bool continous_grass() const;
@@ -3082,11 +3461,15 @@ public:
 	double check_C_mass();
 	/// Checks whether any nmass is negative, in which case it is zeroed and fluxes are corrected (only cropland).
 	double check_N_mass();
+	/// Checks whether any nmass is negative, in which case it is zeroed and fluxes are corrected (only cropland).
+	double check_P_mass();
 
 	/// Save cmass-values on first day of the year of land cover change in expanding stands
 	void save_cmass_luc();
 	/// Save nmass-values on first day of the year of land cover change in expanding stands
 	void save_nmass_luc();
+	/// Save pmass-values on first day of the year of land cover change in expanding stands
+	void save_pmass_luc();
 
 	/// Current leaf C:N ratio
 	/**
@@ -3095,6 +3478,13 @@ public:
 	 */
 	double cton_leaf(bool use_phen = true) const;
 
+	/// Current leaf C:P ratio
+	/**
+	*  \param use_phen Set to false if indiv.phen shouldn't be considered
+	*                  when calculating C:P ratio
+	*/
+	double ctop_leaf(bool use_phen = true) const;
+
 	/// Current fine root C:N ratio
 	/**
 	 *  \param use_phen Set to false if indiv.phen shouldn't be considered
@@ -3102,8 +3492,18 @@ public:
 	 */
 	double cton_root(bool use_phen = true) const;
 
+	/// Current fine root C:P ratio
+	/**
+	*  \param use_phen Set to false if indiv.phen shouldn't be considered
+	*                  when calculating C:P ratio
+	*/
+	double ctop_root(bool use_phen = true) const;
+
 	/// Current sap C:N ratio
 	double cton_sap() const;
+
+	/// Current sap C:P ratio
+	double ctop_sap() const;
 
 	/// Gets the individual's Patchpft
 	Patchpft& patchpft() const;
@@ -3151,6 +3551,9 @@ public:
 
 	/// The N demand of the storage, only used for PNV.
 	double ndemand_storage(double cton_leaf_opt);
+
+	/// The P demand of the storage, only used for PNV.
+	double pdemand_storage(double ctop_leaf_opt);
 };
 
 
@@ -3301,6 +3704,14 @@ public:
 	double clay_frac_peat;
 	/// fraction of soil that is silt
 	double silt_frac_peat;
+	///Soil Phosphorus parameters (moment fixed for Entisol)
+	/// Empirical parameter for describing the equilibrium between labile P and sorbed P [kgP/m2]
+	double kplab;
+	/// maximum amount of sorbed P [kgP/m2]
+	double spmax;
+	/// annual Phosphorus weathering rate [kgP/m2/y]
+	double pwtr;
+	
 
 	// MEMBER FUNCTIONS
 
@@ -3344,9 +3755,11 @@ public:
 
 		cmass = 0.0;
 		nmass = 0.0;
+		pmass = 0.0;
 		ligcfrac = 0.0;
 		delta_cmass = 0.0;
 		delta_nmass = 0.0;
+		delta_pmass = 0.0;
 		fracremain = 0.0;
 		litterme = 0.0;
 		fireresist = 0.0;
@@ -3361,18 +3774,24 @@ public:
 	double cmass;
 	/// Nitrogen mass in pool kgN/m2
 	double nmass;
+	/// Phosphorus mass in pool kgP/m2
+	double pmass;
 	/// (potential) decrease in C following decomposition today (kgC/m2)
 	double cdec;
 	/// (potential) decrease in nitrogen following decomposition today (kgN/m2)
 	double ndec;
-	/// daily change in carbon and nitrogen
-	double delta_cmass,delta_nmass;
+	/// (potential) decrease in phosphorus following decomposition today (kgP/m2)
+	double pdec;
+	/// daily change in carbon, nitrogen and phosphorus
+	double delta_cmass, delta_nmass, delta_pmass;
 	/// lignin fractions
 	double ligcfrac;
 	/// fraction of pool remaining after decomposition
 	double fracremain;
 	/// nitrogen to carbon ratio
 	double ntoc;
+	/// phosphorus to carbon ratio
+	double ptoc;
 
 	// Fire
 	/// soil litter moisture flammability threshold (fraction of AWC)
@@ -3401,13 +3820,15 @@ struct LitterSolveSOM : public Serializable {
 		for (int p = 0; p < NSOMPOOL; p++) {
 			clitter[p] = 0.0;
 			nlitter[p] = 0.0;
+			plitter[p] = 0.0;
 		}
 	}
 
 	/// Add litter
-    void add_litter(double cvalue, double nvalue, int pool) {
+    void add_litter(double cvalue, double nvalue, double pvalue, int pool) {
 		clitter[pool] += cvalue;
 		nlitter[pool] += nvalue;
+		nlitter[pool] += pvalue;
     }
 
 	double get_clitter(int pool) {
@@ -3415,6 +3836,9 @@ struct LitterSolveSOM : public Serializable {
 	}
 	double get_nlitter(int pool) {
 		return nlitter[pool];
+	}
+	double get_plitter(int pool) {
+		return plitter[pool];
 	}
 
 	void serialize(ArchiveStream& arch);
@@ -3425,6 +3849,9 @@ private:
 
 	/// Nitrogen litter
 	double nlitter[NSOMPOOL];
+
+	/// Phosphorus litter
+	double plitter[NSOMPOOL];
 };
 
 /// Soil stores state variables for soils and the snow pack.
@@ -3766,6 +4193,7 @@ public:
 	double dperc;
 	/// fraction of decayed organic nitrogen leached each day;
 	double orgleachfrac;
+
 	/// soil NH4 mass in pool (kgN/m2)
 	double NH4_mass;
 	/// soil NO3 mass in pool (kgN/m2)
@@ -3789,6 +4217,29 @@ public:
 	/// annual leaching of organics from carbon pool
 	double aorgCleach;	
 
+	/// soil PO4 mass in pool (kgP/m2)
+	double pmass_labile;
+	/// soil PO4 mass input (kgP/m2)
+	double pmass_labile_input;
+	/// annual sum of phosphorus mineralisation
+	double apmin;
+	/// annual sum of phosphorus immobilisation
+	double apimmob;
+	/// annual leaching from available phosphorus pool
+	double aminpleach;
+	/// annual leaching of organics from active phosphorus pool
+	double aorgPleach;
+	/// total annual phosphorus weathering
+	double apwtr;
+	/// total annual phosphorus deposition and fertilization
+	double apdep;
+	/// soil sorbed P pool  (kgP/m2)
+	double pmass_sorbed;
+	/// soil strongly sorbed P pool  (kgP/m2)
+	double pmass_strongly_sorbed;
+	/// soil occluded P pool  (kgP/m2)
+	double pmass_occluded;
+
 	// Variables for fast spinup of SOM pools
 
 	/// monthly fraction of available mineral nitrogen taken up
@@ -3799,6 +4250,17 @@ public:
 	double mminleach_mean[12];
 	/// annual nitrogen fixation
 	double anfix_mean;
+	/// annual phosphorus weathering
+	double apwtr_mean;
+	/// annual phosphorus deposition and fertilization
+	double apdep_mean;
+
+	/// monthly fraction of available mineral phosphorus taken up
+	double fpuptake_mean[12];
+	/// monthly fraction of organic carbon/phosphorus leached
+	double morgPleach_mean[12];
+	/// monthly fraction of available mineral phosphorus leached
+	double mminpleach_mean[12];
 
 	// Solving Century SOM pools
 
@@ -3816,6 +4278,8 @@ public:
 	double snowpack_NH4_mass;
 	/// stored NO3 deposition in snowpack
 	double snowpack_NO3_mass;
+	/// stored PO4 deposition in snowpack
+	double snowpack_pmass_labile;
 
 	/// pools of soil N species in transformation (nitrification & denitrifiacation)
 
@@ -3944,6 +4408,12 @@ public:
 	void nmass_subtract(double nmass, int pref = NO);
 	void nmass_inc(double nmass, int pref = NO);
 	void nmass_multiplic_inc(double inc, int pref = NO);
+
+	//// Soil helper functions
+	//double pmass_avail(int pref = NO);
+	//void pmass_subtract(double pmass, int pref = NO);
+	//void pmass_inc(double pmass, int pref = NO);
+	//void pmass_multiplic_inc(double inc, int pref = NO);
 
 private:
 
@@ -4244,6 +4714,15 @@ public:
 	/// remaining heartwood-derived nitrogen litter for PFT on modelled area basis (kgN/m2)
 	double nmass_litter_heart;
 
+	/// leaf-derived phosphorus litter for PFT on modelled area basis (kgP/m2)
+	double pmass_litter_leaf;
+	/// root-derived phosphorus litter for PFT on modelled area basis (kgP/m2)
+	double pmass_litter_root;
+	/// remaining sapwood-derived phosphorus litter for PFT on modelled area basis (kgP/m2)
+	double pmass_litter_sap;
+	/// remaining heartwood-derived phosphorus litter for PFT on modelled area basis (kgP/m2)
+	double pmass_litter_heart;
+
 	/// non-FPC-weighted canopy conductance value for PFT under water-stress conditions (mm/s)
 	double gcbase;
 	/// daily value of the above variable (mm/s)
@@ -4264,6 +4743,9 @@ public:
 	double cmass_harvested_products_slow;
 	/// nitrogen depository for long-lived products like wood
 	double nmass_harvested_products_slow;
+	/// phosphorus depository for long-lived products like wood
+	double pmass_harvested_products_slow;
+
 	/// first and last day of crop sowing window, calculated in crop_sowing_patch() or Crop_sowing_date_new()
 	int swindow[2];
 	/// daily value of water deficit, calculated in irrigated_water_uptake()
@@ -4298,6 +4780,11 @@ public:
 		nmass_litter_sap   = 0.0;
 		nmass_litter_heart = 0.0;
 
+		pmass_litter_leaf = 0.0;
+		pmass_litter_root = 0.0;
+		pmass_litter_sap = 0.0;
+		pmass_litter_heart = 0.0;
+
 		wscal = 1.0;
 		wscal_mean = 1.0;
 		anetps_ff = 0.0;
@@ -4321,6 +4808,7 @@ public:
 		cropphen = NULL;
 		cmass_harvested_products_slow = 0.0;
 		nmass_harvested_products_slow = 0.0;
+		pmass_harvested_products_slow = 0.0;
 
 		swindow[0]=-1;
 		swindow[1]=-1;
@@ -4526,10 +5014,18 @@ public:
 	/// daily nitrogen demand
 	double ndemand;
 
+	/// daily phosphorus demand
+	double pdemand;
+
 	/// annual nitrogen fertilization (kgN/m2/year)
 	double anfert;
 	/// daily nitrogen fertilization (kgN/m2/day)
 	double dnfert;
+
+	/// annual phosphorus fertilization (kgP/m2/year)
+	double apfert;
+	/// daily phosphorus fertilization (kgP/m2/day)
+	double dpfert;
 
 	/// daily value of irrigation water (mm), set in irrigation(), derived from water_deficit_d
 	double irrigation_d;
@@ -4568,12 +5064,16 @@ public:
 	double ncont(double scale_indiv = 1.0, bool luc = false);
 	/// Total patch water and ice mass
 	double water_content();
+	/// Total patch phosphorus biomass and litter
+	double pcont(double scale_indiv = 1.0, bool luc = false);
 	/// Total patch carbon fluxes so far this year
 	double cflux();
 	/// Total patch nitrogen fluxes so far this year
 	double nflux();
 	/// Total patch water fluxes so far this year
 	double water_flux();
+	/// Total patch phosphorus fluxes so far this year
+	double pflux();
 	
 	/// Get 5-year mean of tree wood C mass increase (periodic annual increment)
 	double get_tree_cmass_wood_inc_5() {
@@ -4825,12 +5325,16 @@ public:
 	double ncont(double scale_indiv = 1.0);
 	/// Total stand water and ice
 	double water_content();
+	/// Total stand phosphorus biomass and litter
+	double pcont(double scale_indiv = 1.0);
 	/// Total stand carbon fluxes so far this year
 	double cflux();
 	/// Total stand nitrogen fluxes so far this year
 	double nflux();
 	/// Total stand water fluxes so far this year
 	double water_flux();
+	/// Total stand phosphorus fluxes so far this year
+	double pflux();
 	/// Returns true if stand is true high-latitude peatland stand, as opposed to a wetland < PEATLAND_WETLAND_LATITUDE_LIMIT N
 	bool is_highlatitude_peatland_stand() const;
 	/// Returns true if stand is wetland stand, as opposed to a peatland >= PEATLAND_WETLAND_LATITUDE_LIMIT N
@@ -4901,6 +5405,9 @@ public:
 	/** Half saturation concentration for N uptake (Rothstein 2000, Macduff 2002)
 	 */
 	double Km;
+	/** Half saturation concentration for P uptake (Silveira & Cardoso 2004)
+	*/
+	double Kmp;
 
 	///Crop-specific variables:
 	/// whether the daily temperature has fallen below the autumn temperature limit (tempautumn) this year
@@ -4943,6 +5450,10 @@ public:
 	double Nfert_read;
 	/// Manure N fertilization from input file (kgN/m2/year)
 	double Nfert_man_read;
+	/// P fertilization from input file
+	double Pfert_read;
+	/// Manure P fertilization from input file
+	double Pfert_man_read;
 	/// default harvest date (pft.hlimitdatenh/hlimitdatesh)
 	int hlimitdate_default;
 	/// whether autumn sowing is either calculated or prescribed
@@ -4984,6 +5495,8 @@ public:
 		hdate_force=-1;
 		Nfert_read=-1;
 		Nfert_man_read=-1;
+		Pfert_read = -1;
+		Pfert_man_read = -1;
 		sdatecalc_temp=-1;
 		sdatecalc_prec=-1;
 		hlimitdate_default=-1;
@@ -5042,6 +5555,7 @@ public:
 
 	/// Nitrogen fertilisation amount (kgN/m2/year)
 	double nfert;
+	double pfert;
 
 	/// Harvested forest area fraction
 	double woodharv_frac;
@@ -5049,6 +5563,7 @@ public:
 	double woodharv_cmass;
 	/// Lower tree diameter limit (cm) for cutting (dynamic variable)
 	double diam_cut_low;
+	
 
 	// MEMBER FUNCTIONS
 
@@ -5066,6 +5581,7 @@ public:
 		gross_frac_decrease = 0.0;
 		nstands = 0;
 		nfert = -1.0;
+		pfert = -1.0;
 		woodharv_frac = -1.0;
 		woodharv_cmass = -1.0;
 		diam_cut_low = 0.0;
@@ -5074,6 +5590,7 @@ public:
 		firstmanageyear_st = FAR_FUTURE_YEAR;
 		distinterval_st = 1.0e10;
 		elevation_st = 0;
+
 	}
 
 	void serialize(ArchiveStream& arch);
@@ -5191,6 +5708,22 @@ struct Landcover : public Serializable {
 	/// Gridcell-level N removal at clearing NATURAL and FOREST stands for cropland and pasture
 	double anflux_clearing_orig;
 
+	/// Gridcell-level P flux from slow harvested products
+	double apflux_harvest_slow;
+
+	/// Gridcell-level P flux from harvest associated with landcover change
+	double apflux_landuse_change;
+	/// Gridcell-level P removal from harvest associated with landcover change other than wood harvest and clearing for cropland and pasture
+	double apflux_landuse_change_orig;
+	/// Gridcell-level P flux from wood harvest at LUC among NATURAL and FOREST stands
+	double apflux_wood_harvest;
+	/// Gridcell-level P removal at wood harvest at LUC among NATURAL and FOREST stands
+	double apflux_wood_harvest_orig;
+	/// Gridcell-level P flux from clearing NATURAL and FOREST stands for cropland and pasture
+	double apflux_clearing;
+	/// Gridcell-level P removal at clearing NATURAL and FOREST stands for cropland and pasture
+	double apflux_clearing_orig;
+
 	/// Landcover-level C flux from slow harvested products (donating landcover)
 	double acflux_harvest_slow_lc[NLANDCOVERTYPES];
 
@@ -5212,6 +5745,16 @@ struct Landcover : public Serializable {
 	double anflux_wood_harvest_lc[NLANDCOVERTYPES];
 	/// Landcover-level N flux from clearing NATURAL and FOREST stands for cropland and pasture (donating landcover)
 	double anflux_clearing_lc[NLANDCOVERTYPES];
+
+	/// Landcover-level P flux from slow harvested products (donating landcover)
+	double apflux_harvest_slow_lc[NLANDCOVERTYPES];
+
+	/// Landcover-level P flux from harvest associated with landcover change (donating landcover)
+	double apflux_landuse_change_lc[NLANDCOVERTYPES];
+	/// Landcover-level P flux from wood harvest at LUC among NATURAL and FOREST stands (donating landcover)
+	double apflux_wood_harvest_lc[NLANDCOVERTYPES];
+	/// Landcover-level P flux from clearing NATURAL and FOREST stands for cropland and pasture (donating landcover)
+	double apflux_clearing_lc[NLANDCOVERTYPES];
 
 	/// Which landcover types create new stands when area increases.
 	bool expand_to_new_stand[NLANDCOVERTYPES];
@@ -5299,10 +5842,14 @@ public:
 	double aNH4dep;
 	/// annual NO3 deposition (kgN/m2/year)
 	double aNO3dep;
+	/// annual P deposition (kgP/m2/year)
+	double apdep;
 	/// daily NH4 deposition (kgN/m2)
 	double dNH4dep;
 	/// daily NO3 deposition (kgN/m2)
 	double dNO3dep;
+	/// daily P deposition (kgP/m2)
+	double dpdep;
 
 	double distinterval_gc;
 
@@ -5343,14 +5890,20 @@ public:
 	double ccont();
 	/// Total gridcell nitrogen biomass and litter
 	double ncont();
+	/// Total gridcell phosphorus biomass and litter
+	double pcont();
 	/// Total gridcell water and ice
 	double water_content();
+	
 	/// Total gridcell carbon fluxes so far this year
 	double cflux();
 	/// Total gridcell nitrogen fluxes so far this year
 	double nflux();
+	/// Total gridcell phosphorus fluxes so far this year
+	double pflux();
 	/// Total gridcell water fluxes so far this year
 	double water_flux();
+	
 
 	/// Deletes the stand which the iterator is pointing at
 	/** Returns an iterator pointing to the object following the erased object.
@@ -5423,6 +5976,9 @@ private:
 // Reich, PB, Walters MB & Ellsworth DS 1992 Leaf Life-Span in Relation to Leaf,
 //   Plant, and Stand Characteristics among Diverse Ecosystems.
 //   Ecological Monographs 62: 365-392.
+// Silveira, A. P. D., Cardoso, E. J. B. N. (2004) Arbuscular mycorrhiza and kinetic 
+//	 parameters of phosphorus absorption by bean plants.Sci.Agric. 
+//	 (Piracicaba, Braz.), v.61, n.2, p.203 - 209
 // Sitch, S, Prentice IC, Smith, B & Other LPJ Consortium Members (2000) LPJ - a
 //   coupled model of vegetation dynamics and the terrestrial carbon cycle. In:
 //   Sitch, S. The Role of Vegetation Dynamics in the Control of Atmospheric CO2

@@ -219,6 +219,8 @@ private:
 	/// Daily N deposition for current year
 	double dNH4dep[Date::MAX_YEAR_LENGTH];
 	double dNO3dep[Date::MAX_YEAR_LENGTH];
+	// Daily P deposition for current year
+	double dpdep[Date::MAX_YEAR_LENGTH];
 };
 
 #endif // LPJ_GUESS_CRUINPUT_H

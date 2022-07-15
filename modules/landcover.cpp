@@ -1671,6 +1671,34 @@ void donor_stand_change(Gridcell& gridcell, double& receiving_area, landcover_ch
 						fail("Modify code to deal with landcover harvest at landcover change!\n");
 					}
 
+					/*turnover(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
+						indiv.pft.turnover_sap, indiv.pft.lifeform, indiv.pft.landcover,
+						cp.cmass_leaf, cp.cmass_root, cp.cmass_sap, cp.cmass_heart,
+						cp.nmass_leaf, cp.nmass_root, cp.nmass_sap, cp.nmass_heart,
+						cp.cmass_litter_leaf,
+						cp.cmass_litter_root,
+						cp.nmass_litter_leaf,
+						cp.nmass_litter_root,
+						cp.nstore_longterm, cp.max_n_storage,
+						indiv.alive);*/
+
+					turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
+						indiv.pft.turnover_sap, indiv.pft.lifeform, indiv.pft.landcover,
+						cp.cmass_leaf, cp.cmass_root, cp.cmass_sap, cp.cmass_heart,
+						cp.nmass_leaf, cp.nmass_root, cp.nmass_sap, cp.nmass_heart,
+						cp.pmass_leaf, cp.pmass_root, cp.pmass_sap, cp.pmass_heart,
+						cp.cmass_litter_leaf,
+						cp.cmass_litter_root,
+						cp.cmass_leaf_root_turnover,
+						cp.nmass_litter_leaf,
+						cp.nmass_litter_root,
+						cp.pmass_litter_leaf,
+						cp.pmass_litter_root,
+						cp.nstore_longterm, cp.max_n_storage,
+						cp.pstore_longterm, cp.max_p_storage,
+						indiv.alive);
+
+
 					// In case any vegetation left (eg. cmass_root in pasture or grass in woodland):
 					kill_remaining_vegetation(cp, indiv.pft, indiv.alive, indiv.istruecrop_or_intercropgrass(), false);
 
