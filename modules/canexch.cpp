@@ -2944,7 +2944,7 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 		}
 
 		//Acclimated or standard respiration
-		if(param["acclimated_respiration"].num)
+		if(acclimated_respiration)
 			respiration_acclimated(gtemp, patch.soil.gtemp, temp, patch.soil.get_soil_temp_25(), indiv.pft.lifeform,
 				cton_sap, cton_root,
 				indiv.cmass_sap, cmass_root, assim, resp);
