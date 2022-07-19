@@ -1343,8 +1343,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 
 			PO4_mass += patch.soil.pmass_labile * to_gridcell_average;
 			sorbed_mass += patch.soil.pmass_sorbed * to_gridcell_average;
-			sorbed_mass += patch.soil.pmass_strongly_sorbed * to_gridcell_average;
-			sorbed_mass += patch.soil.pmass_occluded * to_gridcell_average;
+			ssorbed_mass += patch.soil.pmass_strongly_sorbed * to_gridcell_average;
+			occluded_mass += patch.soil.pmass_occluded * to_gridcell_average;
 
 			//Fire N flux
 			flux_ntot+=(patch.fluxes.get_annual_flux(Fluxes::NH3_FIRE) +
@@ -1510,9 +1510,10 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double cton_leaf_gridcell = limited_cton(cmass_leaf_gridcell, nmass_leaf_gridcell);
 	double ctop_leaf_gridcell = limited_ctop(cmass_leaf_gridcell, pmass_leaf_gridcell);
 
-	// Determine total vmax nitrogen limitation
+	// Determine total vmax nitrogen and phosphorus limitation
 	if (cmass_leaf_gridcell > 0.0) {
 		vmaxnlim_gridcell /= cmass_leaf_gridcell;
+		vmaxplim_gridcell /= cmass_leaf_gridcell;
 	}
 
 	outlimit(out,out_cmass,					cmass_gridcell);

@@ -606,6 +606,8 @@ double Patch::pcont(double scale_indiv, bool luc) {
 	double pcont = 0.0;
 
 	pcont += soil.pmass_labile;
+	pcont += soil.pmass_sorbed;
+	pcont += soil.pmass_strongly_sorbed;
 	pcont += soil.snowpack_pmass_labile;
 
 	for (int i = 0; i<NSOMPOOL; i++)
