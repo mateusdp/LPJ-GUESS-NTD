@@ -92,6 +92,9 @@ void Soil::init_states() {
 	NH4_mass = 0.0;
 	NO3_mass = 0.0;
 	pmass_labile = 0.0;
+	pmass_sorbed = 0.0;
+	pmass_strongly_sorbed = 0.0;
+	pmass_occluded = 0.0;
 	NH4_input = 0.0;
 	NO3_input = 0.0;
 	pmass_labile_input = 0.0;
@@ -4093,6 +4096,9 @@ void Soil::serialize(ArchiveStream& arch) {
 		& NH4_mass
 		& NO3_mass
 		& pmass_labile
+		& pmass_sorbed
+		& pmass_strongly_sorbed
+		& pmass_occluded
 		& NH4_input
 		& NO3_input
 		& pmass_labile_input
