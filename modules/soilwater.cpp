@@ -135,12 +135,6 @@ void snow_pinput(double prec, double snowpack_after, double rain_melt,
 	double& snowpack_pmass_labile, 
 	double& pmass_labile_input) {
 
-	//TESTING
-	//dpdep = 0.0;
-	//dpdep = 0.000018 / date.year_length();
-	//dpdep = 0.0002 / date.year_length();
-	//dpdep = 0.005 / date.year_length();
-
 	// calculates this day melt and original snowpack size
 	double melt = max(0.0, rain_melt - prec);
 	double snowpack = melt + snowpack_after;
