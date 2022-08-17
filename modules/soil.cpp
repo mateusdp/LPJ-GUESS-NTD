@@ -98,6 +98,7 @@ void Soil::init_states() {
 	NH4_input = 0.0;
 	NO3_input = 0.0;
 	pmass_labile_input = 0.0;
+	pmass_labile_delta = 0.0;
 	anmin = 0.0;
 	animmob = 0.0;
 	aminleach = 0.0;
@@ -3955,6 +3956,7 @@ void Soil::serialize(ArchiveStream& arch) {
 		& NH4_input
 		& NO3_input
 		& pmass_labile_input
+		& pmass_labile_delta
 		& anmin
 		& animmob
 		& aminleach
