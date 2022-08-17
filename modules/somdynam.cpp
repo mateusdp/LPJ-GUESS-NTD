@@ -105,6 +105,73 @@ void setconstants() {
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
+// BALANCE LABILE AND SORBED P POOLS
+// Internal function (do not call directly from framework)
+
+void balance_p_labile_sorbed(Soil &soil, bool flux_direction) {
+
+	// DESCRIPTION
+	// flux_direction = true - remove plabile to balance with sorbed (when pmass_labile is added)
+	// flux_direction = false - add plabile to balance with sorbed (when pmass_labile is removed)
+
+	
+
+	double a = -1.0;
+	double b = soil.soiltype.kplab + soil.pmass_labile + soil.soiltype.spmax;
+	double c = -soil.soiltype.spmax * soil.pmass_labile + soil.pmass_sorbed;
+
+	//if (!flux_direction)
+	//	b *= -1.0;
+
+	double bha = pow(b, 2.0) - 4 * a * c;
+
+	double x1 = (-b + sqrt(bha)) / 2 * a;
+	double x2 = (-b - sqrt(bha)) / 2 * a;
+
+	x1 = sqrt(pow(x1, 2));
+	x2 = sqrt(pow(x2, 2));
+
+		if (!flux_direction) {
+			double origsorbedx1 = soil.pmass_sorbed + x1;
+			double origsorbedx2 = soil.pmass_sorbed + x2;
+
+			if (origsorbedx1 = soil.soiltype.spmax * (soil.pmass_labile - x1) / (soil.soiltype.kplab + (soil.pmass_labile - x1)) && origsorbedx1 > 0.0 && soil.pmass_labile - x1 > 0.0) {
+				soil.pmass_labile -= x1;
+				soil.pmass_sorbed += x1;
+				return;
+			}
+			else {
+				if (origsorbedx2 = soil.soiltype.spmax * (soil.pmass_labile - x2) / (soil.soiltype.kplab + (soil.pmass_labile - x2)) && origsorbedx2 > 0.0 && soil.pmass_labile - x2 > 0.0) {
+					soil.pmass_labile -= x2;
+					soil.pmass_sorbed += x2;
+					return;
+				}
+			}
+		}
+		else {
+			double origsorbedx1 = soil.pmass_sorbed - x1;
+			double origsorbedx2 = soil.pmass_sorbed - x2;
+
+			if (origsorbedx1 = soil.soiltype.spmax * (soil.pmass_labile + x1) / (soil.soiltype.kplab + (soil.pmass_labile + x1)) && origsorbedx1 > 0.0 && soil.pmass_labile - x1 > 0.0) {
+				soil.pmass_labile += x1;
+				soil.pmass_sorbed -= x1;
+				return;
+			}
+			else {
+				if (origsorbedx2 = soil.soiltype.spmax * (soil.pmass_labile + x2) / (soil.soiltype.kplab + (soil.pmass_labile + x2)) && origsorbedx2 > 0.0 && soil.pmass_labile - x2 > 0.0) {
+					soil.pmass_labile += x2;
+					soil.pmass_sorbed -= x2;
+					return;
+				}
+			}
+
+		}
+
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////
 // DECAYRATES
 // Internal function (do not call directly from framework)
 // used by som_dynamic_lpj()
@@ -616,7 +683,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 
 	const double nmin_mass = soil.nmass_avail(NH4);// + soil.NO3_mass;
 	// mineral phosphorus mass available
-	const double pmin_mass = soil.pmass_labile;
+	const double pmin_mass = soil.pmass_labile - soil.pmass_labile_delta;
 	
 	if (date.day == 0) {
 		soil.anmin = 0.0;
@@ -879,9 +946,11 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 		// Total net P mineralization
 		double tot_net_pmin = pmin_actual - pimmob;
 
+		//subtract pflux up to here to calculate total pmineralization
+
 		//Phosphorus reduce decay rates
 		// (negative value = immobilisation)
-		if (tot_net_pmin + soil.pmass_labile + EPS >= 0.0) {
+		if (tot_net_pmin + pmin_mass + EPS >= 0.0) {
 
 			net_pmineralization = true;
 		}
@@ -893,12 +962,12 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 				// Immobilization larger than soil available nitrogen -> reduce targeted N concentration in SOM pool with flexible N:C ratios
 				if (ptimes == 0) {
 					// initial reduction
-					init_negative_pmass = tot_net_pmin + soil.pmass_labile;
+					init_negative_pmass = tot_net_pmin + pmin_mass;
 					init_ptoc_reduction = ptoc_reduction;
 				}
 				else {
 					// trying to match needed N:C reduction
-					ptoc_reduction = min(init_ptoc_reduction, pow(init_ptoc_reduction, 1.0 / (1.0 - (tot_net_pmin + soil.pmass_labile) / init_negative_pmass) + 1.0));
+					ptoc_reduction = min(init_ptoc_reduction, pow(init_ptoc_reduction, 1.0 / (1.0 - (tot_net_pmin + pmin_mass) / init_negative_pmass) + 1.0));
 				}
 
 				soil.sompool[SLOWSOM].ptoc *= ptoc_reduction;
@@ -915,7 +984,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 
 			// Immobilization larger than soil available nitrogen -> reduce decay rates
 			if (ptimes < 4) {
-				reduce_decay_rates(decay_reduction_p, net_pmin, reduction_groups[ptimes], tot_net_pmin + soil.pmass_labile);
+				reduce_decay_rates(decay_reduction_p, net_pmin, reduction_groups[ptimes], tot_net_pmin + pmin_mass);
 			}
 			net_pmineralization = false;
 		}
@@ -974,32 +1043,91 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 		
 	double pmin_inc = pmin_actual - pimmob;
 
-	soil.pmass_labile = max(0.0, soil.pmass_labile + pmin_inc);
+	//soil.pmass_labile = max(0.0, soil.pmass_labile + pmin_inc);
+	soil.pmass_labile_delta += pmin_inc;
+
+
+	///////////////////////////// Wang p delta equations explicit
+
+	double delta_plabile = (soil.pmass_labile_delta - (USORB * soil.soiltype.spmax * soil.pmass_labile) / (soil.soiltype.kplab + soil.pmass_labile)) / (1 + (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0));
+	//double delta_plabile = soil.pmass_labile_delta;
+
+	double delta_sorbed = (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0) * delta_plabile;
+
+	double delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
+
+	soil.pmass_labile += delta_plabile;
+	soil.pmass_labile = max(0.0, soil.pmass_labile);
+
+	soil.pmass_sorbed += delta_sorbed;
+	soil.pmass_sorbed = max(0.0, soil.pmass_sorbed);
+
+	soil.pmass_strongly_sorbed += delta_strongly_sorbed;
+	soil.pmass_strongly_sorbed = max(0.0, soil.pmass_strongly_sorbed);
+
+	////////////////////////////
+
+	/////////////////////////////////// P Sorbed Balance
+
+	/*if (soil.pmass_labile > 0.0) {
+
+		if (soil.pmass_sorbed > soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile))
+			balance_p_labile_sorbed(soil, true);
+		else 
+			balance_p_labile_sorbed(soil, false);
+	}*/
+
+	//if (soil.pmass_labile > 0.0) {
+
+	//	if (soil.pmass_sorbed < soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile)) {
+	//		soil.pmass_sorbed += 
+	//	}
+	//	else {
+	//		balance_p_labile_sorbed(soil, false);
+	//	}
+	//}
+
+	//double delta_strongly_sorbed = max(0.0, USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed);
+	//soil.pmass_sorbed = max(0.0, soil.pmass_sorbed - delta_strongly_sorbed);
+	//
+	//// Strongly sorbed should not be considered a pool, but a outgoing flux of phosphorus.
+	//soil.pmass_strongly_sorbed += delta_strongly_sorbed;
+
+	////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////// Simple P Sorbed Balance
 
-	if (soil.pmass_labile > 0.0) {
-		double target_sorbed = (soil.pmass_labile * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0);
-		//double target_sorbed = soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile);
+	//if (soil.pmass_labile > 0.0) {
+	//	double target_sorbed = (soil.pmass_labile * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0);
+	//	//double target_sorbed = soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile);
 
-		if (target_sorbed > soil.pmass_sorbed) {
-			double sorbed_diff = target_sorbed - soil.pmass_sorbed;
-			soil.pmass_labile = max(0.0, soil.pmass_labile - sorbed_diff);
-			soil.pmass_sorbed += sorbed_diff;
-		}
-		else {
-			double sorbed_diff = soil.pmass_sorbed - target_sorbed;
-			soil.pmass_sorbed = max(0.0, soil.pmass_sorbed - sorbed_diff);
-			soil.pmass_labile += sorbed_diff;
-		}
-	}
+	//	if (target_sorbed > soil.pmass_sorbed) {
+	//		double sorbed_diff = target_sorbed - soil.pmass_sorbed;
+	//		soil.pmass_labile = max(0.0, soil.pmass_labile - sorbed_diff);
+	//		soil.pmass_sorbed += sorbed_diff;
+	//	}
+	//	else {
+	//		double sorbed_diff = soil.pmass_sorbed - target_sorbed;
+	//		soil.pmass_sorbed = max(0.0, soil.pmass_sorbed - sorbed_diff);
+	//		soil.pmass_labile += sorbed_diff;
+	//	}
+	//}
 
-	double delta_strongly_sorbed = max(0.0, USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed);
-	soil.pmass_sorbed = max(0.0, soil.pmass_sorbed - delta_strongly_sorbed);
+	//double delta_strongly_sorbed = max(0.0, USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed);
+	//soil.pmass_sorbed = max(0.0, soil.pmass_sorbed - delta_strongly_sorbed);
+	//
+	//// Strongly sorbed should not be considered a pool, but a outgoing flux of phosphorus.
+	//soil.pmass_strongly_sorbed += delta_strongly_sorbed;
+
+	/////////////////////// Improved p balance, to implement
+
+	// Sum all p fluxes for this day (padd - puptake - pleach)
+	// sum this daily flux to pmass_labile to know what it was before removal
+	// calculate delta_pmass
+	// calculate delta_sorbed
+
+	//extra: during freen, psorbed is spmax, pmass_labile is calculated from psorbed.
 	
-	// Strongly sorbed should not be considered a pool, but a outgoing flux of phosphorus.
-	soil.pmass_strongly_sorbed += delta_strongly_sorbed;
-
 	////////////////////////////////////////////////////////////////
 
 	// Estimate of N flux from soil (simple CLM-CN approach)
@@ -1034,7 +1162,8 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 		//Value of sorbed phosphorus pool, based on labile p and soil parameters [KgP/m-2].
 		//Equilibrated instantanously based on Wang 2007, 2010
 		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
-		soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + PMASS_SAT, 2.0);
+		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + PMASS_SAT, 2.0);
+		soil.pmass_sorbed = soil.soiltype.spmax;
 	}
 }
 
@@ -1425,8 +1554,10 @@ void leaching(Soil& soil) {
 
 		double leaching_p = pmin_avail * minleachfrac;
 
-		soil.pmass_labile -= leaching_p;
-		soil.pmass_labile = max(0.0, soil.pmass_labile);
+		/*soil.pmass_labile -= leaching_p;
+		soil.pmass_labile = max(0.0, soil.pmass_labile);*/
+
+		soil.pmass_labile_delta -= leaching_p;
 
 		soil.aminpleach += leaching_p;
 
@@ -1506,11 +1637,13 @@ void soilpadd(Patch& patch) {
 	double daily_pwtr = soil.soiltype.pwtr / date.year_length();
 
 	// Phosphorus weathering input
-	soil.pmass_labile += daily_pwtr;
+	//soil.pmass_labile += daily_pwtr;
+	soil.pmass_labile_delta += daily_pwtr;
 	soil.apwtr += daily_pwtr;
 
 	// Phosphorus fertilization and deposition input (calculated in snow_pinput())
-	soil.pmass_labile += soil.pmass_labile_input;
+	//soil.pmass_labile += soil.pmass_labile_input;
+	soil.pmass_labile_delta += soil.pmass_labile_input;
 	soil.apdep += soil.pmass_labile_input;
 
 	if (date.year >= soil.solvesomcent_beginyr && date.year <= soil.solvesomcent_endyr) {
@@ -1638,7 +1771,8 @@ void vegetation_p_uptake(Patch& patch) {
 		else
 			indiv.pstore_longterm += indiv.storefpdemand * puptake_day;
 		
-		soil.pmass_labile = max(0.0, soil.pmass_labile - puptake_day);
+		//soil.pmass_labile = max(0.0, soil.pmass_labile - puptake_day);
+		soil.pmass_labile_delta -= puptake_day;
 				
 		if (!negligible(indiv.phen))
 			indiv.ctop_leaf_aavr += min(indiv.ctop_leaf(), indiv.pft.ctop_leaf_max);
@@ -1828,6 +1962,8 @@ void equilsom(Soil& soil) {
  *  Transfers litter, performes nitrogen uptake and addition, leaching and decomposition.
  */
 void som_dynamics_century(Patch& patch, Climate& climate, double tillage_fact) {
+
+	patch.soil.pmass_labile_delta = 0.0;
 
 	// Transfer litter to SOM pools
 	transfer_litter(patch);

@@ -4221,6 +4221,8 @@ public:
 	double pmass_labile;
 	/// soil PO4 mass input (kgP/m2)
 	double pmass_labile_input;
+	/// soil PO4 mass delta for equilization with sorbed pool (kgP/m2)
+	double pmass_labile_delta;
 	/// annual sum of phosphorus mineralisation
 	double apmin;
 	/// annual sum of phosphorus immobilisation
