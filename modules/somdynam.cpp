@@ -678,7 +678,7 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	// mineral nitrogen mass available
 	const double nmin_mass = soil.nmass_avail(NH4);// + soil.NO3_mass;
 	// mineral phosphorus mass available
-	const double pmin_mass = soil.pmass_labile - soil.pmass_labile_delta;
+	const double pmin_mass = soil.pmass_labile;
 	
 	if (date.day == 0) {
 		soil.anmin = 0.0;
