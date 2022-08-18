@@ -1037,8 +1037,8 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 
 	///////////////////////////// Wang p delta equations explicit
 
-	double delta_plabile = (soil.pmass_labile_delta - (USORB * soil.soiltype.spmax * soil.pmass_labile) / (soil.soiltype.kplab + soil.pmass_labile)) / (1 + (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0));
-	//double delta_plabile = soil.pmass_labile_delta;
+	//double delta_plabile = (soil.pmass_labile_delta - (USORB * soil.soiltype.spmax * soil.pmass_labile) / (soil.soiltype.kplab + soil.pmass_labile)) / (1 + (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0));
+	double delta_plabile = soil.pmass_labile_delta;
 
 	double delta_sorbed = (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0) * delta_plabile;
 
@@ -1054,6 +1054,13 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	soil.pmass_strongly_sorbed = max(0.0, soil.pmass_strongly_sorbed);
 
 	////////////////////////////
+
+	////////////////////////// Wang to simple //////////////////////////////////
+	
+	/*soil.pmass_labile += soil.pmass_labile_delta;
+	soil.pmass_labile = max(0.0, soil.pmass_labile);*/
+
+	////////////////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////// P Sorbed Balance
 
@@ -1086,8 +1093,8 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	/////////////////////////////////// Simple P Sorbed Balance
 
 	//if (soil.pmass_labile > 0.0) {
-	//	double target_sorbed = (soil.pmass_labile * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0);
-	//	//double target_sorbed = soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile);
+	//	//double target_sorbed = (soil.pmass_labile * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0);
+	//	double target_sorbed = soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile);
 
 	//	if (target_sorbed > soil.pmass_sorbed) {
 	//		double sorbed_diff = target_sorbed - soil.pmass_sorbed;
