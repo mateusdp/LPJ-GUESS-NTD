@@ -1049,8 +1049,11 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 
 	///////////////////////////// Wang p delta equations explicit
 
-	double delta_plabile = (soil.pmass_labile_delta - (USORB * soil.soiltype.spmax * soil.pmass_labile) / (soil.soiltype.kplab + soil.pmass_labile)) / (1 + (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0));
-	//double delta_plabile = soil.pmass_labile_delta;
+	// Must include tfac = 1 for N to be dominant limitation in the andes
+	// with more complex delta_plabile inceptisol regions somehow lose a lot of P
+
+	//double delta_plabile = (soil.pmass_labile_delta - (USORB * soil.soiltype.spmax * soil.pmass_labile) / (soil.soiltype.kplab + soil.pmass_labile)) / (1 + (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0));
+	double delta_plabile = soil.pmass_labile_delta;
 
 	double delta_sorbed = (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0) * delta_plabile;
 
