@@ -1040,18 +1040,18 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	// Must include tfac = 1 for N to be dominant limitation in the andes
 	// with more complex delta_plabile inceptisol regions somehow lose a lot of P
 
-	//double delta_plabile = (soil.pmass_labile_delta - (USORB * soil.soiltype.spmax * soil.pmass_labile) / (soil.soiltype.kplab + soil.pmass_labile)) / (1 + (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0));
-	double delta_plabile = soil.pmass_labile_delta;
+	double delta_plabile = (soil.pmass_labile_delta - (USORB * soil.soiltype.spmax * soil.pmass_labile) / (soil.soiltype.kplab + soil.pmass_labile)) / (1 + (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0));
+	//double delta_plabile = soil.pmass_labile_delta;
 
 	double delta_sorbed = (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0) * delta_plabile;
 
 	double delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
 
 	soil.pmass_labile += delta_plabile;
-	if (delta_sorbed + soil.pmass_sorbed > 0.0 & delta_sorbed < soil.pmass_labile)
-		soil.pmass_labile -= delta_sorbed;
-	else
-		delta_sorbed = 0.0;
+	//if (delta_sorbed + soil.pmass_sorbed > 0.0 & delta_sorbed < soil.pmass_labile)
+	//	soil.pmass_labile -= delta_sorbed;
+	//else
+	//	delta_sorbed = 0.0;
 	soil.pmass_labile = max(0.0, soil.pmass_labile);
 
 	soil.pmass_sorbed += delta_sorbed;

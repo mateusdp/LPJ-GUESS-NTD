@@ -52,7 +52,8 @@ const double N0 = 7.15 * G_PER_MG;
 /// leaf phosphorus (kgP/kgC) not associated with photosynthesis - Lipid, Nucleic acid, and residual P concentration
 /** (value given by Hidaka & Kitayama 2013, Table 2, average of ultrabasic and sedimentary sites, dry mass to C.) */
 //const double P0 = 0.232 * G_PER_MG;
-const double P0 = 0.3145 * G_PER_MG; //NTD 3.0 values
+//const double P0 = 0.3145 * G_PER_MG; //NTD 3.0 values
+const double P0 = 0.3145 * G_PER_MG * 2.0; //NTD 3.0 values
 
 // Lookup tables for parameters with Q10 temperature responses
 
@@ -558,8 +559,8 @@ void vmax_p(double b, double c1, double c2, double apar, double tscal,
 	// Hidaka et al. 2013, Amax dependent on gP/m²
 
 	//		- from Amax nmolCO2/m2/sec to Vm gC/m2/day
-	//double CN = 1.0e-9 * 3600 * daylength * CMASS / c2;
-	double CN = 1.0e-9 * 3600 * daylength * CMASS;
+	double CN = 1.0e-9 * 3600 * daylength * CMASS / c2;
+	//double CN = 1.0e-9 * 3600 * daylength * CMASS;
 
 	//double tfac = exp(-0.0693 * (temp - 25.0));
 	//temperature effects already included in c2.
