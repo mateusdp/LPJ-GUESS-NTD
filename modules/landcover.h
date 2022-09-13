@@ -3,7 +3,7 @@
 /// \brief Functions handling landcover aspects, such as creating or resizing Stands
 ///
 /// \author Mats Lindeskog
-/// $Date: 2019-10-28 18:48:52 +0100 (Mon, 28 Oct 2019) $
+/// $Date: 2022-09-13 10:47:57 +0200 (Tue, 13 Sep 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -38,17 +38,17 @@ int stepfromdate(int day, int step);
 /// struct storing carbon, nitrogen and water (plus aaet_5 and anfix_calc) during landcover change
 struct landcover_change_transfer {
 
-	double *transfer_litter_leaf;
-	double *transfer_litter_sap;
-	double *transfer_litter_heart;
-	double *transfer_litter_root;
-	double *transfer_litter_repr;
-	double *transfer_harvested_products_slow;
+	double *transfer_cmass_litter_leaf;
+	double *transfer_cmass_litter_sap;
+	double *transfer_cmass_litter_heart;
+	double *transfer_cmass_litter_root;
+	double *transfer_cmass_litter_repr;
+	double *transfer_cmass_harvested_products_slow;
 	double *transfer_nmass_litter_leaf;
 	double *transfer_nmass_litter_sap;
 	double *transfer_nmass_litter_heart;
 	double *transfer_nmass_litter_root;
-	double *transfer_harvested_products_slow_nmass;
+	double *transfer_nmass_harvested_products_slow;
 
 	double transfer_acflux_harvest;
 	double transfer_anflux_harvest;
@@ -94,12 +94,12 @@ struct landcover_change_transfer {
 		double ccont = transfer_acflux_harvest;
 
 		for(int i=0; i<npft; i++) {
-			ccont += transfer_litter_leaf[i];
-			ccont += transfer_litter_sap[i];
-			ccont += transfer_litter_heart[i];
-			ccont += transfer_litter_root[i];
-			ccont += transfer_litter_repr[i];
-			ccont += transfer_harvested_products_slow[i];
+			ccont += transfer_cmass_litter_leaf[i];
+			ccont += transfer_cmass_litter_sap[i];
+			ccont += transfer_cmass_litter_heart[i];
+			ccont += transfer_cmass_litter_root[i];
+			ccont += transfer_cmass_litter_repr[i];
+			ccont += transfer_cmass_harvested_products_slow[i];
 		}
 
 		for(int i=0; i<NSOMPOOL; i++)
@@ -117,7 +117,7 @@ struct landcover_change_transfer {
 			ncont += transfer_nmass_litter_sap[i];
 			ncont += transfer_nmass_litter_heart[i];
 			ncont += transfer_nmass_litter_root[i];
-			ncont += transfer_harvested_products_slow_nmass[i];
+			ncont += transfer_nmass_harvested_products_slow[i];
 		}
 
 		for(int i=0; i<NSOMPOOL; i++)
@@ -144,11 +144,11 @@ struct landcover_change_transfer {
 			// sum original litter C & N:
 			for(int n=0; n<npft; n++)
 			{
-				transfer_litter_leaf[n] += patch.pft[n].litter_leaf * scale;
-				transfer_litter_root[n] += patch.pft[n].litter_root * scale;
-				transfer_litter_sap[n] += patch.pft[n].litter_sap * scale;
-				transfer_litter_heart[n] += patch.pft[n].litter_heart * scale;
-				transfer_litter_repr[n] += patch.pft[n].litter_repr * scale;
+				transfer_cmass_litter_leaf[n] += patch.pft[n].cmass_litter_leaf * scale;
+				transfer_cmass_litter_root[n] += patch.pft[n].cmass_litter_root * scale;
+				transfer_cmass_litter_sap[n] += patch.pft[n].cmass_litter_sap * scale;
+				transfer_cmass_litter_heart[n] += patch.pft[n].cmass_litter_heart * scale;
+				transfer_cmass_litter_repr[n] += patch.pft[n].cmass_litter_repr * scale;
 
 				transfer_nmass_litter_leaf[n] += patch.pft[n].nmass_litter_leaf * scale;
 				transfer_nmass_litter_root[n] += patch.pft[n].nmass_litter_root*scale;
@@ -156,8 +156,8 @@ struct landcover_change_transfer {
 				transfer_nmass_litter_heart[n] += patch.pft[n].nmass_litter_heart * scale;
 
 				if(ifslowharvestpool) {
-					transfer_harvested_products_slow[n] += patch.pft[n].harvested_products_slow * scale;
-					transfer_harvested_products_slow_nmass[n] += patch.pft[n].harvested_products_slow_nmass * scale;
+					transfer_cmass_harvested_products_slow[n] += patch.pft[n].cmass_harvested_products_slow * scale;
+					transfer_nmass_harvested_products_slow[n] += patch.pft[n].nmass_harvested_products_slow * scale;
 				}
 			}
 
@@ -224,18 +224,18 @@ struct landcover_change_transfer {
 
 	void copy(landcover_change_transfer& from) {
 
-		if(transfer_litter_leaf)
-			memcpy(transfer_litter_leaf, from.transfer_litter_leaf, sizeof(double) * npft);
-		if(transfer_litter_sap)
-			memcpy(transfer_litter_sap, from.transfer_litter_sap, sizeof(double) * npft);
-		if(transfer_litter_heart)
-			memcpy(transfer_litter_heart, from.transfer_litter_heart, sizeof(double) * npft);
-		if(transfer_litter_root)
-			memcpy(transfer_litter_root, from.transfer_litter_root, sizeof(double) * npft);
-		if(transfer_litter_repr)
-			memcpy(transfer_litter_repr, from.transfer_litter_repr, sizeof(double) * npft);
-		if(transfer_harvested_products_slow)
-			memcpy(transfer_harvested_products_slow, from.transfer_harvested_products_slow, sizeof(double) * npft);
+		if(transfer_cmass_litter_leaf)
+			memcpy(transfer_cmass_litter_leaf, from.transfer_cmass_litter_leaf, sizeof(double) * npft);
+		if(transfer_cmass_litter_sap)
+			memcpy(transfer_cmass_litter_sap, from.transfer_cmass_litter_sap, sizeof(double) * npft);
+		if(transfer_cmass_litter_heart)
+			memcpy(transfer_cmass_litter_heart, from.transfer_cmass_litter_heart, sizeof(double) * npft);
+		if(transfer_cmass_litter_root)
+			memcpy(transfer_cmass_litter_root, from.transfer_cmass_litter_root, sizeof(double) * npft);
+		if(transfer_cmass_litter_repr)
+			memcpy(transfer_cmass_litter_repr, from.transfer_cmass_litter_repr, sizeof(double) * npft);
+		if(transfer_cmass_harvested_products_slow)
+			memcpy(transfer_cmass_harvested_products_slow, from.transfer_cmass_harvested_products_slow, sizeof(double) * npft);
 		if(transfer_nmass_litter_leaf)
 			memcpy(transfer_nmass_litter_leaf, from.transfer_nmass_litter_leaf, sizeof(double) * npft);
 		if(transfer_nmass_litter_sap)
@@ -244,8 +244,8 @@ struct landcover_change_transfer {
 			memcpy(transfer_nmass_litter_heart, from.transfer_nmass_litter_heart, sizeof(double) * npft);
 		if(transfer_nmass_litter_root)
 			memcpy(transfer_nmass_litter_root, from.transfer_nmass_litter_root, sizeof(double) * npft);
-		if(transfer_harvested_products_slow_nmass)
-			memcpy(transfer_harvested_products_slow_nmass, from.transfer_harvested_products_slow_nmass, sizeof(double) * npft);
+		if(transfer_nmass_harvested_products_slow)
+			memcpy(transfer_nmass_harvested_products_slow, from.transfer_nmass_harvested_products_slow, sizeof(double) * npft);
 
 		transfer_acflux_harvest = from.transfer_acflux_harvest;
 		transfer_anflux_harvest = from.transfer_anflux_harvest;
@@ -296,18 +296,18 @@ struct landcover_change_transfer {
 	void add(landcover_change_transfer& from, double multiplier = 1.0) {
 
 		for(int i=0; i<npft; i++) {
-			if(transfer_litter_leaf)
-				transfer_litter_leaf[i] += from.transfer_litter_leaf[i] * multiplier;
-			if(transfer_litter_sap)
-				transfer_litter_sap[i] += from.transfer_litter_sap[i] * multiplier;
-			if(transfer_litter_heart)
-				transfer_litter_heart[i] += from.transfer_litter_heart[i] * multiplier;
-			if(transfer_litter_root)
-				transfer_litter_root[i] += from.transfer_litter_root[i] * multiplier;
-			if(transfer_litter_repr)
-				transfer_litter_repr[i] += from.transfer_litter_repr[i] * multiplier;
-			if(transfer_harvested_products_slow)
-				transfer_harvested_products_slow[i] += from.transfer_harvested_products_slow[i] * multiplier;
+			if(transfer_cmass_litter_leaf)
+				transfer_cmass_litter_leaf[i] += from.transfer_cmass_litter_leaf[i] * multiplier;
+			if(transfer_cmass_litter_sap)
+				transfer_cmass_litter_sap[i] += from.transfer_cmass_litter_sap[i] * multiplier;
+			if(transfer_cmass_litter_heart)
+				transfer_cmass_litter_heart[i] += from.transfer_cmass_litter_heart[i] * multiplier;
+			if(transfer_cmass_litter_root)
+				transfer_cmass_litter_root[i] += from.transfer_cmass_litter_root[i] * multiplier;
+			if(transfer_cmass_litter_repr)
+				transfer_cmass_litter_repr[i] += from.transfer_cmass_litter_repr[i] * multiplier;
+			if(transfer_cmass_harvested_products_slow)
+				transfer_cmass_harvested_products_slow[i] += from.transfer_cmass_harvested_products_slow[i] * multiplier;
 			if(transfer_nmass_litter_leaf)
 				transfer_nmass_litter_leaf[i] += from.transfer_nmass_litter_leaf[i] * multiplier;
 			if(transfer_nmass_litter_sap)
@@ -316,8 +316,8 @@ struct landcover_change_transfer {
 				transfer_nmass_litter_heart[i] += from.transfer_nmass_litter_heart[i] * multiplier;
 			if(transfer_nmass_litter_root)
 				transfer_nmass_litter_root[i] += from.transfer_nmass_litter_root[i] * multiplier;
-			if(transfer_harvested_products_slow_nmass)
-				transfer_harvested_products_slow_nmass[i] += from.transfer_harvested_products_slow_nmass[i] * multiplier;
+			if(transfer_nmass_harvested_products_slow)
+				transfer_nmass_harvested_products_slow[i] += from.transfer_nmass_harvested_products_slow[i] * multiplier;
 		}
 		transfer_acflux_harvest += from.transfer_acflux_harvest * multiplier;
 		transfer_anflux_harvest += from.transfer_anflux_harvest * multiplier;

@@ -3,7 +3,7 @@
 /// \brief Implementation of the common output module
 ///
 /// \author Joe Siltberg
-/// $Date: 2021-05-24 18:34:40 +0200 (Mon, 24 May 2021) $
+/// $Date: 2022-09-13 10:47:57 +0200 (Tue, 13 Sep 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -960,7 +960,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				standpft_amon_mt2 += patch.fluxes.get_annual_flux(Fluxes::MT_TBOC, pft.id);
 				standpft_amon_mt2 += patch.fluxes.get_annual_flux(Fluxes::MT_OTHR, pft.id);
 					
-				standpft_clitter += patchpft.litter_leaf + patchpft.litter_root + patchpft.litter_sap + patchpft.litter_heart + patchpft.litter_repr;
+				standpft_clitter += patchpft.cmass_litter_leaf + patchpft.cmass_litter_root + patchpft.cmass_litter_sap + patchpft.cmass_litter_heart + patchpft.cmass_litter_repr;
 				standpft_nlitter += patchpft.nmass_litter_leaf + patchpft.nmass_litter_root + patchpft.nmass_litter_sap + patchpft.nmass_litter_heart;
 
 					vegetation.firstobj();
@@ -1256,8 +1256,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 			if(run_landcover && ifslowharvestpool) {
 				for (int q=0;q<npft;q++) {
 					Patchpft& patchpft=patch.pft[q];
-					c_harv_slow+=patchpft.harvested_products_slow*to_gridcell_average;
-					n_harv_slow+=patchpft.harvested_products_slow_nmass*to_gridcell_average;
+					c_harv_slow+=patchpft.cmass_harvested_products_slow*to_gridcell_average;
+					n_harv_slow+=patchpft.nmass_harvested_products_slow*to_gridcell_average;
 				}
 			}
 

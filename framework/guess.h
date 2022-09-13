@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2022-07-01 16:54:16 +0200 (Fri, 01 Jul 2022) $
+/// $Date: 2022-09-13 10:47:57 +0200 (Tue, 13 Sep 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -3888,25 +3888,29 @@ public:
 	double wscal_mean_est;
 	/// vegetation phenological state (fraction of potential leaf cover), updated daily
 	double phen;
+	/// monthly sum of daily fractional leaf cover
+	double mphen[12];
 	/// annual sum of daily fractional leaf cover
 	/** equivalent number of days with full leaf cover
 	 *  (reset on expected coldest day of year)
 	 */
 	double aphen;
+	/// Month of lowest phen for RAINGREEN
+	int driest_mth;
 	/// whether PFT can establish in this patch under current conditions
 	bool establish;
 	/// running total for number of saplings of this PFT to establish (cohort mode)
 	double nsapling;
 	/// leaf-derived litter for PFT on modelled area basis (kgC/m2)
-	double litter_leaf;
+	double cmass_litter_leaf;
 	/// fine root-derived litter for PFT on modelled area basis (kgC/m2)
-	double litter_root;
+	double cmass_litter_root;
 	/// remaining sapwood-derived litter for PFT on modelled area basis (kgC/m2)
-	double litter_sap;
+	double cmass_litter_sap;
 	/// remaining heartwood-derived litter for PFT on modelled area basis (kgC/m2)
-	double litter_heart;
+	double cmass_litter_heart;
 	/// litter derived from allocation to reproduction for PFT on modelled area basis (kgC/m2)
-	double litter_repr;
+	double cmass_litter_repr;
 
 	/// leaf-derived nitrogen litter for PFT on modelled area basis (kgN/m2)
 	double nmass_litter_leaf;
@@ -3934,9 +3938,9 @@ public:
 	bool wstress_day;
 
 	/// carbon depository for long-lived products like wood
-	double harvested_products_slow;
+	double cmass_harvested_products_slow;
 	/// nitrogen depository for long-lived products like wood
-	double harvested_products_slow_nmass;
+	double nmass_harvested_products_slow;
 	/// first and last day of crop sowing window, calculated in crop_sowing_patch() or Crop_sowing_date_new()
 	int swindow[2];
 	/// daily value of water deficit, calculated in irrigated_water_uptake()
@@ -3960,11 +3964,11 @@ public:
 	/// Constructor: initialises id, pft and data members
 	Patchpft(int i,Pft& p):id(i),pft(p) {
 
-		litter_leaf = 0.0;
-		litter_root = 0.0;
-		litter_sap   = 0.0;
-		litter_heart = 0.0;
-		litter_repr = 0.0;
+		cmass_litter_leaf = 0.0;
+		cmass_litter_root = 0.0;
+		cmass_litter_sap   = 0.0;
+		cmass_litter_heart = 0.0;
+		cmass_litter_repr = 0.0;
 
 		nmass_litter_leaf  = 0.0;
 		nmass_litter_root  = 0.0;
@@ -3976,6 +3980,7 @@ public:
 		anetps_ff = 0.0;
 		aphen = 0.0;
 		phen = 0.0;
+		driest_mth = 0;
 		wsupply = 0.0;
 		wsupply_leafon = 0.0;
 		anetps_ff_est = 0.0;
@@ -3983,12 +3988,15 @@ public:
 		wscal_mean_est = 0.0;
 		nsapling = 0;
 
-		for(int i=0;i<NSOILLAYER;i++)
-			fwuptake[i]=0.0;
+		for (int mth = 0; mth < 12; mth++)
+			mphen[mth] = 0.0;
+
+		for (int i = 0; i < NSOILLAYER; i++)
+			fwuptake[i] = 0.0;
 
 		cropphen = NULL;
-		harvested_products_slow = 0.0;
-		harvested_products_slow_nmass = 0.0;
+		cmass_harvested_products_slow = 0.0;
+		nmass_harvested_products_slow = 0.0;
 
 		swindow[0]=-1;
 		swindow[1]=-1;

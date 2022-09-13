@@ -3,7 +3,7 @@
 /// \brief LPJ-GUESS Combined Modular Framework
 ///
 /// \author Ben Smith
-/// $Date: 2022-07-01 16:54:16 +0200 (Fri, 01 Jul 2022) $
+/// $Date: 2022-09-13 10:47:57 +0200 (Tue, 13 Sep 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -323,14 +323,15 @@ void Patchpft::serialize(ArchiveStream& arch) {
 		& anetps_ff_est_initial
 		& wscal_mean_est
 		& phen
+		& mphen
 		& aphen
 		& establish
 		& nsapling
-		& litter_leaf
-		& litter_root
-		& litter_sap
-		& litter_heart
-		& litter_repr
+		& cmass_litter_leaf
+		& cmass_litter_root
+		& cmass_litter_sap
+		& cmass_litter_heart
+		& cmass_litter_repr
 		& gcbase
 		& gcbase_day
 		& wsupply
@@ -338,12 +339,12 @@ void Patchpft::serialize(ArchiveStream& arch) {
 		& fwuptake
 		& wstress
 		& wstress_day
-		& harvested_products_slow
+		& cmass_harvested_products_slow
 		& nmass_litter_leaf
 		& nmass_litter_root
 		& nmass_litter_sap
 		& nmass_litter_heart
-		& harvested_products_slow_nmass
+		& nmass_harvested_products_slow
 		& swindow
 		& water_deficit_y
 		& inund_count
@@ -529,12 +530,12 @@ double Patch::ccont(double scale_indiv, bool luc) {
 
 	for (int i=0; i<npft; i++) {
 		Patchpft& ppft = pft[i];
-		ccont += ppft.litter_leaf;
-		ccont += ppft.litter_root;
-		ccont += ppft.litter_sap;
-		ccont += ppft.litter_heart;
-		ccont += ppft.litter_repr;
-		ccont += ppft.harvested_products_slow;
+		ccont += ppft.cmass_litter_leaf;
+		ccont += ppft.cmass_litter_root;
+		ccont += ppft.cmass_litter_sap;
+		ccont += ppft.cmass_litter_heart;
+		ccont += ppft.cmass_litter_repr;
+		ccont += ppft.cmass_harvested_products_slow;
 	}
 
 	for (unsigned int i=0; i<vegetation.nobj; i++) {
@@ -568,7 +569,7 @@ double Patch::ncont(double scale_indiv, bool luc) {
 		ncont += ppft.nmass_litter_root;
 		ncont += ppft.nmass_litter_sap;
 		ncont += ppft.nmass_litter_heart;
-		ncont += ppft.harvested_products_slow_nmass;
+		ncont += ppft.nmass_harvested_products_slow;
 	}
 
 	for (unsigned int i=0; i<vegetation.nobj; i++) {
@@ -1402,16 +1403,16 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 			cmass_leaf_litter += mortality * cropindiv->cmass_agpool;
 		}
 
-		ppft.litter_leaf += cmass_leaf_litter * mortality_non_fire / mortality;
-		ppft.litter_root += cmass_root_litter;
+		ppft.cmass_litter_leaf += cmass_leaf_litter * mortality_non_fire / mortality;
+		ppft.cmass_litter_root += cmass_root_litter;
 
 		if (cmass_debt <= cmass_heart + cmass_sap) {
 			if (cmass_debt <= cmass_heart) {
-				ppft.litter_sap   += mortality_non_fire * cmass_sap;
-				ppft.litter_heart += mortality_non_fire * (cmass_heart - cmass_debt);
+				ppft.cmass_litter_sap   += mortality_non_fire * cmass_sap;
+				ppft.cmass_litter_heart += mortality_non_fire * (cmass_heart - cmass_debt);
 			}
 			else {
-				ppft.litter_sap   += mortality_non_fire * (cmass_sap + cmass_heart - cmass_debt);
+				ppft.cmass_litter_sap   += mortality_non_fire * (cmass_sap + cmass_heart - cmass_debt);
 			}
 		}
 		else {
@@ -2013,7 +2014,7 @@ void Individual::kill(bool harvest /* = false */) {
 				cropindiv->grs_cmass_leaf *= (1 - harv_eff);
 			}
 
-			ppft.litter_leaf += cropindiv->grs_cmass_leaf * (1 - res_outtake);
+			ppft.cmass_litter_leaf += cropindiv->grs_cmass_leaf * (1 - res_outtake);
 			charvest_flux    += cropindiv->grs_cmass_leaf * res_outtake;
 		}
 		else {
@@ -2022,14 +2023,14 @@ void Individual::kill(bool harvest /* = false */) {
 				charvest_flux += cmass_leaf * harv_eff;
 				cmass_leaf *= (1 - harv_eff);
 			}
-			ppft.litter_leaf += cmass_leaf * (1 - res_outtake);
+			ppft.cmass_litter_leaf += cmass_leaf * (1 - res_outtake);
 			charvest_flux    += cmass_leaf * res_outtake;
 		}
 		// Root: all goes to litter
 		if (has_daily_turnover() && cropindiv)
-			ppft.litter_root += cropindiv->grs_cmass_root;
+			ppft.cmass_litter_root += cropindiv->grs_cmass_root;
 		else
-			ppft.litter_root += cmass_root;
+			ppft.cmass_litter_root += cmass_root;
 
 		if (pft.landcover == CROPLAND) {
 
@@ -2039,19 +2040,19 @@ void Individual::kill(bool harvest /* = false */) {
 				cropindiv->grs_cmass_ho *= (1 - harv_eff);
 
 				if (pft.aboveground_ho) {
-					ppft.litter_leaf+=cropindiv->grs_cmass_ho * (1 - res_outtake);
+					ppft.cmass_litter_leaf+=cropindiv->grs_cmass_ho * (1 - res_outtake);
 					charvest_flux += cropindiv->grs_cmass_ho * res_outtake;
 				}
 				else {
-					ppft.litter_root+=cropindiv->grs_cmass_ho;
+					ppft.cmass_litter_root+=cropindiv->grs_cmass_ho;
 				}
-				ppft.litter_leaf+=cropindiv->grs_cmass_agpool * (1 - res_outtake);
+				ppft.cmass_litter_leaf+=cropindiv->grs_cmass_agpool * (1 - res_outtake);
 				charvest_flux += cropindiv->grs_cmass_agpool * res_outtake;
 
-				ppft.litter_leaf+=cropindiv->grs_cmass_dead_leaf * (1 - res_outtake);
+				ppft.cmass_litter_leaf+=cropindiv->grs_cmass_dead_leaf * (1 - res_outtake);
 				charvest_flux += cropindiv->grs_cmass_dead_leaf * res_outtake;
 
-				ppft.litter_leaf+=cropindiv->grs_cmass_stem * (1 - res_outtake);
+				ppft.cmass_litter_leaf+=cropindiv->grs_cmass_stem * (1 - res_outtake);
 				charvest_flux += cropindiv->grs_cmass_stem * res_outtake;
 			}
 			else {
@@ -2060,13 +2061,13 @@ void Individual::kill(bool harvest /* = false */) {
 				cropindiv->cmass_ho *= (1 - harv_eff);
 
 				if (pft.aboveground_ho) {
-					ppft.litter_leaf+=cropindiv->cmass_ho * (1 - res_outtake);
+					ppft.cmass_litter_leaf+=cropindiv->cmass_ho * (1 - res_outtake);
 					charvest_flux += cropindiv->cmass_ho * res_outtake;
 				}
 				else {
-					ppft.litter_root+=cropindiv->cmass_ho;
+					ppft.cmass_litter_root+=cropindiv->cmass_ho;
 				}
-				ppft.litter_leaf+=cropindiv->cmass_agpool * (1 - res_outtake);
+				ppft.cmass_litter_leaf+=cropindiv->cmass_agpool * (1 - res_outtake);
 				charvest_flux += cropindiv->cmass_agpool * res_outtake;
 			}
 		}
@@ -2098,8 +2099,8 @@ void Individual::kill(bool harvest /* = false */) {
 				                       clitter_sap, clitter_heart,
 				                       cwood_harvest, charvested_products_slow);
 
-				ppft.litter_sap   += clitter_sap;
-				ppft.litter_heart += clitter_heart;
+				ppft.cmass_litter_sap   += clitter_sap;
+				ppft.cmass_litter_heart += clitter_heart;
 
 				charvest_flux += cwood_harvest;
 			}
@@ -2159,8 +2160,8 @@ void Individual::kill(bool harvest /* = false */) {
 	report_flux(Fluxes::HARVESTN, nharvest_flux);
 
 	// Add to biomass depositories for long-lived products
-	ppft.harvested_products_slow += charvested_products_slow;
-	ppft.harvested_products_slow_nmass += nharvested_products_slow;
+	ppft.cmass_harvested_products_slow += charvested_products_slow;
+	ppft.nmass_harvested_products_slow += nharvested_products_slow;
 }
 
 double Individual::wscal_mean() const {

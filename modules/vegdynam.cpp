@@ -3,7 +3,7 @@
 /// \brief Vegetation dynamics and disturbance
 ///
 /// \author Ben Smith
-/// $Date: 2020-11-24 18:23:10 +0100 (Tue, 24 Nov 2020) $
+/// $Date: 2022-09-13 10:47:57 +0200 (Tue, 13 Sep 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1339,8 +1339,8 @@ void fire(Patch& patch,double& fireprob) {
 	// Loop through PFTs
 
 	for (p=0;p<npft;p++) {
-		litter_ag += patch.pft[p].litter_leaf + patch.pft[p].litter_sap + patch.pft[p].litter_heart +
-			patch.pft[p].litter_repr;
+		litter_ag += patch.pft[p].cmass_litter_leaf + patch.pft[p].cmass_litter_sap + patch.pft[p].cmass_litter_heart +
+			patch.pft[p].cmass_litter_repr;
 	}
 
 	// Soil Litter
@@ -1361,8 +1361,8 @@ void fire(Patch& patch,double& fireprob) {
 	// Loop through PFTs
 
 	for (p=0;p<npft;p++) {
-		me_mean += (patch.pft[p].litter_leaf + patch.pft[p].litter_sap + patch.pft[p].litter_heart +
-			patch.pft[p].litter_repr) * patch.pft[p].pft.litterme / litter_ag;
+		me_mean += (patch.pft[p].cmass_litter_leaf + patch.pft[p].cmass_litter_sap + patch.pft[p].cmass_litter_heart +
+			patch.pft[p].cmass_litter_repr) * patch.pft[p].pft.litterme / litter_ag;
 	}
 
 	// Soil litter
@@ -1416,18 +1416,18 @@ void fire(Patch& patch,double& fireprob) {
 		// Calculate flux from burnt litter
 
 		patch.fluxes.report_flux(Fluxes::FIREC,
-		                         mort_fire*(patch.pft[p].litter_leaf + patch.pft[p].litter_sap +
-		                                    patch.pft[p].litter_heart + patch.pft[p].litter_repr));
+		                         mort_fire*(patch.pft[p].cmass_litter_leaf + patch.pft[p].cmass_litter_sap +
+		                                    patch.pft[p].cmass_litter_heart + patch.pft[p].cmass_litter_repr));
 
 		report_fire_nfluxes(patch, mort_fire * (patch.pft[p].nmass_litter_leaf +
 			                patch.pft[p].nmass_litter_sap + patch.pft[p].nmass_litter_heart));
 
 		// Account for burnt above ground litter
 
-		patch.pft[p].litter_leaf        *= (1.0 - mort_fire);
-		patch.pft[p].litter_sap         *= (1.0 - mort_fire);
-		patch.pft[p].litter_heart       *= (1.0 - mort_fire);
-		patch.pft[p].litter_repr        *= (1.0 - mort_fire);
+		patch.pft[p].cmass_litter_leaf  *= (1.0 - mort_fire);
+		patch.pft[p].cmass_litter_sap   *= (1.0 - mort_fire);
+		patch.pft[p].cmass_litter_heart *= (1.0 - mort_fire);
+		patch.pft[p].cmass_litter_repr  *= (1.0 - mort_fire);
 		patch.pft[p].nmass_litter_leaf  *= (1.0 - mort_fire);
 		patch.pft[p].nmass_litter_sap   *= (1.0 - mort_fire);
 		patch.pft[p].nmass_litter_heart *= (1.0 - mort_fire);
