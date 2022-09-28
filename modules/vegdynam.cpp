@@ -1576,6 +1576,10 @@ void vegetation_dynamics(Stand& stand,Patch& patch) {
 		// Disturbance when N limitation is switched on to get right pft composition under N limitation faster
 		if (ifcentury && ifnlim && date.year == freenyears){
 			disturbance(patch, 1.0);
+			if (ifplim) {
+				patch.soil.pmass_labile = 0.0;
+				patch.soil.pmass_sorbed = 0.0;
+			}
 			if (patch.disturbed) {
 				return; // no mortality or establishment this year
 			}

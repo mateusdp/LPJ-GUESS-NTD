@@ -213,7 +213,7 @@ void allocation_crop_nplim(Individual& indiv, double cmass_seed, double nmass_se
 	// report seed fluxes
 	indiv.report_flux(Fluxes::SEEDC, -cmass_seed);
 	indiv.report_flux(Fluxes::SEEDN, -nmass_seed);
-	indiv.report_flux(Fluxes::SEEDP, -nmass_seed);
+	indiv.report_flux(Fluxes::SEEDP, -pmass_seed);
 
 	// add seed carbon
 	double cmass_extra = cmass_seed;

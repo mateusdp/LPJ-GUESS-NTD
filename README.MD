@@ -9,6 +9,15 @@ Branch of Frankfurt-BiK-F Data Modelling center Gitlab repository
 PLEASE NOTE:
 ==============
 
+-- 9.2022
+
+- Phosphorus cycle balanced, including sorbed and strongly sorbed going into flux
+- Balancing of labile and sorbed based on quadradic equation (extra function)
+- vmax without c2 factor.
+
+
+-- 7.2022
+
 - Phosphorus cycles still NOT balanced - error functions deactivated
 - Balancing of labile P and sorbed P pools based on Wang et al. 2010. However using equation D8 results in inconsistencies
 for soil P pools of soils type 1 and 2.
