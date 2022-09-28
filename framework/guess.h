@@ -3828,7 +3828,7 @@ struct LitterSolveSOM : public Serializable {
     void add_litter(double cvalue, double nvalue, double pvalue, int pool) {
 		clitter[pool] += cvalue;
 		nlitter[pool] += nvalue;
-		nlitter[pool] += pvalue;
+		plitter[pool] += pvalue;
     }
 
 	double get_clitter(int pool) {

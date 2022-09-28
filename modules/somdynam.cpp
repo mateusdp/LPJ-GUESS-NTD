@@ -895,6 +895,8 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 
 			// Account for organic nitrogen leaching loss
 			leachsum_nmass = soil.orgleachfrac * soil.sompool[SOILMICRO].cdec * soil.sompool[SOILMICRO].nmass / soil.sompool[SOILMICRO].cmass;
+			// Account for organic phosphorus leaching loss
+			leachsum_pmass = soil.orgleachfrac * soil.sompool[SOILMICRO].cdec * soil.sompool[SOILMICRO].pmass / soil.sompool[SOILMICRO].cmass;
 		}
 
 		// Donor pool PASSIVE SOM
@@ -1055,31 +1057,58 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	//double delta_plabile = (soil.pmass_labile_delta - (USORB * soil.soiltype.spmax * soil.pmass_labile) / (soil.soiltype.kplab + soil.pmass_labile)) / (1 + (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0));
 	double delta_plabile = soil.pmass_labile_delta;
 
-	double delta_sorbed = (soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0) * delta_plabile;
+	//double delta_sorbed = ((soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0)) * delta_plabile;
 
 	double delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
 
 	soil.pmass_labile += delta_plabile;
-	if (delta_sorbed + soil.pmass_sorbed > 0.0 & delta_sorbed < soil.pmass_labile)
+	
+	/*if (delta_sorbed + soil.pmass_sorbed > 0.0 && delta_sorbed < soil.pmass_labile)
 		soil.pmass_labile -= delta_sorbed;
 	else
-		delta_sorbed = 0.0;
-	soil.pmass_labile = max(0.0, soil.pmass_labile);
+		delta_sorbed = 0.0;*/
+	//soil.pmass_labile = max(0.0, soil.pmass_labile);
+	if(delta_plabile > 0.0)
+		balance_p_labile_sorbed(soil, true);
+	else
+		balance_p_labile_sorbed(soil, false);
 
-	soil.pmass_sorbed += delta_sorbed;
+	//soil.pmass_labile -= delta_sorbed;
+
+	if (soil.pmass_labile < 0.0) {
+		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile);
+		soil.pmass_labile = 0.0;
+	}
+
+	//soil.pmass_sorbed += delta_sorbed;
+
 	soil.pmass_sorbed -= delta_strongly_sorbed;
-	soil.pmass_sorbed = max(0.0, soil.pmass_sorbed);
+	//soil.pmass_sorbed = max(0.0, soil.pmass_sorbed);
+	if (soil.pmass_sorbed < 0.0) {
+		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed);
+		soil.pmass_sorbed = 0.0;
+	}
 
-	soil.pmass_strongly_sorbed += delta_strongly_sorbed;
-	soil.pmass_strongly_sorbed = max(0.0, soil.pmass_strongly_sorbed);
+	balance_p_labile_sorbed(soil, true);
+	//soil.pmass_strongly_sorbed += delta_strongly_sorbed;
+	//////soil.pmass_strongly_sorbed = max(0.0, soil.pmass_strongly_sorbed);
+	//if (soil.pmass_strongly_sorbed < 0.0) {
+	//	patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_strongly_sorbed);
+	//	soil.pmass_strongly_sorbed = 0.0;
+	//}
+
+	patch.fluxes.report_flux(Fluxes::P_SOIL, delta_strongly_sorbed);
 
 	////////////////////////////
 
 	////////////////////////// Wang to simple //////////////////////////////////
 	
-	/*soil.pmass_labile += soil.pmass_labile_delta;
-	soil.pmass_labile = max(0.0, soil.pmass_labile);*/
-
+	//soil.pmass_labile += soil.pmass_labile_delta;
+	////soil.pmass_labile = max(0.0, soil.pmass_labile);
+	//if (soil.pmass_labile < 0.0) {
+	//	patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile);
+	//	soil.pmass_labile = 0.0;
+	//}
 	////////////////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////// P Sorbed Balance
@@ -1179,6 +1208,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
 		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + PMASS_SAT, 2.0);
 		soil.pmass_sorbed = soil.soiltype.spmax;
+		//soil.pmass_sorbed = 0.0;
 	}
 }
 
@@ -1796,7 +1826,7 @@ void vegetation_p_uptake(Patch& patch) {
 	}
 
 	if (date.year >= soil.solvesomcent_beginyr && date.year <= soil.solvesomcent_endyr && !negligible(origpmass)) {
-		soil.fpuptake_mean[date.month] += (1.0 - soil.pmass_labile / origpmass) / date.ndaymonth[date.month];
+		soil.fpuptake_mean[date.month] += (1.0 - max(0.0, origpmass - soil.pmass_labile_delta) / origpmass) / date.ndaymonth[date.month];
 	}
 }
 
@@ -1919,7 +1949,11 @@ void equilsom(Soil& soil) {
 
 			// Monthly mineral phosphorus leaching
 			 double pleach = soil.pmass_labile * (1.0 - soil.mminpleach_mean[m]);
-			soil.pmass_labile = max(0.0, soil.pmass_labile - pleach);
+			soil.pmass_labile -= pleach;
+			if (soil.pmass_labile < 0.0) {
+				patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile);
+				soil.pmass_labile = 0.0;
+			}
 
 			// Monthly nitrogen addition to the system
 			soil.nmass_inc((gridcell.aNH4dep + soil.anfix_mean) / 12.0, NH4);

@@ -631,7 +631,8 @@ double Patch::pcont(double scale_indiv, bool luc) {
 
 	pcont += soil.pmass_labile;
 	pcont += soil.pmass_sorbed;
-	pcont += soil.pmass_strongly_sorbed;
+	//pcont += soil.pmass_strongly_sorbed;
+	//pcont += soil.pmass_occluded;
 	pcont += soil.snowpack_pmass_labile;
 
 	for (int i = 0; i<NSOMPOOL; i++)
@@ -3841,8 +3842,8 @@ void MassBalance::check_year(Gridcell& gridcell) {
 
 	if (ifcentury) {
 		check_year_N(gridcell);
-		/*if(ifplim)
-			check_year_P(gridcell);*/
+		if(ifplim)
+			check_year_P(gridcell);
 	}
 
 	check_year_water(gridcell);
