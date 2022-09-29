@@ -416,8 +416,8 @@ void CommonOutput::define_output_tables() {
 	ColumnDescriptors soil_ppool_columns;
 	soil_ppool_columns += ColumnDescriptor("PO4", 13, 5);
 	soil_ppool_columns += ColumnDescriptor("SoilP_S", 9, 2);
-	soil_ppool_columns += ColumnDescriptor("SoilP_SS", 9, 2);
-	soil_ppool_columns += ColumnDescriptor("SoilP_OC", 9, 2);
+	//soil_ppool_columns += ColumnDescriptor("SoilP_SS", 9, 2);
+	//soil_ppool_columns += ColumnDescriptor("SoilP_OC", 9, 2);
 
 
 	// *** ANNUAL OUTPUT VARIABLES ***
@@ -1364,6 +1364,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 					patch.fluxes.get_annual_flux(Fluxes::N2O_SOIL) +
 					patch.fluxes.get_annual_flux(Fluxes::N2_SOIL)) * to_gridcell_average;
 
+			//Strongly sorbed P flux
+			flux_ptot += patch.fluxes.get_annual_flux(Fluxes::P_SOIL) * to_gridcell_average;
+
 			c_fast+=patch.soil.cpool_fast*to_gridcell_average;
 			c_slow+=patch.soil.cpool_slow*to_gridcell_average;
 
@@ -1867,8 +1870,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	// Ackumulated phosphorus in pools		
 	outlimit(out, out_soil_ppool, PO4_mass * M2_PER_HA);
 	outlimit(out, out_soil_ppool, sorbed_mass * M2_PER_HA);
-	outlimit(out, out_soil_ppool, ssorbed_mass * M2_PER_HA);
-	outlimit(out, out_soil_ppool, occluded_mass * M2_PER_HA);
+	/*outlimit(out, out_soil_ppool, ssorbed_mass * M2_PER_HA);
+	outlimit(out, out_soil_ppool, occluded_mass * M2_PER_HA);*/
 
 
 	// Output of tree stand age structure, monthly soil water and 3D vegetation view
