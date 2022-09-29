@@ -14,6 +14,7 @@ PLEASE NOTE:
 - Phosphorus cycle balanced, including sorbed and strongly sorbed going into flux
 - Balancing of labile and sorbed based on quadradic equation (extra function)
 - vmax without c2 factor.
+- Activating acclimated respiration gives out of memory error when running larger regions (>amazon) in Goethe HLR
 
 
 -- 7.2022

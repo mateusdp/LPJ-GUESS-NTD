@@ -1037,7 +1037,7 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	soil.pmass_labile_delta += pmin_inc;
 
 
-	///////////////////////////// Wang p delta equations explicit
+	///////////////////////////// Balanced dynamics of P labile and P sorbed, also flux into strongly sorbed pool
 
 	// Must include tfac = 1 for N to be dominant limitation in the andes
 	// with more complex delta_plabile inceptisol regions somehow lose a lot of P
@@ -1087,79 +1087,7 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 
 	patch.fluxes.report_flux(Fluxes::P_SOIL, delta_strongly_sorbed);
 
-	////////////////////////////
 
-	////////////////////////// Wang to simple //////////////////////////////////
-	
-	//soil.pmass_labile += soil.pmass_labile_delta;
-	////soil.pmass_labile = max(0.0, soil.pmass_labile);
-	//if (soil.pmass_labile < 0.0) {
-	//	patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile);
-	//	soil.pmass_labile = 0.0;
-	//}
-	////////////////////////////////////////////////////////////////////////////
-
-	/////////////////////////////////// P Sorbed Balance
-
-	/*if (soil.pmass_labile > 0.0) {
-
-		if (soil.pmass_sorbed > soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile))
-			balance_p_labile_sorbed(soil, true);
-		else 
-			balance_p_labile_sorbed(soil, false);
-	}*/
-
-	//if (soil.pmass_labile > 0.0) {
-
-	//	if (soil.pmass_sorbed < soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile)) {
-	//		soil.pmass_sorbed += 
-	//	}
-	//	else {
-	//		balance_p_labile_sorbed(soil, false);
-	//	}
-	//}
-
-	//double delta_strongly_sorbed = max(0.0, USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed);
-	//soil.pmass_sorbed = max(0.0, soil.pmass_sorbed - delta_strongly_sorbed);
-	//
-	//// Strongly sorbed should not be considered a pool, but a outgoing flux of phosphorus.
-	//soil.pmass_strongly_sorbed += delta_strongly_sorbed;
-
-	////////////////////////////////////////////////////////////////
-
-	/////////////////////////////////// Simple P Sorbed Balance
-
-	//if (soil.pmass_labile > 0.0) {
-	//	//double target_sorbed = (soil.pmass_labile * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + soil.pmass_labile, 2.0);
-	//	double target_sorbed = soil.soiltype.spmax * soil.pmass_labile / (soil.soiltype.kplab + soil.pmass_labile);
-
-	//	if (target_sorbed > soil.pmass_sorbed) {
-	//		double sorbed_diff = target_sorbed - soil.pmass_sorbed;
-	//		soil.pmass_labile = max(0.0, soil.pmass_labile - sorbed_diff);
-	//		soil.pmass_sorbed += sorbed_diff;
-	//	}
-	//	else {
-	//		double sorbed_diff = soil.pmass_sorbed - target_sorbed;
-	//		soil.pmass_sorbed = max(0.0, soil.pmass_sorbed - sorbed_diff);
-	//		soil.pmass_labile += sorbed_diff;
-	//	}
-	//}
-
-	//double delta_strongly_sorbed = max(0.0, USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed);
-	//soil.pmass_sorbed = max(0.0, soil.pmass_sorbed - delta_strongly_sorbed);
-	//
-	//// Strongly sorbed should not be considered a pool, but a outgoing flux of phosphorus.
-	//soil.pmass_strongly_sorbed += delta_strongly_sorbed;
-
-	/////////////////////// Improved p balance, to implement
-
-	// Sum all p fluxes for this day (padd - puptake - pleach)
-	// sum this daily flux to pmass_labile to know what it was before removal
-	// calculate delta_pmass
-	// calculate delta_sorbed
-
-	//extra: during freen, psorbed is spmax, pmass_labile is calculated from psorbed.
-	
 	////////////////////////////////////////////////////////////////
 
 	// Estimate of N flux from soil (simple CLM-CN approach)
