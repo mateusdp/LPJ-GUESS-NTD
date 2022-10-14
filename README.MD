@@ -9,6 +9,12 @@ Branch of Frankfurt-BiK-F Data Modelling center Gitlab repository
 PLEASE NOTE:
 ==============
 
+-- 14.10.2022
+
+- Corrected error of acclimated respiration deactivation by setting setptoc MICRO to fixed 32.
+
+
+
 -- 9.2022
 
 - Phosphorus cycle balanced, including sorbed and strongly sorbed going into flux

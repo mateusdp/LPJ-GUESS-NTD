@@ -693,8 +693,11 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	}
 
 	// Warning if soil available nitrogen is negative (if happens once or so no problem, but if it propagates through time then it is)
+	//double dummy;
 	if (ifnlim) {
 		assert(soil.NH4_mass > -EPS);
+		//if(soil.NH4_mass < -EPS)
+		//dummy = 1;
 	}
 
 	// Warning if soil available phosphorus is negative (if happens once or so no problem, but if it propagates through time then it is)
@@ -719,8 +722,8 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 
 	setptoc(soil, soil.pmass_labile, PASSIVESOM, 200.0, 20.0, 0.0, PMASS_SAT);
 
-	//setptoc(soil, soil.pmass_labile, SOILMICRO, 32.0, 32.0, 0.0, PMASS_SAT); //Check this
-	setptoc(soil, soil.pmass_labile, SOILMICRO, 80.0, 30.0, 0.0, PMASS_SAT); //Check this
+	setptoc(soil, soil.pmass_labile, SOILMICRO, 32.0, 32.0, 0.0, PMASS_SAT); //Check this
+	//setptoc(soil, soil.pmass_labile, SOILMICRO, 80.0, 30.0, 0.0, PMASS_SAT); //Check this
 
 	setptoc(soil, soil.pmass_labile, SURFHUMUS, 200.0, 90.0, 0.0, PMASS_SAT);
 
@@ -781,6 +784,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 		for (int p = 0; p < NSOMPOOL; p++) {
 			//Mateus: Choose larger decay reduction between N and P
 			decay_reduction_np[p] = max(decay_reduction_n[p], decay_reduction_p[p]);
+			//decay_reduction_np[p] = decay_reduction_n[p];
 
 			soil.sompool[p].cdec = soil.sompool[p].cmass * (1.0 - soil.sompool[p].fracremain) * (1.0 - decay_reduction_np[p]);
 			soil.sompool[p].ndec = soil.sompool[p].nmass * (1.0 - soil.sompool[p].fracremain) * (1.0 - decay_reduction_np[p]);
@@ -968,7 +972,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 					init_ptoc_reduction = ptoc_reduction;
 				}
 				else {
-					// trying to match needed N:C reduction
+					// trying to match needed P:C reduction
 					ptoc_reduction = min(init_ptoc_reduction, pow(init_ptoc_reduction, 1.0 / (1.0 - (tot_net_pmin + pmin_mass) / init_negative_pmass) + 1.0));
 				}
 
