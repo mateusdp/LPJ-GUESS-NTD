@@ -772,9 +772,12 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 
 		// Calculate decomposition in all pools assuming these decay rates
 		for (int p = 0; p < NSOMPOOL; p++) {
-			//Mateus: Choose larger decay reduction between N and P
-			decay_reduction_np[p] = max(decay_reduction_n[p], decay_reduction_p[p]);
-			//decay_reduction_np[p] = decay_reduction_n[p];
+			
+			if(ifplim)
+				decay_reduction_np[p] = max(decay_reduction_n[p], decay_reduction_p[p]);
+			else
+				//Mateus: Choose larger decay reduction between N and P
+				decay_reduction_np[p] = decay_reduction_n[p];
 
 			soil.sompool[p].cdec = soil.sompool[p].cmass * (1.0 - soil.sompool[p].fracremain) * (1.0 - decay_reduction_np[p]);
 			soil.sompool[p].ndec = soil.sompool[p].nmass * (1.0 - soil.sompool[p].fracremain) * (1.0 - decay_reduction_np[p]);
