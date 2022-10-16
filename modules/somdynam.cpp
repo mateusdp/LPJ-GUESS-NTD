@@ -685,6 +685,11 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 		soil.animmob = 0.0;
 		soil.anmin = 0.0;
 		soil.animmob = 0.0;
+
+		soil.apmin = 0.0;
+		soil.apimmob = 0.0;
+		soil.apmin = 0.0;
+		soil.apimmob = 0.0;
 	}
 
 	// Warning if soil available nitrogen is negative (if happens once or so no problem, but if it propagates through time then it is)
