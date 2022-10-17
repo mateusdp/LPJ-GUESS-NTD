@@ -1366,6 +1366,7 @@ void Stand::set_management() {
 							}
 						}
 
+
 						if (mt.cutfirstyear_unsel && pftx.lifeform == TREE) {
 							for (unsigned int p = 0; p < nobj; p++) {
 								Patch& patch = (*this)[p];
@@ -1392,6 +1393,7 @@ void Stand::set_management() {
 				pftlist.nextobj();
 			}
 		}
+
 	}
 }
 
@@ -1725,7 +1727,6 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 	ctop_leaf_aopt = 0.0;
 	ctop_leaf_aavr = 0.0;
 	ctop_status = 0.0;
-	cmass_veg = 0.0;
 	pmass_veg = 0.0;
 	pmass_tot_luc = 0.0;
 
