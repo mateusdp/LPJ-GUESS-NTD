@@ -1022,7 +1022,7 @@ void Stand::rotate() {
 		if(!readNfert_st)
 			gridcell->st[stid].nfert = mt.nfert;
 		if (!readPfert_st)
-			gridcell->st[stid].nfert = mt.pfert;
+			gridcell->st[stid].pfert = mt.pfert;
 	}
 }
 
@@ -1305,7 +1305,6 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 	ctop_leaf_aopt = 0.0;
 	ctop_leaf_aavr = 0.0;
 	ctop_status = 0.0;
-	cmass_veg = 0.0;
 	pmass_veg = 0.0;
 	pmass_tot_luc = 0.0;
 
