@@ -674,7 +674,7 @@ void photosynthesis(const PhotosynthesisEnvironment& ps_env,
 
 	const double PATMOS = 1e5;	// atmospheric pressure (Pa)
 
-	//double vm = 0.0;
+	double vm_n = 0.0;
 	double vm_p = 0.0;
 
 	// Get the environmental variables
@@ -761,15 +761,12 @@ void photosynthesis(const PhotosynthesisEnvironment& ps_env,
 	if (vm < 0) {
 
 		// Calculation of non-water-stressed rubisco capacity (Eqn 11, Haxeltine & Prentice 1996a)
-		vmax(b, c1, c2, apar, tscal, daylength, temp, nactive, ifnlimvmax, vm, ps_result.vmaxnlim, ps_result.nactive_opt);
+		vmax(b, c1, c2, apar, tscal, daylength, temp, nactive, ifnlimvmax, vm_n, ps_result.vmaxnlim, ps_result.nactive_opt);
 		// Calculation of non-water-stressed p limited vmax
 		vmax_p(b, c1, c2, apar, tscal, daylength, temp, pactive, ifplimvmax, vm_p, ps_result.vmaxplim, ps_result.pactive_opt);
 		
 		// vm is the minimum of N limited and P limited vmax
-		if (ifplim)
-			ps_result.vm = min(vm, vm_p);
-		else
-			ps_result.vm = vm;
+		ps_result.vm = min(vm_n, vm_p);
 	}
 	else {
 		ps_result.vm = vm;			// reuse existing Vmax
