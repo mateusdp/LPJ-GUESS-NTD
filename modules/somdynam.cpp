@@ -774,6 +774,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	// If mineralization together with soil available nitrogen is negative then decay rates are decreased
 	// The SOM system have five try to get a positive result, after that all pools decay rate has been
 	// affected by nitrogen limitation
+	//while ((!net_mineralization || !net_pmineralization) && (times < 5 || ptimes < 5)) {
 	while ((!net_mineralization || !net_pmineralization) && (times < 5 || ptimes < 5)) {
 
 		respsum = 0.0;
@@ -1143,6 +1144,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	// available phosphorus to its saturation level.
 	if (!ifplim || date.year <= freenyears) {
 		soil.pmass_labile = PMASS_SAT;
+		//soil.pmass_labile = 0.0;
 		//Value of sorbed phosphorus pool, based on labile p and soil parameters [KgP/m-2].
 		//Equilibrated instantanously based on Wang 2007, 2010
 		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
@@ -1259,7 +1261,8 @@ void transfer_litter(Patch& patch) {
 
 		// LEAF
 
-		if (!negligible(cmass_litter_leaf) || !negligible(nmass_litter_leaf) || !negligible(pmass_litter_leaf)) {
+		//if (!negligible(cmass_litter_leaf) || !negligible(nmass_litter_leaf) || !negligible(pmass_litter_leaf)) {
+		if (!negligible(cmass_litter_leaf) || !negligible(nmass_litter_leaf)) {
 
 			// Calculate inputs to surface structural and metabolic litter
 
