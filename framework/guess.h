@@ -2530,13 +2530,13 @@ public:
 		// Average sap C:P ratio
 		ctop_sap_avr = avg_ctop(ctop_sap_min, ctop_sap_max);
 
-		if (lifeform == GRASS || lifeform == MOSS) {
+		/*if (lifeform == GRASS || lifeform == MOSS) {
 			respcoeff /= 2.0 * ctop_root / (ctop_root_avr + ctop_root_min);
 		}
 		else {
 			respcoeff /= ctop_root / (ctop_root_avr + ctop_root_min) +
 				ctop_sap / (ctop_sap_avr + ctop_sap_min);
-		}
+		}*/
 		ctop_stem_max = 1.0 / (2.0*0.0034); //Maize params
 		ctop_stem_avr = 1.0 / (2.0*0.0068);
 	}
