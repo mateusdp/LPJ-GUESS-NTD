@@ -1544,7 +1544,7 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	// Nitrogen within projective cover of all individuals
 	double tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.fpc_total);
 
-	// Nitrogen within projective cover of all individuals
+	// Phosphorus within projective cover of all individuals
 	double tot_pmass_avail = patch.soil.pmass_labile * min(1.0, patch.fpc_total);
 
 	// Calculate individual uptake fraction of nitrogen demand
@@ -2935,17 +2935,17 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 			cton_root = pft.cton_root_avr;
 		}
 
-		// Static root and sap wood C:P ratio if no P limitation
+		//// Static root and sap wood C:P ratio if no P limitation
 
-		double ctop_sap, ctop_root;
-		if (ifplim) {
-			ctop_sap = indiv.ctop_sap();
-			ctop_root = indiv.ctop_root();
-		}
-		else {
-			ctop_sap = pft.ctop_sap_avr;
-			ctop_root = pft.ctop_root_avr;
-		}
+		//double ctop_sap, ctop_root;
+		//if (ifplim) {
+		//	ctop_sap = indiv.ctop_sap();
+		//	ctop_root = indiv.ctop_root();
+		//}
+		//else {
+		//	ctop_sap = pft.ctop_sap_avr;
+		//	ctop_root = pft.ctop_root_avr;
+		//}
 
 		//Acclimated or standard respiration
 		if(acclimated_respiration)
