@@ -1471,16 +1471,16 @@ void growth(Stand& stand, Patch& patch) {
 
 				if(!indiv.has_daily_turnover()) {
 					//// Tissue turnover and associated litter production
-					//turnover(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
-					//	indiv.pft.turnover_sap, indiv.pft.lifeform, indiv.pft.landcover,
-					//	indiv.cmass_leaf, indiv.cmass_root, indiv.cmass_sap, indiv.cmass_heart,
-					//	indiv.nmass_leaf, indiv.nmass_root, indiv.nmass_sap, indiv.nmass_heart,
-					//	patch.pft[indiv.pft.id].litter_leaf,
-					//	patch.pft[indiv.pft.id].litter_root,
-					//	patch.pft[indiv.pft.id].nmass_litter_leaf,
-					//	patch.pft[indiv.pft.id].nmass_litter_root,
-					//	indiv.nstore_longterm,indiv.max_n_storage,
-					//	indiv.alive);
+					/*turnover(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
+						indiv.pft.turnover_sap, indiv.pft.lifeform, indiv.pft.landcover,
+						indiv.cmass_leaf, indiv.cmass_root, indiv.cmass_sap, indiv.cmass_heart,
+						indiv.nmass_leaf, indiv.nmass_root, indiv.nmass_sap, indiv.nmass_heart,
+						patch.pft[indiv.pft.id].cmass_litter_leaf,
+						patch.pft[indiv.pft.id].cmass_litter_root,
+						patch.pft[indiv.pft.id].nmass_litter_leaf,
+						patch.pft[indiv.pft.id].nmass_litter_root,
+						indiv.nstore_longterm,indiv.max_n_storage,
+						indiv.alive);*/
 
 					// Tissue turnover with both nitrogen and phosphorus and associated litter production
 					turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
