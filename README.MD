@@ -9,9 +9,9 @@ Branch of Frankfurt-BiK-F Data Modelling center Gitlab repository
 PLEASE NOTE:
 ==============
 
--- 14.10.2022
+-- 17.10.2022
 
-- Corrected error of acclimated respiration deactivation by setting setptoc MICRO to fixed 32.
+- Corrected error of acclimated respiration deactivation by removing influence of ctop in respcoeff.
 
 
 
