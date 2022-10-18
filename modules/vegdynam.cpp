@@ -707,6 +707,8 @@ void establishment_guess(Stand& stand,Patch& patch) {
 
 						Individual& indiv=vegetation.createobj(pft,vegetation);
 
+						//Define all traits here, with activation switches in ins file, and using functions from guess.h (ex. initsla())
+
 						if (vegmode==COHORT)
 							indiv.densindiv=nsapling/patcharea;
 						else if (vegmode==INDIVIDUAL)
