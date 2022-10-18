@@ -717,8 +717,8 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 
 	setptoc(soil, soil.pmass_labile, PASSIVESOM, 200.0, 20.0, 0.0, PMASS_SAT);
 
-	setptoc(soil, soil.pmass_labile, SOILMICRO, 32.0, 32.0, 0.0, PMASS_SAT); //Check this
-	//setptoc(soil, soil.pmass_labile, SOILMICRO, 80.0, 30.0, 0.0, PMASS_SAT); //Check this
+	//setptoc(soil, soil.pmass_labile, SOILMICRO, 32.0, 32.0, 0.0, PMASS_SAT); //Check this
+	setptoc(soil, soil.pmass_labile, SOILMICRO, 80.0, 30.0, 0.0, PMASS_SAT); //Check this
 
 	setptoc(soil, soil.pmass_labile, SURFHUMUS, 200.0, 90.0, 0.0, PMASS_SAT);
 
@@ -759,8 +759,8 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	// If mineralization together with soil available nitrogen is negative then decay rates are decreased
 	// The SOM system have five try to get a positive result, after that all pools decay rate has been
 	// affected by nitrogen limitation
-	//while ((!net_mineralization || !net_pmineralization) && (times < 5 || ptimes < 5)) {
 	while ((!net_mineralization || !net_pmineralization) && (times < 5 || ptimes < 5)) {
+	//while ((!net_mineralization && !net_pmineralization) && (times < 5 && ptimes < 5)) {
 
 		respsum = 0.0;
 		nmin_actual = 0.0;
