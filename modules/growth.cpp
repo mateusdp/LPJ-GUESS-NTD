@@ -988,7 +988,8 @@ void allocation_init(double bminit, double ltor, Individual& indiv) {
 	double cmass_root_ind;
 	double cmass_sap_ind;
 
-	allocation(bminit, 0.0, 0.0, 0.0, 0.0, 0.0, ltor, 0.0, indiv.pft.sla, indiv.pft.wooddens,
+	//allocation(bminit, 0.0, 0.0, 0.0, 0.0, 0.0, ltor, 0.0, indiv.pft.sla, indiv.pft.wooddens,
+	allocation(bminit, 0.0, 0.0, 0.0, 0.0, 0.0, ltor, 0.0, indiv.sla, indiv.wooddens,
 		indiv.pft.lifeform, indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
 		cmass_leaf_ind, cmass_root_ind, cmass_sap_ind, dval, dval, dval, dval, dval);
 
@@ -1079,7 +1080,8 @@ bool allometry(Individual& indiv) {
 		// guess2008 - new allometry check
 		if (!negligible(indiv.cmass_leaf)) {
 
-			indiv.height = indiv.cmass_sap / indiv.cmass_leaf / indiv.pft.sla * indiv.pft.k_latosa / indiv.pft.wooddens;
+			//indiv.height = indiv.cmass_sap / indiv.cmass_leaf / indiv.pft.sla * indiv.pft.k_latosa / indiv.pft.wooddens;
+			indiv.height = indiv.cmass_sap / indiv.cmass_leaf / indiv.sla * indiv.pft.k_latosa / indiv.wooddens;
 
 			// Stem diameter (Eqn 5)
 			indiv.diam = pow(indiv.height / indiv.pft.k_allom2, 1.0 / indiv.pft.k_allom3);
@@ -1087,11 +1089,13 @@ bool allometry(Individual& indiv) {
 			// Stem volume
 			double vol = indiv.height * PI * indiv.diam * indiv.diam * 0.25;
 
+
 			if (indiv.age && (indiv.cmass_heart + indiv.cmass_sap) / indiv.densindiv / vol < indiv.pft.wooddens * 0.9) {
 				Patch& patch = indiv.vegetation.patch;
 				Patchpft& patchpft = patch.pft[indiv.pft.id];
 
 				patchpft.cmass_mort += indiv.ccont();
+
 				return false;
 			}
 		}
@@ -1118,7 +1122,8 @@ bool allometry(Individual& indiv) {
 
 			// Individual LAI (Eqn 9)
 			indiv.lai_indiv = indiv.cmass_leaf / indiv.densindiv *
-				indiv.pft.sla / indiv.crownarea;
+				//indiv.pft.sla / indiv.crownarea;
+				indiv.sla / indiv.crownarea;
 
 			// FPC (Eqn 8)
 
@@ -1138,7 +1143,8 @@ bool allometry(Individual& indiv) {
 		indiv.boleht = 0.0;
 
 		// Stand-level LAI
-		indiv.lai = indiv.cmass_leaf * indiv.pft.sla;
+		//indiv.lai = indiv.cmass_leaf * indiv.pft.sla;
+		indiv.lai = indiv.cmass_leaf * indiv.sla;
 	}
 	else if (indiv.pft.lifeform == GRASS || indiv.pft.lifeform == MOSS) {
 
@@ -1150,7 +1156,8 @@ bool allometry(Individual& indiv) {
 			if (!negligible(indiv.cmass_leaf)) {
 
 				// Grass "individual" LAI (Eqn 11)
-				indiv.lai_indiv = indiv.cmass_leaf * indiv.pft.sla;
+				//indiv.lai_indiv = indiv.cmass_leaf * indiv.pft.sla;
+				indiv.lai_indiv = indiv.cmass_leaf * indiv.sla;
 
 				// FPC (Eqn 10)
 				indiv.fpc = 1.0 - lambertbeer(indiv.lai_indiv);
@@ -1203,7 +1210,8 @@ double fracmass_lpj(double fpc_low,double fpc_high,Individual& indiv) {
 		if (fpc_high>=1.0 || fpc_low>=1.0 || negligible(indiv.cmass_leaf)) return 1.0;
 
 		// else
-		return 1.0+2.0/indiv.cmass_leaf/indiv.pft.sla*
+		//return 1.0+2.0/indiv.cmass_leaf/indiv.pft.sla*
+		return 1.0 + 2.0 / indiv.cmass_leaf / indiv.sla*
 			(log(1.0-fpc_high)-log(1.0-fpc_low));
 	}
 	else {
@@ -1527,7 +1535,8 @@ void growth(Stand& stand, Patch& patch) {
 						indiv.cmass_root / indiv.densindiv, indiv.cmass_sap / indiv.densindiv,
 						indiv.cmass_debt / indiv.densindiv,
 						indiv.cmass_heart / indiv.densindiv, indiv.ltor,
-						indiv.height, indiv.pft.sla, indiv.pft.wooddens, TREE,
+						//indiv.height, indiv.pft.sla, indiv.pft.wooddens, TREE,
+						indiv.height, indiv.sla, indiv.wooddens, TREE,
 						indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
 						cmass_leaf_inc, cmass_root_inc, cmass_sap_inc, cmass_debt_inc,
 						cmass_heart_inc,

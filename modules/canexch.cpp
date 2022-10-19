@@ -3018,7 +3018,8 @@ void leaf_senescence(Vegetation& vegetation) {
 		if (indiv.cmass_leaf_today() > 0.0) {
 			double Ln = indiv.lai_nitrogen_today();
 			double Lnld = indiv.lai_today();
-			r = (Lnld - min(Lnld, Ln))/indiv.pft.sla/10.0;
+			//r = (Lnld - min(Lnld, Ln))/indiv.pft.sla/10.0;
+			r = (Lnld - min(Lnld, Ln)) / indiv.sla / 10.0;
 		}
 
 		// No senescence during the initial growing period

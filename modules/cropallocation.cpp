@@ -57,10 +57,12 @@ void lai_crop(Patch& patch) {
 			if(ppftcrop.growingseason) {
 
 				if(!ppftcrop.senescence || ifnlim)
-					indiv.lai_daily = cropindiv.grs_cmass_leaf * indiv.pft.sla;
+					//indiv.lai_daily = cropindiv.grs_cmass_leaf * indiv.pft.sla;
+					indiv.lai_daily = cropindiv.grs_cmass_leaf * indiv.sla;
 				else
 					// Follow the senescence curve from leaf cmass at senescence (cmass_leaf_sen):
-					indiv.lai_daily = cropindiv.cmass_leaf_sen * indiv.pft.sla * senescence_curve(indiv.pft, ppftcrop.fphu);
+					//indiv.lai_daily = cropindiv.cmass_leaf_sen * indiv.pft.sla * senescence_curve(indiv.pft, ppftcrop.fphu);
+					indiv.lai_daily = cropindiv.cmass_leaf_sen * indiv.sla * senescence_curve(indiv.pft, ppftcrop.fphu);
 
 				if(indiv.lai_daily < 0.0)
 					indiv.lai_daily = 0.0;
@@ -967,7 +969,8 @@ void allometry_crop(Individual& indiv) {
 	// crop grass compatible with natural grass
 	if(indiv.pft.phenology == ANY) {
 
-		indiv.lai_indiv = indiv.cmass_leaf * indiv.pft.sla;
+		//indiv.lai_indiv = indiv.cmass_leaf * indiv.pft.sla;
+		indiv.lai_indiv = indiv.cmass_leaf * indiv.sla;
 
 		// For intercrop grass, use LAI of parent grass in its own stand.
 		if(indiv.cropindiv->isintercropgrass) {
@@ -1093,7 +1096,8 @@ void allometry_crop(Individual& indiv) {
 		if (!negligible(indiv.cropindiv->cmass_leaf_max)) {
 
 			// Grass "individual" LAI (Eqn 11)
-			indiv.lai_indiv = indiv.cropindiv->cmass_leaf_max * indiv.pft.sla;
+			//indiv.lai_indiv = indiv.cropindiv->cmass_leaf_max * indiv.pft.sla;
+			indiv.lai_indiv = indiv.cropindiv->cmass_leaf_max * indiv.sla;
 
 			// FPC (Eqn 10)
 //			indiv.fpc = 1.0 - lambertbeer(indiv.lai_indiv);
