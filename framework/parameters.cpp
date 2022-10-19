@@ -54,6 +54,13 @@ bool ifntransform;
 double frac_labile_carbon = 1.0;
 double pH_soil;
 
+bool ifslavary;
+bool ifwsgvary;
+bool ifsrlvary;
+int sla_width;
+int wsg_width;
+int srl_width;
+
 //Maximum amount of NH4 nitrified
 double f_nitri_max;
 //Maximum gaseus losses in nitrification
@@ -514,6 +521,20 @@ void plib_declarations(int id,xtring setname) {
 			"Fraction of microbial respiration assumed to produce labile carbon");
 		declareitem("pH_soil",&pH_soil,3.5,8.5,1,CB_NONE, "Soil pH");
 		declareitem("f_nitri_max",  &f_nitri_max,  0.01,   1.0, 1,CB_NONE, "Maximum amount of NH4 nitrified");
+
+		declareitem("ifslavary", &ifslavary, 1, CB_NONE,
+			"Activation of specific leaf area trait variation. Ranges defined by PFT.");
+		declareitem("ifwsgvary", &ifwsgvary, 1, CB_NONE,
+			"Activation of wood specific gravity trait variation. Ranges defined by PFT.");
+		declareitem("ifsrlvary", &ifsrlvary, 1, CB_NONE,
+			"Activation of specific root length trait variation. Ranges defined by PFT.");
+		declareitem("sla_width", &sla_width, 0, 5000, 1, CB_NONE,
+			"Number of possible sla values between min and maximum trait ranges (trait resolution)");
+		declareitem("wsg_width", &wsg_width, 0, 5000, 1, CB_NONE,
+			"Number of possible wsg values between min and maximum trait ranges (trait resolution)");
+		declareitem("srl_width", &srl_width, 0, 5000, 1, CB_NONE,
+			"Number of possible srl values between min and maximum trait ranges (trait resolution)");
+
 
 		declareitem("k_N",    &k_N,    0.0001, 1.0, 1,CB_NONE, "Constant in denitrification");
 		declareitem("k_C",    &k_C,    0.00001, 1.0, 1,CB_NONE, "Constant in denitrification");
@@ -1508,6 +1529,14 @@ void plib_callback(int callback) {
 		if (!itemparsed("ifnlim")) badins("ifnlim");
 		if (!itemparsed("ifplim")) badins("ifplim");
 		if (!itemparsed("freenyears")) badins("freenyears");
+
+		if (!itemparsed("ifslavary")) badins("ifslavary");
+		if (!itemparsed("ifwsgvary")) badins("ifwsgvary");
+		if (!itemparsed("ifsrlvary")) badins("ifsrlvary");
+		if (!itemparsed("sla_width")) badins("sla_width");
+		if (!itemparsed("wsg_width")) badins("wsg_width");
+		if (!itemparsed("srl_width")) badins("srl_width");
+
 
 		if (nyear_spinup <= freenyears) {
 			sendmessage("Error", "freenyears must be smaller than nyear_spinup");

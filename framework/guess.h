@@ -3067,6 +3067,42 @@ public:
 	Vegetation& vegetation;
 	/// id code (0-based, sequential)
 	int id;
+
+	/// specific leaf area (m2/kgC)
+	double sla;
+	/// sapwood and heartwood density (kgC/m3)
+	double wooddens;
+
+	/// minimum leaf C:N mass ratio allowed when nitrogen demand is determined
+	double cton_leaf_min;
+	/// maximum leaf C:N mass ratio	allowed when nitrogen demand is determined
+	double cton_leaf_max;
+	/// average leaf C:N mass ratio (between min and max)
+	double cton_leaf_avr;
+	/// average fine root C:N mass ratio (connected cton_leaf_avr)
+	double cton_root_avr;
+	/// maximum fine root C:N mass ratio (used when mass is negligible)
+	double cton_root_max;
+	/// average sapwood C:N mass ratio (connected cton_leaf_avr)
+	double cton_sap_avr;
+	/// maximum sapwood C:N mass ratio (used when mass is negligible)
+	double cton_sap_max;
+
+	/// minimum leaf C:P mass ratio allowed when phosphorus demand is determined
+	double ctop_leaf_min;
+	/// maximum leaf C:P mass ratio	allowed when phosphorus demand is determined
+	double ctop_leaf_max;
+	/// average leaf C:P mass ratio (between min and max)
+	double ctop_leaf_avr;
+	/// average fine root C:P mass ratio (connected cton_leaf_avr)
+	double ctop_root_avr;
+	/// maximum fine root C:P mass ratio (used when mass is negligible)
+	double ctop_root_max;
+	/// average sapwood C:P mass ratio (connected cton_leaf_avr)
+	double ctop_sap_avr;
+	/// maximum sapwood C:P mass ratio (used when mass is negligible)
+	double ctop_sap_max;
+
 	/// leaf C biomass on modelled area basis (kgC/m2)
 	double cmass_leaf;
 	/// fine root C biomass on modelled area basis (kgC/m2)
@@ -3554,6 +3590,49 @@ public:
 
 	/// The P demand of the storage, only used for PNV.
 	double pdemand_storage(double ctop_leaf_opt);
+
+
+
+	//////// Trait variation functions //////////////
+	
+	/// Transfer sla values from pft or randomize it along max or min values.
+	void sla_vary() {
+
+		if (!ifslavary) {
+			sla = pft.sla;
+		}
+	}
+
+	/// Transfer cton and ctop values from pft or randomize it along max or min values.
+	void ctonp_vary() {
+
+		if (!ifslavary) {		
+			cton_leaf_min = pft.cton_leaf_min;
+			cton_leaf_max = pft.cton_leaf_max;
+			cton_leaf_avr = pft.cton_leaf_avr;
+			cton_root_avr = pft.cton_root_avr;
+			cton_root_max = pft.cton_root_max;
+			cton_sap_avr = pft.cton_sap_avr;
+			cton_sap_max = pft.cton_sap_max;
+
+			ctop_leaf_min = pft.ctop_leaf_min;
+			ctop_leaf_max = pft.ctop_leaf_max;
+			ctop_leaf_avr = pft.ctop_leaf_avr;
+			ctop_root_avr = pft.ctop_root_avr;
+			ctop_root_max = pft.ctop_root_max;
+			ctop_sap_avr = pft.ctop_sap_avr;
+			ctop_sap_max = pft.ctop_sap_max;
+		}
+	}
+
+	/// Transfer wsg values from pft or randomize it along max or min values.
+	void wsg_vary() {
+
+		if (!ifwsgvary) {
+			wooddens = pft.wooddens;
+		}
+	}
+
 };
 
 

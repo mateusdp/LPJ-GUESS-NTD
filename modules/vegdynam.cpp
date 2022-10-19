@@ -557,6 +557,12 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						indiv.densindiv=1.0;
 						indiv.fpc=1.0;
 
+						//Define all traits here, with activation switches in ins file, and using functions from guess.h
+
+						indiv.sla_vary();
+
+						indiv.wsg_vary();
+
 						// Initial grass biomass proportional to potential forest floor
 						// net assimilation this year on patch area basis
 
@@ -707,7 +713,11 @@ void establishment_guess(Stand& stand,Patch& patch) {
 
 						Individual& indiv=vegetation.createobj(pft,vegetation);
 
-						//Define all traits here, with activation switches in ins file, and using functions from guess.h (ex. initsla())
+						//Define all traits here, with activation switches in ins file, and using functions from guess.h
+						
+						indiv.sla_vary();
+
+						indiv.wsg_vary();
 
 						if (vegmode==COHORT)
 							indiv.densindiv=nsapling/patcharea;

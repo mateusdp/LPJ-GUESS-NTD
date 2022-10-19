@@ -159,6 +159,14 @@ extern bool ifnlim;
 /// whether plant growth limited by available P
 extern bool ifplim;
 
+/// Trait variation variables
+extern bool ifslavary;
+extern bool ifwsgvary;
+extern bool ifsrlvary;
+extern int sla_width;
+extern int wsg_width;
+extern int srl_width;
+
 /// number of years to allow spinup without nitrogen limitation
 extern int freenyears;
 
