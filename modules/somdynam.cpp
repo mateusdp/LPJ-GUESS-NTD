@@ -1262,7 +1262,7 @@ void transfer_litter(Patch& patch) {
 			// Calculate inputs to surface structural and metabolic litter
 
 			// Leaf litter lignin:N ratio
-			double leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.pft.cton_leaf_avr);
+			double leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.pft.cton_leaf_avr); //maybe here is pft.pft.cmass_litter_leaf/pft.pft.nmass_litter_leaf
 
 			// Metabolic litter fraction for leaf litter
 			double fm = metabolic_litter_fraction(leaf_lton);
@@ -1313,7 +1313,7 @@ void transfer_litter(Patch& patch) {
 			// Calculate inputs to soil structural and metabolic litter
 
 			// Root litter lignin:N ratio
-			double root_lton = lignin_to_n_ratio(cmass_litter_root, nmass_litter_root, LIGCFRAC_ROOT, pft.pft.cton_root_avr);
+			double root_lton = lignin_to_n_ratio(cmass_litter_root, nmass_litter_root, LIGCFRAC_ROOT, pft.pft.cton_root_avr); //maybe here is pft.pft.cmass_litter_root/pft.pft.nmass_litter_root
 
 			// Metabolic litter fraction for root litter
 			double fm = metabolic_litter_fraction(root_lton);
@@ -1698,7 +1698,7 @@ void vegetation_n_uptake(Patch& patch) {
 
 
 		if (!negligible(indiv.phen))
-			indiv.cton_leaf_aavr += min(indiv.cton_leaf(),indiv.pft.cton_leaf_max);
+			indiv.cton_leaf_aavr += min(indiv.cton_leaf(),indiv.cton_leaf_max);
 
 		vegetation.nextobj();
 	}
@@ -1758,7 +1758,7 @@ void vegetation_p_uptake(Patch& patch) {
 		soil.pmass_labile_delta -= puptake_day;
 				
 		if (!negligible(indiv.phen))
-			indiv.ctop_leaf_aavr += min(indiv.ctop_leaf(), indiv.pft.ctop_leaf_max);
+			indiv.ctop_leaf_aavr += min(indiv.ctop_leaf(), indiv.ctop_leaf_max);
 
 		vegetation.nextobj();
 	}

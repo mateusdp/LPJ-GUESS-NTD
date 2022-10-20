@@ -326,15 +326,15 @@ void establishment_lpj(Stand& stand,Patch& patch) {
 			indiv.cmass_heart+=indiv.pft.regen.cmass_heart*est_pft;
 
 			// Calculate storage pool size
-			indiv.max_n_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.pft.cton_leaf_avr;
+			indiv.max_n_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.cton_leaf_avr;
 			if (!indiv.alive)
-				indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr /
+				indiv.scale_n_storage = indiv.max_n_storage * indiv.cton_leaf_avr /
 					((indiv.pft.regen.cmass_leaf + indiv.pft.regen.cmass_root +
 					indiv.pft.regen.cmass_sap +	indiv.pft.regen.cmass_heart) * est_pft);
 
-			indiv.max_p_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.pft.ctop_leaf_avr;
+			indiv.max_p_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.ctop_leaf_avr;
 			if (!indiv.alive)
-				indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr /
+				indiv.scale_p_storage = indiv.max_p_storage * indiv.ctop_leaf_avr /
 				((indiv.pft.regen.cmass_leaf + indiv.pft.regen.cmass_root +
 					indiv.pft.regen.cmass_sap + indiv.pft.regen.cmass_heart) * est_pft);
 
@@ -361,14 +361,14 @@ void establishment_lpj(Stand& stand,Patch& patch) {
 			indiv.cmass_root+=est_pft*indiv.pft.regen.cmass_root;
 
 			// Calculate storage pool size
-			indiv.max_n_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.pft.cton_leaf_avr;
+			indiv.max_n_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.cton_leaf_avr;
 			if (!indiv.alive)
-				indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr /
+				indiv.scale_n_storage = indiv.max_n_storage * indiv.cton_leaf_avr /
 					((indiv.pft.regen.cmass_leaf + indiv.pft.regen.cmass_root) * est_pft);
 
-			indiv.max_p_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.pft.ctop_leaf_avr;
+			indiv.max_p_storage = (indiv.cmass_leaf + indiv.cmass_root) / indiv.ctop_leaf_avr;
 			if (!indiv.alive)
-				indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr /
+				indiv.scale_p_storage = indiv.max_p_storage * indiv.ctop_leaf_avr /
 				((indiv.pft.regen.cmass_leaf + indiv.pft.regen.cmass_root) * est_pft);
 		}
 
@@ -561,6 +561,8 @@ void establishment_guess(Stand& stand,Patch& patch) {
 
 						indiv.sla_vary();
 
+						indiv.ctonp_vary();
+
 						indiv.wsg_vary();
 
 						// Initial grass biomass proportional to potential forest floor
@@ -591,18 +593,18 @@ void establishment_guess(Stand& stand,Patch& patch) {
 
 						// Calculate storage pool size
 						if(indiv.pft.phenology == CROPGREEN) {
-							indiv.max_n_storage = CMASS_SEED / indiv.pft.cton_leaf_avr;
-							indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr / CMASS_SEED;
+							indiv.max_n_storage = CMASS_SEED / indiv.cton_leaf_avr;
+							indiv.scale_n_storage = indiv.max_n_storage * indiv.cton_leaf_avr / CMASS_SEED;
 
-							indiv.max_p_storage = CMASS_SEED / indiv.pft.ctop_leaf_avr;
-							indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr / CMASS_SEED;
+							indiv.max_p_storage = CMASS_SEED / indiv.ctop_leaf_avr;
+							indiv.scale_p_storage = indiv.max_p_storage * indiv.ctop_leaf_avr / CMASS_SEED;
 						}
 						else {
-							indiv.max_n_storage = indiv.cmass_root * indiv.pft.fnstorage / indiv.pft.cton_leaf_avr;
-							indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr / bminit;
+							indiv.max_n_storage = indiv.cmass_root * indiv.pft.fnstorage / indiv.cton_leaf_avr;
+							indiv.scale_n_storage = indiv.max_n_storage * indiv.cton_leaf_avr / bminit;
 
-							indiv.max_p_storage = indiv.cmass_root * indiv.pft.fpstorage / indiv.pft.ctop_leaf_avr;
-							indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr / bminit;
+							indiv.max_p_storage = indiv.cmass_root * indiv.pft.fpstorage / indiv.ctop_leaf_avr;
+							indiv.scale_p_storage = indiv.max_p_storage * indiv.ctop_leaf_avr / bminit;
 						}
 
 						// Establishment flux is not debited for 'new' Individual
@@ -717,6 +719,8 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						
 						indiv.sla_vary();
 
+						indiv.ctonp_vary();
+
 						indiv.wsg_vary();
 
 						if (vegmode==COHORT)
@@ -750,11 +754,11 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						allometry(indiv);
 
 						// Calculate storage pool size
-						indiv.max_n_storage = indiv.cmass_sap * indiv.pft.fnstorage / indiv.pft.cton_leaf_avr;
-						indiv.scale_n_storage = indiv.max_n_storage * indiv.pft.cton_leaf_avr / bminit;
+						indiv.max_n_storage = indiv.cmass_sap * indiv.pft.fnstorage / indiv.cton_leaf_avr;
+						indiv.scale_n_storage = indiv.max_n_storage * indiv.cton_leaf_avr / bminit;
 
-						indiv.max_p_storage = indiv.cmass_sap * indiv.pft.fpstorage / indiv.pft.ctop_leaf_avr;
-						indiv.scale_p_storage = indiv.max_p_storage * indiv.pft.ctop_leaf_avr / bminit;
+						indiv.max_p_storage = indiv.cmass_sap * indiv.pft.fpstorage / indiv.ctop_leaf_avr;
+						indiv.scale_p_storage = indiv.max_p_storage * indiv.ctop_leaf_avr / bminit;
 
 						// Establishment flux is not debited for 'new' Individual
 						// objects - their carbon is debited in function growth()

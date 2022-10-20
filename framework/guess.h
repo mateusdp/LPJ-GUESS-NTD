@@ -3087,6 +3087,10 @@ public:
 	double cton_sap_avr;
 	/// maximum sapwood C:N mass ratio (used when mass is negligible)
 	double cton_sap_max;
+	/// average stem C:N mass ratio (connected cton_leaf_avr)
+	double cton_stem_avr;
+	/// maximum stem C:N mass ratio (used when mass is negligible)
+	double cton_stem_max;
 
 	/// minimum leaf C:P mass ratio allowed when phosphorus demand is determined
 	double ctop_leaf_min;
@@ -3102,6 +3106,10 @@ public:
 	double ctop_sap_avr;
 	/// maximum sapwood C:P mass ratio (used when mass is negligible)
 	double ctop_sap_max;
+	/// average stem C:P mass ratio (connected cton_leaf_avr)
+	double ctop_stem_avr;
+	/// maximum stem C:P mass ratio (used when mass is negligible)
+	double ctop_stem_max;
 
 	/// leaf C biomass on modelled area basis (kgC/m2)
 	double cmass_leaf;
@@ -3614,6 +3622,8 @@ public:
 			cton_root_max = pft.cton_root_max;
 			cton_sap_avr = pft.cton_sap_avr;
 			cton_sap_max = pft.cton_sap_max;
+			cton_stem_avr = pft.cton_stem_avr;
+			cton_stem_max = pft.cton_stem_max;
 
 			ctop_leaf_min = pft.ctop_leaf_min;
 			ctop_leaf_max = pft.ctop_leaf_max;
@@ -3622,6 +3632,8 @@ public:
 			ctop_root_max = pft.ctop_root_max;
 			ctop_sap_avr = pft.ctop_sap_avr;
 			ctop_sap_max = pft.ctop_sap_max;
+			ctop_stem_avr = pft.ctop_stem_avr;
+			ctop_stem_max = pft.ctop_stem_max;
 		}
 	}
 

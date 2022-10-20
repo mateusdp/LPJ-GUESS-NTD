@@ -2058,7 +2058,7 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 		// stored N is partioned out to leaf and root biomass as new tissue after growth might have extremely low
 		// N content (to get closer to relationship between compartment averages (cton_leaf, cton_root, cton_sap))
 		nstore_adjust(cmass_leaf_litter, cmass_root_litter, nmass_leaf_litter, nmass_root_litter,
-			mortality * nstore(), pft.cton_leaf_avr,pft.cton_root_avr);
+			mortality * nstore(), cton_leaf_avr,cton_root_avr);
 
 		ppft.nmass_litter_leaf  += nmass_leaf_litter * mortality_non_fire / mortality;
 		ppft.nmass_litter_root  += nmass_root_litter;
@@ -2081,7 +2081,7 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 		// stored P is partioned out to leaf and root biomass as new tissue after growth might have extremely low
 		// P content (to get closer to relationship between compartment averages (ctop_leaf, ctop_root, ctop_sap))
 		pstore_adjust(cmass_leaf_litter, cmass_root_litter, pmass_leaf_litter, pmass_root_litter,
-			mortality * pstore(), pft.ctop_leaf_avr, pft.ctop_root_avr);
+			mortality * pstore(), ctop_leaf_avr, ctop_root_avr);
 
 		ppft.pmass_litter_leaf += pmass_leaf_litter * mortality_non_fire / mortality;
 		ppft.pmass_litter_root += pmass_root_litter;
@@ -2155,7 +2155,7 @@ double Individual::cton_leaf(bool use_phen /* = true*/) const {
 				return cmass_leaf_today() / nmass_leaf;
 			}
 			else {
-				return pft.cton_leaf_avr;
+				return cton_leaf_avr;
 			}
 		}
 		else {
@@ -2163,7 +2163,7 @@ double Individual::cton_leaf(bool use_phen /* = true*/) const {
 		}
 	}
 	else {
-		return pft.cton_leaf_max;
+		return cton_leaf_max;
 	}
 }
 
@@ -2180,7 +2180,7 @@ double Individual::ctop_leaf(bool use_phen /* = true*/) const {
 				return cmass_leaf_today() / pmass_leaf;
 			}
 			else {
-				return pft.ctop_leaf_avr;
+				return ctop_leaf_avr;
 			}
 		}
 		else {
@@ -2188,7 +2188,7 @@ double Individual::ctop_leaf(bool use_phen /* = true*/) const {
 		}
 	}
 	else {
-		return pft.ctop_leaf_max;
+		return ctop_leaf_max;
 	}
 }
 
@@ -2197,18 +2197,18 @@ double Individual::cton_root(bool use_phen /* = true*/) const {
 	if (!negligible(cmass_root) && !negligible(nmass_root)) {
 		if (use_phen) {
 			if (!negligible(cmass_root_today())) {
-				return max(pft.cton_root_avr * pft.cton_leaf_min / pft.cton_leaf_avr, cmass_root_today() / nmass_root);
+				return max(cton_root_avr * cton_leaf_min / cton_leaf_avr, cmass_root_today() / nmass_root);
 			}
 			else {
-				return pft.cton_root_avr;
+				return cton_root_avr;
 			}
 		}
 		else {
-			return max(pft.cton_root_avr * pft.cton_leaf_min / pft.cton_leaf_avr, cmass_root / nmass_root);
+			return max(cton_root_avr * cton_leaf_min / cton_leaf_avr, cmass_root / nmass_root);
 		}
 	}
 	else {
-		return pft.cton_root_max;
+		return cton_root_max;
 	}
 }
 
@@ -2217,18 +2217,18 @@ double Individual::ctop_root(bool use_phen /* = true*/) const {
 	if (!negligible(cmass_root) && !negligible(pmass_root)) {
 		if (use_phen) {
 			if (!negligible(cmass_root_today())) {
-				return max(pft.ctop_root_avr * pft.ctop_leaf_min / pft.ctop_leaf_avr, cmass_root_today() / pmass_root);
+				return max(ctop_root_avr * ctop_leaf_min / ctop_leaf_avr, cmass_root_today() / pmass_root);
 			}
 			else {
-				return pft.ctop_root_avr;
+				return ctop_root_avr;
 			}
 		}
 		else {
-			return max(pft.ctop_root_avr * pft.ctop_leaf_min / pft.ctop_leaf_avr, cmass_root / pmass_root);
+			return max(ctop_root_avr * ctop_leaf_min / ctop_leaf_avr, cmass_root / pmass_root);
 		}
 	}
 	else {
-		return pft.ctop_root_max;
+		return ctop_root_max;
 	}
 }
 
@@ -2236,9 +2236,9 @@ double Individual::cton_sap() const {
 
 	if (pft.lifeform == TREE) {
 		if (!negligible(cmass_sap) && !negligible(nmass_sap))
-			return max(pft.cton_sap_avr * pft.cton_leaf_min / pft.cton_leaf_avr, cmass_sap / nmass_sap);
+			return max(cton_sap_avr * cton_leaf_min / cton_leaf_avr, cmass_sap / nmass_sap);
 		else
-			return pft.cton_sap_max;
+			return cton_sap_max;
 	}
 	else {
 		return 1.0;
@@ -2249,9 +2249,9 @@ double Individual::ctop_sap() const {
 
 	if (pft.lifeform == TREE) {
 		if (!negligible(cmass_sap) && !negligible(pmass_sap))
-			return max(pft.ctop_sap_avr * pft.ctop_leaf_min / pft.ctop_leaf_avr, cmass_sap / pmass_sap);
+			return max(ctop_sap_avr * ctop_leaf_min / ctop_leaf_avr, cmass_sap / pmass_sap);
 		else
-			return pft.ctop_sap_max;
+			return ctop_sap_max;
 	}
 	else {
 		return 1.0;
@@ -2430,7 +2430,7 @@ double Individual::ndemand_storage(double cton_leaf_opt) {
 
 	if (vegetation.patch.stand.is_true_crop_stand() && ifnlim)	// only CROPGREEN, only ifnlim ?
 		// analogous with root demand
-		storendemand = max(0.0, cropindiv->grs_cmass_stem / (cton_leaf_opt * pft.cton_stem_avr / pft.cton_leaf_avr) - cropindiv->nmass_agpool);
+		storendemand = max(0.0, cropindiv->grs_cmass_stem / (cton_leaf_opt * cton_stem_avr / cton_leaf_avr) - cropindiv->nmass_agpool);
 	else
 		storendemand = max(0.0, min(anpp * scale_n_storage / cton_leaf(), max_n_storage) - nstore());
 
@@ -2441,7 +2441,7 @@ double Individual::pdemand_storage(double ctop_leaf_opt) {
 
 	if (vegetation.patch.stand.is_true_crop_stand() && ifplim)	// only CROPGREEN, only ifplim ?
 																// analogous with root demand
-		storepdemand = max(0.0, cropindiv->grs_cmass_stem / (ctop_leaf_opt * pft.ctop_stem_avr / pft.ctop_leaf_avr) - cropindiv->pmass_agpool);
+		storepdemand = max(0.0, cropindiv->grs_cmass_stem / (ctop_leaf_opt * ctop_stem_avr / ctop_leaf_avr) - cropindiv->pmass_agpool);
 	else
 		storepdemand = max(0.0, min(anpp * scale_p_storage / ctop_leaf(), max_p_storage) - pstore());
 
@@ -2769,7 +2769,7 @@ double Individual::lai_nitrogen_today() const{
 			const double k = 0.5;
 			const double ktn = 0.52*k + 0.01; // Yin et al 2003
 			//double nb = 1/(pft.cton_leaf_max*pft.sla);
-			double nb = 1 / (pft.cton_leaf_max*sla);
+			double nb = 1 / (cton_leaf_max*sla);
 			Ln = (1/ktn) * log(1+ktn*nmass_leaf/nb);
 		}
 		return Ln;

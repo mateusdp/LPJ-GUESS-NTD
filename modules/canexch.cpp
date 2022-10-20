@@ -1100,7 +1100,7 @@ void nstore_usage(Vegetation& vegetation) {
 					double tot_nmass = indiv.nmass_leaf + indiv.nmass_root + indiv.fnuptake * (indiv.leafndemand + indiv.rootndemand) + indiv.nstore_labile;
 
 					// new leaf C:N ratio
-					double cton_leaf = (indiv.cmass_leaf_today() + indiv.cmass_root_today() * (indiv.pft.cton_leaf_avr / indiv.pft.cton_root_avr)) / tot_nmass;
+					double cton_leaf = (indiv.cmass_leaf_today() + indiv.cmass_root_today() * (indiv.cton_leaf_avr / indiv.cton_root_avr)) / tot_nmass;
 
 					// nitrogen added to leaf from storage
 					double labile_nto_leaf = indiv.cmass_leaf_today() / cton_leaf - (indiv.nmass_leaf + indiv.fnuptake * indiv.leafndemand);
@@ -1168,7 +1168,7 @@ void pstore_usage(Vegetation& vegetation) {
 					double tot_pmass = indiv.pmass_leaf + indiv.pmass_root + indiv.fpuptake * (indiv.leafpdemand + indiv.rootpdemand) + indiv.pstore_labile;
 
 					// new leaf C:P ratio
-					double ctop_leaf = (indiv.cmass_leaf_today() + indiv.cmass_root_today() * (indiv.pft.ctop_leaf_avr / indiv.pft.ctop_root_avr)) / tot_pmass;
+					double ctop_leaf = (indiv.cmass_leaf_today() + indiv.cmass_root_today() * (indiv.ctop_leaf_avr / indiv.ctop_root_avr)) / tot_pmass;
 
 					// phosphorus added to leaf from storage
 					double labile_pto_leaf = indiv.cmass_leaf_today() / ctop_leaf - (indiv.pmass_leaf + indiv.fpuptake * indiv.leafpdemand);
@@ -1252,15 +1252,15 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			leafoptn = indiv.photosynthesis.nactive_opt * indiv.nextin + N0 * indiv.cmass_leaf_today();
 
 			// Can not have higher nitrogen concentration than minimum leaf C:N ratio
-			if (indiv.cmass_leaf_today() / leafoptn < indiv.pft.cton_leaf_min) {
-				leafoptn = indiv.cmass_leaf_today() / indiv.pft.cton_leaf_min;
+			if (indiv.cmass_leaf_today() / leafoptn < indiv.cton_leaf_min) {
+				leafoptn = indiv.cmass_leaf_today() / indiv.cton_leaf_min;
 
 				// Optimal leaf N above limit -> always N limitation on Vmax
 				indiv.n_opt_isabovelim = ifnlim && date.year > freenyears;
 			}
 			// Can not have lower nitrogen concentration than maximum leaf C:N ratio
-			else if (indiv.cmass_leaf_today() / leafoptn > indiv.pft.cton_leaf_max) {
-				leafoptn = indiv.cmass_leaf_today() / indiv.pft.cton_leaf_max;
+			else if (indiv.cmass_leaf_today() / leafoptn > indiv.cton_leaf_max) {
+				leafoptn = indiv.cmass_leaf_today() / indiv.cton_leaf_max;
 			}
 
 			// Updating annual optimal leaf C:N ratio
@@ -1274,7 +1274,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 				cton_leaf_opt = indiv.cmass_leaf_today() / leafoptn;
 			}
 			else {
-				cton_leaf_opt = max(indiv.pft.cton_leaf_min, indiv.cton_leaf());
+				cton_leaf_opt = max(indiv.cton_leaf_min, indiv.cton_leaf());
 			}
 		}
 		else {
@@ -1285,11 +1285,11 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// Nitrogen demand
 
 		// Root nitrogen demand
-		indiv.rootndemand = max(0.0, indiv.cmass_root_today() / (cton_leaf_opt * indiv.pft.cton_root_avr / indiv.pft.cton_leaf_avr) - indiv.nmass_root);
+		indiv.rootndemand = max(0.0, indiv.cmass_root_today() / (cton_leaf_opt * indiv.cton_root_avr / indiv.cton_leaf_avr) - indiv.nmass_root);
 
 		// Sap wood nitrogen demand. Demand is ramped up throughout the year.
 		if (indiv.pft.lifeform == TREE) {
-			indiv.sapndemand = max(0.0, indiv.cmass_sap / (cton_leaf_opt * indiv.pft.cton_sap_avr / indiv.pft.cton_leaf_avr) - indiv.nmass_sap) * ((1.0 + (double)date.day)/date.year_length());
+			indiv.sapndemand = max(0.0, indiv.cmass_sap / (cton_leaf_opt * indiv.cton_sap_avr / indiv.cton_leaf_avr) - indiv.nmass_sap) * ((1.0 + (double)date.day)/date.year_length());
 		}
 
 		// Labile nitrogen storage demand
@@ -1306,7 +1306,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double ntoc = !negligible(indiv.cmass_leaf_today() + indiv.cmass_root_today()) ? (indiv.nmass_leaf + indiv.nmass_root) / (indiv.cmass_leaf_today() + indiv.cmass_root_today()) : 0.0;
 
 		// Scale to maximum nitrogen concentrations
-		indiv.cton_status = max(0.0, (ntoc - 1.0 / indiv.pft.cton_leaf_min) / (1.0 / indiv.pft.cton_leaf_avr - 1.0 / indiv.pft.cton_leaf_min));
+		indiv.cton_status = max(0.0, (ntoc - 1.0 / indiv.cton_leaf_min) / (1.0 / indiv.cton_leaf_avr - 1.0 / indiv.cton_leaf_min));
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics
 		double nmin_scale = kNmin + nmin_avail / (nmin_avail + gridcell.pft[indiv.pft.id].Km);
@@ -1419,15 +1419,15 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 			leafoptp = indiv.photosynthesis.pactive_opt * indiv.pextin + P0 * indiv.cmass_leaf_today();
 
 			// Can not have higher phosphorus concentration than minimum leaf C:P ratio
-			if (indiv.cmass_leaf_today() / leafoptp < indiv.pft.ctop_leaf_min) {
-				leafoptp = indiv.cmass_leaf_today() / indiv.pft.ctop_leaf_min;
+			if (indiv.cmass_leaf_today() / leafoptp < indiv.ctop_leaf_min) {
+				leafoptp = indiv.cmass_leaf_today() / indiv.ctop_leaf_min;
 
 				// Optimal leaf P above limit -> always P limitation on Vmax
 				indiv.p_opt_isabovelim = ifplim && date.year > freenyears;
 			}
 			// Can not have lower phosphorus concentration than maximum leaf C:P ratio
-			else if (indiv.cmass_leaf_today() / leafoptp > indiv.pft.ctop_leaf_max) {
-				leafoptp = indiv.cmass_leaf_today() / indiv.pft.ctop_leaf_max;
+			else if (indiv.cmass_leaf_today() / leafoptp > indiv.ctop_leaf_max) {
+				leafoptp = indiv.cmass_leaf_today() / indiv.ctop_leaf_max;
 			}
 
 			// Updating annual optimal leaf C:P ratio
@@ -1441,7 +1441,7 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 				ctop_leaf_opt = indiv.cmass_leaf_today() / leafoptp;
 			}
 			else {
-				ctop_leaf_opt = max(indiv.pft.ctop_leaf_min, indiv.ctop_leaf());
+				ctop_leaf_opt = max(indiv.ctop_leaf_min, indiv.ctop_leaf());
 			}
 		}
 		else {
@@ -1452,11 +1452,11 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		// Phosphorus demand
 
 		// Root phosphorus demand
-		indiv.rootpdemand = max(0.0, indiv.cmass_root_today() / (ctop_leaf_opt * indiv.pft.ctop_root_avr / indiv.pft.ctop_leaf_avr) - indiv.pmass_root);
+		indiv.rootpdemand = max(0.0, indiv.cmass_root_today() / (ctop_leaf_opt * indiv.ctop_root_avr / indiv.ctop_leaf_avr) - indiv.pmass_root);
 
 		// Sap wood phosphorus demand. Demand is ramped up throughout the year.
 		if (indiv.pft.lifeform == TREE) {
-			indiv.sappdemand = max(0.0, indiv.cmass_sap / (ctop_leaf_opt * indiv.pft.ctop_sap_avr / indiv.pft.ctop_leaf_avr) - indiv.pmass_sap) * ((1.0 + (double)date.day) / date.year_length());
+			indiv.sappdemand = max(0.0, indiv.cmass_sap / (ctop_leaf_opt * indiv.ctop_sap_avr / indiv.ctop_leaf_avr) - indiv.pmass_sap) * ((1.0 + (double)date.day) / date.year_length());
 		}
 
 		// Labile phosphorus storage demand
@@ -1473,7 +1473,7 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double ptoc = !negligible(indiv.cmass_leaf_today() + indiv.cmass_root_today()) ? (indiv.pmass_leaf + indiv.pmass_root) / (indiv.cmass_leaf_today() + indiv.cmass_root_today()) : 0.0;
 
 		// Scale to maximum phosphorus concentrations
-		indiv.ctop_status = max(0.0, (ptoc - 1.0 / indiv.pft.ctop_leaf_min) / (1.0 / indiv.pft.ctop_leaf_avr - 1.0 / indiv.pft.ctop_leaf_min));
+		indiv.ctop_status = max(0.0, (ptoc - 1.0 / indiv.ctop_leaf_min) / (1.0 / indiv.ctop_leaf_avr - 1.0 / indiv.ctop_leaf_min));
 
 		// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
 		double pmin_scale = kPmin + pmin_avail / (pmin_avail + gridcell.pft[indiv.pft.id].Kmp);
@@ -2928,7 +2928,7 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 			cton_root = indiv.cton_root();
 		}
 		else {
-			cton_sap = pft.cton_sap_avr;
+			cton_sap = pft.cton_sap_avr; //No trait influence
 			cton_root = pft.cton_root_avr;
 		}
 
@@ -2991,7 +2991,7 @@ void leaf_senescence(Vegetation& vegetation) {
 		// Age dependent N retranslocation, Sec. 2.1.3 Olin 2015
 		if (indiv.patchpft().cropphen->dev_stage > 1.0) {
 			const double senNr = 0.1;
-			double senN = senNr * (indiv.nmass_leaf-indiv.cmass_leaf_today() / (indiv.pft.cton_leaf_max));
+			double senN = senNr * (indiv.nmass_leaf-indiv.cmass_leaf_today() / (indiv.cton_leaf_max));
 
 			// Senescence is not done during the period without no N-limitation
 			if (date.year > freenyears && senN > 0) {
@@ -3003,7 +3003,7 @@ void leaf_senescence(Vegetation& vegetation) {
 		// Age dependent P retranslocation, same as N, check this
 		if (indiv.patchpft().cropphen->dev_stage > 1.0) {
 			const double senPr = 0.1;
-			double senP = senPr * (indiv.pmass_leaf - indiv.cmass_leaf_today() / (indiv.pft.ctop_leaf_max));
+			double senP = senPr * (indiv.pmass_leaf - indiv.cmass_leaf_today() / (indiv.ctop_leaf_max));
 
 			// Senescence is not done during the period without no P-limitation
 			if (date.year > freenyears && senP > 0) {
@@ -3133,12 +3133,12 @@ void init_canexch(Patch& patch, Climate& climate, Vegetation& vegetation) {
 			if (!negligible(indiv.cmass_leaf) && !negligible(indiv.nmass_leaf))
 				indiv.cton_leaf_aopt = indiv.cmass_leaf / indiv.nmass_leaf;
 			else
-				indiv.cton_leaf_aopt = indiv.pft.cton_leaf_max;
+				indiv.cton_leaf_aopt = indiv.cton_leaf_max;
 
 			if (!negligible(indiv.cmass_leaf) && !negligible(indiv.pmass_leaf))
 				indiv.ctop_leaf_aopt = indiv.cmass_leaf / indiv.pmass_leaf;
 			else
-				indiv.ctop_leaf_aopt = indiv.pft.ctop_leaf_max;
+				indiv.ctop_leaf_aopt = indiv.ctop_leaf_max;
 
  			for (int m=0; m<12; m++) {
 				indiv.mlai[m] = 0.0;

@@ -857,7 +857,7 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
 
 	// Root litter lignin:N ratio
 	lton = lignin_to_n_ratio(ppft.cmass_litter_root, ppft.nmass_litter_root, LIGCFRAC_ROOT,
-					ppft.pft.cton_root_avr);
+					ppft.pft.cton_root_avr); //maybe here is pft.pft.cmass_litter_root/pft.pft.nmass_litter_root
 
 	// Metabolic litter fraction for root 
 	double fm_root = metabolic_litter_fraction(lton);

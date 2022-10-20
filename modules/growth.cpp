@@ -1367,13 +1367,13 @@ void growth(Stand& stand, Patch& patch) {
 			indiv.ctop_leaf_aavr /= indiv.nday_leafon;
 		}
 		else {
-			indiv.cton_leaf_aavr = indiv.pft.cton_leaf_max;
-			indiv.ctop_leaf_aavr = indiv.pft.ctop_leaf_max;
+			indiv.cton_leaf_aavr = indiv.cton_leaf_max;
+			indiv.ctop_leaf_aavr = indiv.ctop_leaf_max;
 		}
 
 		// Nitrogen and Phosphorus stress scalars for leaf to root allocation (adopted from Zaehle and Friend 2010 SM eq 19)
-		double cton_leaf_aopt = max(indiv.cton_leaf_aopt, indiv.pft.cton_leaf_avr);
-		double ctop_leaf_aopt = max(indiv.ctop_leaf_aopt, indiv.pft.ctop_leaf_avr);
+		double cton_leaf_aopt = max(indiv.cton_leaf_aopt, indiv.cton_leaf_avr);
+		double ctop_leaf_aopt = max(indiv.ctop_leaf_aopt, indiv.ctop_leaf_avr);
 
 		if (ifnlim)
 			nscal = min(1.0, cton_leaf_aopt / indiv.cton_leaf_aavr);
