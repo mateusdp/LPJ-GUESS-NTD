@@ -48,6 +48,7 @@
 #include "soil.h"
 #include "guessstring.h"
 
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // GLOBAL ENUMERATED TYPE DEFINITIONS
 
@@ -2087,6 +2088,12 @@ public:
 	/** kgC/m2 leaf/year, individual and cohort modes */
 	double greff_min;
 
+	/// Trait Variation parameters
+	/// Max SLA in trait variation (m²/kgC)
+	double sla_max;
+	/// Min SLA in trait variation (m²/kgC)
+	double sla_min;
+
 	// Bioclimatic limits (all temperatures deg C)
 
 	/// minimum 20-year coldest month mean temperature for survival
@@ -3606,8 +3613,17 @@ public:
 	/// Transfer sla values from pft or randomize it along max or min values.
 	void sla_vary() {
 
+		double rand;
+		double step;
+
 		if (!ifslavary) {
 			sla = pft.sla;
+		}
+		else {
+			step = (pft.sla_max - pft.sla_min) / sla_width;
+			//rand = sla_width * randfrac(vegetation.patch.stand.seed);
+
+			sla = step * rand + pft.sla_min;
 		}
 	}
 

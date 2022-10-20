@@ -800,6 +800,11 @@ void plib_declarations(int id,xtring setname) {
 			"Threshold for growth suppression mortality (kgC/m2 leaf/yr)");
 		declareitem("leaflong",&ppft->leaflong,0.1,100.0,1,CB_NONE,
 			"Leaf longevity (years)");
+
+		declareitem("sla_max", &ppft->sla_max, 0, 200.0, 1, CB_NONE,
+			"Maximum SLA value in trait variation (m²/kgC)");
+		declareitem("sla_min", &ppft->sla_min, 0, 200.0, 1, CB_NONE,
+			"Minimum SLA value in trait variation (m²/kgC)");
 		declareitem("intc",&ppft->intc,0.0,1.0,1,CB_NONE,"Interception coefficient");
 
 		// guess2008 - DLE
@@ -1984,6 +1989,9 @@ void plib_callback(int callback) {
 			if (!itemparsed("intc")) badins("intc");
 			if (!itemparsed("stem_frac")) badins("stem_frac");
 			if (!itemparsed("twig_frac")) badins("twig_frac");
+
+			if (!itemparsed("sla_max")) badins("sla_max");
+			if (!itemparsed("sla_min")) badins("sla_min");
 
 			if (run_landcover) {
 				if (!itemparsed("landcover")) badins("landcover");
