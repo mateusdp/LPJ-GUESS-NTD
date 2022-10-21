@@ -51,6 +51,19 @@ void report_fire_nfluxes(Patch& patch, double nflux_fire) {
 	patch.fluxes.report_flux(Fluxes::N2_FIRE,  Fluxes::N2_FIRERATIO  * nflux_fire);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+// TRAIT RANDOMIZATION
+// Randomization function for a uniform random trait distribution
+
+double randomize_trait(double min, double max, int width, long seed) {
+
+	double step = (max - min) / width;
+	int rand = (int) width * randfrac(seed);
+	double random_trait = step * rand + min;
+
+	return random_trait;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // RANDPOISSON
@@ -557,13 +570,20 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						indiv.densindiv=1.0;
 						indiv.fpc=1.0;
 
-						//Define all traits here, with activation switches in ins file, and using functions from guess.h
+						//////////////////////// TRAIT DIVERSITY FUNCTIONS //////////////////////////
 
-						indiv.sla_vary();
+						indiv.pft_to_individual();
 
-						indiv.ctonp_vary();
+						if (ifslavary) {
+							indiv.sla = randomize_trait(pft.sla_min, pft.sla_max, sla_width, stand.seed);
+							indiv.ctonp_tradeoffs();
+						}
 
-						indiv.wsg_vary();
+						/*if (ifwsgvary) {
+							indiv.wooddens = randomize_trait(pft.wsg_min, pft.wsg_max, wsg_width, stand.seed);
+						}*/
+
+						/////////////////////////////////////////////////////////////////////////////
 
 						// Initial grass biomass proportional to potential forest floor
 						// net assimilation this year on patch area basis
@@ -715,13 +735,20 @@ void establishment_guess(Stand& stand,Patch& patch) {
 
 						Individual& indiv=vegetation.createobj(pft,vegetation);
 
-						//Define all traits here, with activation switches in ins file, and using functions from guess.h
+						//////////////////////// TRAIT DIVERSITY FUNCTIONS //////////////////////////
 						
-						indiv.sla_vary();
+						indiv.pft_to_individual();
 
-						indiv.ctonp_vary();
+						if (ifslavary) {
+							indiv.sla = randomize_trait(pft.sla_min, pft.sla_max, sla_width, stand.seed);
+							indiv.ctonp_tradeoffs();
+						}
 
-						indiv.wsg_vary();
+						if (ifwsgvary) {
+							indiv.wooddens = randomize_trait(pft.wsg_min, pft.wsg_max, wsg_width, stand.seed);
+						}
+
+						/////////////////////////////////////////////////////////////////////////////
 
 						if (vegmode==COHORT)
 							indiv.densindiv=nsapling/patcharea;
@@ -1271,8 +1298,18 @@ void mortality_guess(Stand& stand, Patch& patch, const Climate& climate, double 
 				// Smith et al 2001; c.f. Pacala et al 1993, Eqn 5
 
 				// guess2008 - introduce a smoothly-varying mort_greff - 5 is the exponent in the global validation
-				if (ifsmoothgreffmort)
-					mort_greff=KMORTGREFF/(1.0+pow((greff_mean/(indiv.pft.greff_min)),5.0));
+				// Added Wood density related growth efficiency mortality
+
+				if (ifsmoothgreffmort) {
+					if (!ifwsgvary) {
+						mort_greff = KMORTGREFF / (1.0 + pow((greff_mean / (indiv.pft.greff_min)), 5.0));
+					}
+					else {
+						//Dantas 2020 ssd - mort relationship from TRY database (Kattge et al. 2020 apud Rüger et al. 2011) R² = 21, lower mortality
+						double mort_wd = exp(-3.45256 * pow(log(500 / indiv.wooddens), -0.21427));
+						mort_greff = KMORTGREFF / (1.0 + pow((greff_mean / (mort_wd)), 5.0));
+					}
+				}
 				else {
 					// Standard case, as in guess030124
 					if (greff_mean<indiv.pft.greff_min)

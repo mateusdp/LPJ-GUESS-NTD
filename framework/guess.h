@@ -2093,6 +2093,10 @@ public:
 	double sla_max;
 	/// Min SLA in trait variation (m²/kgC)
 	double sla_min;
+	/// Max SLA in trait variation (m²/kgC)
+	double wsg_max;
+	/// Min SLA in trait variation (m²/kgC)
+	double wsg_min;
 
 	// Bioclimatic limits (all temperatures deg C)
 
@@ -3609,57 +3613,81 @@ public:
 
 
 	//////// Trait variation functions //////////////
+
+	/// Transfer sla, cton, ctop and wsg values from pft to the individual class.
+	void pft_to_individual() {
+
+		sla = pft.sla;
+
+		cton_leaf_min = pft.cton_leaf_min;
+		cton_leaf_max = pft.cton_leaf_max;
+		cton_leaf_avr = pft.cton_leaf_avr;
+		cton_root_avr = pft.cton_root_avr;
+		cton_root_max = pft.cton_root_max;
+		cton_sap_avr = pft.cton_sap_avr;
+		cton_sap_max = pft.cton_sap_max;
+		cton_stem_avr = pft.cton_stem_avr;
+		cton_stem_max = pft.cton_stem_max;
+
+		ctop_leaf_min = pft.ctop_leaf_min;
+		ctop_leaf_max = pft.ctop_leaf_max;
+		ctop_leaf_avr = pft.ctop_leaf_avr;
+		ctop_root_avr = pft.ctop_root_avr;
+		ctop_root_max = pft.ctop_root_max;
+		ctop_sap_avr = pft.ctop_sap_avr;
+		ctop_sap_max = pft.ctop_sap_max;
+		ctop_stem_avr = pft.ctop_stem_avr;
+		ctop_stem_max = pft.ctop_stem_max;
+
+		wooddens = pft.wooddens;
+	}
 	
-	/// Transfer sla values from pft or randomize it along max or min values.
-	void sla_vary() {
+	
+	/// Recalculate cton and ctop values based on sla tradeoff.
+	void ctonp_tradeoffs() {
 
-		double rand;
-		double step;
+		double frac_mintomax = 1.48;	// Max min from Baez & Homeier (2017)
+		// Fraction between leaf and root C:N ratio
+		double frac_leaftoroot = 1.057143; // Kerstin Ecuador Data (Friend = 1.16)
+		// Fraction between leaf and sap wood C:N ratio
+		double frac_leaftosap = 6.9;   // Friend et al. 1997
+		// Tighter C:N ratio range for roots and sapwood: picked out thin air
+		double frac_maxtomin = .9;
 
-		if (!ifslavary) {
-			sla = pft.sla;
-		}
-		else {
-			step = (pft.sla_max - pft.sla_min) / sla_width;
-			//rand = sla_width * randfrac(vegetation.patch.stand.seed);
+		///cton
+		cton_leaf_avr = 159.33 * pow(sla, -0.609); //corrected for m2/KgC Local RBSF data
+		//indiv.cton_leaf_avr = 66.67033 * pow(indiv.sla, -0.27773); //corrected for m2/KgC TRY data
+		cton_leaf_min = cton_leaf_avr / ((frac_mintomax + 1.0) / 2.0);
+		cton_leaf_max = cton_leaf_min * frac_mintomax;
 
-			sla = step * rand + pft.sla_min;
-		}
+		cton_root_avr = cton_leaf_avr * frac_leaftoroot;
+		cton_root_max = cton_root_avr / ((frac_maxtomin + 1.0) / 2.0);
+		//cton_root_min = cton_root_max * frac_maxtomin;
+
+		cton_sap_avr = cton_leaf_avr * frac_leaftosap;
+		cton_sap_max = cton_sap_avr / ((frac_maxtomin + 1.0) / 2.0);
+		//cton_sap_min = cton_sap_max * frac_maxtomin;
+		cton_stem_avr = pft.cton_stem_avr;
+		cton_stem_max = pft.cton_stem_max;
+
+		///ctop
+		//ctop_leaf_avr = max(0.0, exp(8.63342 + log(sla) * -0.80936)); //Log Baez & Homeier (2017) R² = 0.49
+		ctop_leaf_avr = exp(8.63342 + log(sla) * -0.80936); //Log Baez & Homeier (2017) R² = 0.49
+		ctop_leaf_min = ctop_leaf_avr / ((frac_mintomax + 1.0) / 2.0);
+		ctop_leaf_max = ctop_leaf_min * frac_mintomax;
+
+		ctop_root_avr = ctop_leaf_avr * frac_leaftoroot;
+		ctop_root_max = ctop_root_avr / ((frac_maxtomin + 1.0) / 2.0);
+		//ctop_root_min = ctop_root_max * frac_maxtomin;
+
+		ctop_sap_avr = ctop_leaf_avr * frac_leaftosap;
+		ctop_sap_max = ctop_sap_avr / ((frac_maxtomin + 1.0) / 2.0);
+		//ctop_sap_min = ctop_sap_max * frac_maxtomin;
+		ctop_stem_avr = pft.ctop_stem_avr;
+		ctop_stem_max = pft.ctop_stem_max;
+
 	}
 
-	/// Transfer cton and ctop values from pft or randomize it along max or min values.
-	void ctonp_vary() {
-
-		if (!ifslavary) {		
-			cton_leaf_min = pft.cton_leaf_min;
-			cton_leaf_max = pft.cton_leaf_max;
-			cton_leaf_avr = pft.cton_leaf_avr;
-			cton_root_avr = pft.cton_root_avr;
-			cton_root_max = pft.cton_root_max;
-			cton_sap_avr = pft.cton_sap_avr;
-			cton_sap_max = pft.cton_sap_max;
-			cton_stem_avr = pft.cton_stem_avr;
-			cton_stem_max = pft.cton_stem_max;
-
-			ctop_leaf_min = pft.ctop_leaf_min;
-			ctop_leaf_max = pft.ctop_leaf_max;
-			ctop_leaf_avr = pft.ctop_leaf_avr;
-			ctop_root_avr = pft.ctop_root_avr;
-			ctop_root_max = pft.ctop_root_max;
-			ctop_sap_avr = pft.ctop_sap_avr;
-			ctop_sap_max = pft.ctop_sap_max;
-			ctop_stem_avr = pft.ctop_stem_avr;
-			ctop_stem_max = pft.ctop_stem_max;
-		}
-	}
-
-	/// Transfer wsg values from pft or randomize it along max or min values.
-	void wsg_vary() {
-
-		if (!ifwsgvary) {
-			wooddens = pft.wooddens;
-		}
-	}
 
 };
 

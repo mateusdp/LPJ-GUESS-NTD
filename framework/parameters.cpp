@@ -805,6 +805,11 @@ void plib_declarations(int id,xtring setname) {
 			"Maximum SLA value in trait variation (m²/kgC)");
 		declareitem("sla_min", &ppft->sla_min, 0, 200.0, 1, CB_NONE,
 			"Minimum SLA value in trait variation (m²/kgC)");
+		declareitem("wsg_max", &ppft->wsg_max, 0, 5000.0, 1, CB_NONE,
+			"Maximum SLA value in trait variation (m²/kgC)");
+		declareitem("wsg_min", &ppft->wsg_min, 0, 5000.0, 1, CB_NONE,
+			"Minimum SLA value in trait variation (m²/kgC)");
+		
 		declareitem("intc",&ppft->intc,0.0,1.0,1,CB_NONE,"Interception coefficient");
 
 		// guess2008 - DLE
@@ -1989,9 +1994,16 @@ void plib_callback(int callback) {
 			if (!itemparsed("intc")) badins("intc");
 			if (!itemparsed("stem_frac")) badins("stem_frac");
 			if (!itemparsed("twig_frac")) badins("twig_frac");
+			
+			if (ifslavary) {
+				if (!itemparsed("sla_max")) badins("sla_max");
+				if (!itemparsed("sla_min")) badins("sla_min");
+			}
 
-			if (!itemparsed("sla_max")) badins("sla_max");
-			if (!itemparsed("sla_min")) badins("sla_min");
+			if (ifwsgvary) {
+				if (!itemparsed("wsg_max")) badins("wsg_max");
+				if (!itemparsed("wsg_min")) badins("wsg_min");
+			}
 
 			if (run_landcover) {
 				if (!itemparsed("landcover")) badins("landcover");
