@@ -12,7 +12,7 @@ PLEASE NOTE:
 -- 21.10.2022
 
 Added sla variation - changes results but no large difference
-Added cton and ctop tradeoffs - reduces biomass and especially cton and ctop ratios, increases decomposition.
+Added cton and ctop tradeoffs - reduces biomass and especially cton and ctop ratios.
 Added wsg variation - increases biomass in relation to previous implementation, but still relatively low.
 
 

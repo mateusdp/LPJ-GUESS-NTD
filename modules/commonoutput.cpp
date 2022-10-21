@@ -66,6 +66,10 @@ CommonOutput::CommonOutput() {
 
 	declare_parameter("file_speciesheights", &file_speciesheights, 300, "Mean species heights");
 
+	// Trait outputs
+	declare_parameter("file_sla", &file_sla, 300, "Specific Leaf Area output file");
+	declare_parameter("file_wsg", &file_wsg, 300, "Wood Specific Gravity output file");
+
 	// Monthly output variables
 	declare_parameter("file_mnpp", &file_mnpp, 300, "Monthly NPP output file");
 	declare_parameter("file_mlai", &file_mlai, 300, "Monthly LAI output file");
@@ -419,6 +423,9 @@ void CommonOutput::define_output_tables() {
 	//soil_ppool_columns += ColumnDescriptor("SoilP_SS", 9, 2);
 	//soil_ppool_columns += ColumnDescriptor("SoilP_OC", 9, 2);
 
+	// TRAITS
+	ColumnDescriptors sla_columns = cmass_columns;
+	ColumnDescriptors wsg_columns = cmass_columns;
 
 	// *** ANNUAL OUTPUT VARIABLES ***
 
@@ -467,6 +474,9 @@ void CommonOutput::define_output_tables() {
 	create_output_table(out_vmaxplim, file_vmaxplim, vmaxnlim_columns);
 	create_output_table(out_pflux, file_pflux, pflux_columns);
 	create_output_table(out_soil_ppool, file_soil_ppool, soil_ppool_columns);
+
+	create_output_table(out_sla, file_sla, sla_columns);
+	create_output_table(out_wsg, file_wsg, wsg_columns);
 
 	// *** MONTHLY OUTPUT VARIABLES ***
 
@@ -843,6 +853,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double mean_standpft_vmaxnlim=0.0;
 	double mean_standpft_vmaxplim = 0.0;
 
+	double mean_standpft_sla = 0.0;
+	double mean_standpft_wsg = 0.0;
+
 	double cmass_gridcell=0.0;
 	double nmass_gridcell= 0.0;
 	double pmass_gridcell = 0.0;
@@ -875,6 +888,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double vmaxnlim_gridcell=0.0;
 	double vmaxplim_gridcell = 0.0;
 	double maxald_gridcell=0.0;
+
+	double sla_gridcell = 0.0;
+	double wsg_gridcell = 0.0;
 
 	double aNH4dep_gridcell=0.0;
 	double aNO3dep_gridcell=0.0;
@@ -918,6 +934,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double standpft_vmaxnlim=0.0;
 	double standpft_vmaxplim = 0.0;
 
+	double standpft_sla = 0.0;
+	double standpft_wsg = 0.0;
+
 	// *** Loop through PFTs ***
 
 	pftlist.firstobj();
@@ -951,6 +970,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 		mean_standpft_nuptake=0.0;
 		mean_standpft_vmaxnlim=0.0;
 		mean_standpft_vmaxplim = 0.0;
+
+		mean_standpft_sla = 0.0;
+		mean_standpft_wsg = 0.0;
 
 		mean_standpft_heightindiv_total = 0.0;
 		mean_standpft_diamindiv_total = 0.0;
@@ -1005,6 +1027,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 			standpft_nuptake=0.0;
 			standpft_vmaxnlim=0.0;
 			standpft_vmaxplim = 0.0;
+
+			standpft_sla = 0.0;
+			standpft_wsg = 0.0;
 
 			stand.firstobj();
 
@@ -1062,6 +1087,11 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 									standpft_densindiv_total += indiv.densindiv;
 									standpft_diamindiv_total += indiv.diam * indiv.densindiv;
 									standpft_heightindiv_total += indiv.height * indiv.densindiv;
+									standpft_sla += indiv.sla * indiv.densindiv;
+									standpft_wsg += indiv.wooddens * indiv.densindiv;
+								} else {
+									standpft_sla += indiv.sla / patcharea;
+									//standpft_wsg += indiv.wooddens / patcharea;
 								}
 								standpft_vmaxnlim += indiv.avmaxnlim * indiv.cmass_leaf;
 								standpft_vmaxplim += indiv.avmaxplim * indiv.cmass_leaf;
@@ -1115,6 +1145,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				standpft_vmaxplim /= (double)stand.npatch();
 				standpft_heightindiv_total/=(double)stand.npatch();
 				standpft_diamindiv_total/=(double)stand.npatch();
+
+				standpft_sla /= (double)stand.npatch();
+				standpft_wsg /= (double)stand.npatch();
 
 				if (!negligible(standpft_cmass_leaf)) {
 					standpft_vmaxnlim /= standpft_cmass_leaf;
@@ -1175,6 +1208,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 					mean_standpft_nuptake += standpft_nuptake * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_vmaxnlim += standpft_vmaxnlim * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_vmaxplim += standpft_vmaxplim * stand.get_gridcell_fraction() / active_fraction;
+
+					mean_standpft_sla += standpft_sla * stand.get_gridcell_fraction() / active_fraction;
+					mean_standpft_wsg += standpft_wsg * stand.get_gridcell_fraction() / active_fraction;
 				}
 
 				// Update gridcell totals
@@ -1206,6 +1242,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				nuptake_gridcell+=standpft_nuptake*fraction_of_gridcell;
 				vmaxnlim_gridcell+=standpft_vmaxnlim*standpft_cmass_leaf*fraction_of_gridcell;
 				vmaxplim_gridcell += standpft_vmaxplim * standpft_cmass_leaf*fraction_of_gridcell;
+
+				sla_gridcell += standpft_sla * fraction_of_gridcell;
+				wsg_gridcell += standpft_wsg * fraction_of_gridcell;
 
 				// Graphical output every PLOT_INTERVAL years
 				// (Windows shell only - "plot" statements have no effect otherwise)
@@ -1251,6 +1290,15 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 		outlimit(out, out_vmaxplim, mean_standpft_vmaxplim);
 		outlimit(out,out_nuptake,   mean_standpft_nuptake * M2_PER_HA);
 		outlimit(out,out_nlitter,   mean_standpft_nlitter * M2_PER_HA);
+
+		if (mean_standpft_densindiv_total > 0.0) {
+			outlimit(out, out_sla, mean_standpft_sla / mean_standpft_densindiv_total);
+			outlimit(out, out_wsg, mean_standpft_wsg / mean_standpft_densindiv_total);
+		}
+		else {
+			outlimit(out, out_sla, 0.0);
+			outlimit(out, out_wsg, 0.0);
+		}
 
 		// print species heights
 		double height = 0.0;
@@ -1573,6 +1621,15 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	outlimit(out,out_nsources, (anmin_gridcell - animm_gridcell) * M2_PER_HA);
 	outlimit(out,out_nsources, (anmin_gridcell - animm_gridcell + aNH4dep_gridcell + aNO3dep_gridcell +
 				anfix_gridcell + anfert_gridcell) * M2_PER_HA);
+
+	if (dens_gridcell > 0.0) {
+		outlimit(out, out_sla, sla_gridcell / dens_gridcell);
+		outlimit(out, out_wsg, wsg_gridcell / dens_gridcell);
+	}
+	else {
+		outlimit(out, out_sla, 0.0);
+		outlimit(out, out_wsg, 0.0);
+	}
 
 	// Print landcover totals to files
 	if (run_landcover) {
