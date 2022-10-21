@@ -14,6 +14,10 @@ PLEASE NOTE:
 Added sla variation - changes results but no large difference
 Added cton and ctop tradeoffs - reduces biomass and especially cton and ctop ratios.
 Added wsg variation - increases biomass in relation to previous implementation, but still relatively low.
+Added output variables for SLA and WSG
+obs. cton and ctop tradeoffs for Ecuador when added (indiv.ctonp_tradeoffs()) cause lower cton and ctop than 
+standard and a significant reduction in cmass, lai and npp.
+Using the correct kmp values improves biomass. Maybe the model needs P myco uptake.
 
 
 -- 20.10.2022
