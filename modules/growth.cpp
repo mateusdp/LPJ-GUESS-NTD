@@ -1376,12 +1376,18 @@ void growth(Stand& stand, Patch& patch) {
 		double ctop_leaf_aopt = max(indiv.ctop_leaf_aopt, indiv.ctop_leaf_avr);
 
 		if (ifnlim)
-			nscal = min(1.0, cton_leaf_aopt / indiv.cton_leaf_aavr);
+			if (!ifdynltor)
+				nscal = min(1.0, cton_leaf_aopt / indiv.cton_leaf_aavr);
+			else
+				nscal = cton_leaf_aopt / indiv.cton_leaf_aavr;
 		else
 			nscal = 1.0;
 
 		if (ifplim)
-			pscal = min(1.0, ctop_leaf_aopt / indiv.ctop_leaf_aavr);
+			if (!ifdynltor)
+				pscal = min(1.0, ctop_leaf_aopt / indiv.ctop_leaf_aavr);
+			else
+				pscal = ctop_leaf_aopt / indiv.ctop_leaf_aavr;
 		else
 			pscal = 1.0;
 
@@ -1390,7 +1396,14 @@ void growth(Stand& stand, Patch& patch) {
 
 		// Set leaf:root mass ratio based on water stress parameter,
 		// nitrogen or phosphorus stress scalar
-		indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
+		// Added dynamic ltor switch
+		if(!ifdynltor)
+			indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
+		else
+			if (indiv.wscal_mean() < 1.0)
+				indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.ltor;
+			else
+				indiv.ltor = npscal * indiv.ltor;
 
 		// Move leftover compartment nitrogen storage to longterm storage
 		if(!indiv.has_daily_turnover())	{

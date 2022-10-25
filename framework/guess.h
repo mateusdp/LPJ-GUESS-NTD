@@ -3640,6 +3640,9 @@ public:
 		ctop_stem_max = pft.ctop_stem_max;
 
 		wooddens = pft.wooddens;
+
+		if (ifdynltor)
+			ltor = pft.ltor_max;
 	}
 	
 	
