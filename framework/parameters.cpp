@@ -812,9 +812,13 @@ void plib_declarations(int id,xtring setname) {
 		declareitem("sla_min", &ppft->sla_min, 0, 200.0, 1, CB_NONE,
 			"Minimum SLA value in trait variation (m²/kgC)");
 		declareitem("wsg_max", &ppft->wsg_max, 0, 5000.0, 1, CB_NONE,
-			"Maximum SLA value in trait variation (m²/kgC)");
+			"Max WSG in trait variation (kgC/m³)");
 		declareitem("wsg_min", &ppft->wsg_min, 0, 5000.0, 1, CB_NONE,
-			"Minimum SLA value in trait variation (m²/kgC)");
+			"Max WSG in trait variation (kgC/m³)");
+		declareitem("srl_max", &ppft->srl_max, 0, 1000000.0, 1, CB_NONE,
+			"Maximum SRL value in trait variation (m/kgC)");
+		declareitem("srl_min", &ppft->srl_min, 0, 1000000.0, 1, CB_NONE,
+			"Minimum SRL value in trait variation (m/kgC)");
 		
 		declareitem("intc",&ppft->intc,0.0,1.0,1,CB_NONE,"Interception coefficient");
 
@@ -2011,6 +2015,7 @@ void plib_callback(int callback) {
 			if (ifwsgvary) {
 				if (!itemparsed("wsg_max")) badins("wsg_max");
 				if (!itemparsed("wsg_min")) badins("wsg_min");
+				if (!itemparsed("srl_min")) badins("srl_min");
 			}
 
 			if (run_landcover) {

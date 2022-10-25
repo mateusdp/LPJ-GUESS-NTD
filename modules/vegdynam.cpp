@@ -586,6 +586,11 @@ void establishment_guess(Stand& stand,Patch& patch) {
 							indiv.wooddens = randomize_trait(pft.wsg_min, pft.wsg_max, wsg_width, stand.seed);
 						}*/
 
+						if (ifsrlvary) {
+							indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, wsg_width, stand.seed);
+							indiv.srl_tradeoffs();
+						}
+
 						/////////////////////////////////////////////////////////////////////////////
 
 						// Initial grass biomass proportional to potential forest floor
@@ -752,6 +757,11 @@ void establishment_guess(Stand& stand,Patch& patch) {
 
 						if (ifwsgvary) {
 							indiv.wooddens = randomize_trait(pft.wsg_min, pft.wsg_max, wsg_width, stand.seed);
+						}
+
+						if (ifsrlvary) {
+							indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, wsg_width, stand.seed);
+							indiv.srl_tradeoffs();
 						}
 
 						/////////////////////////////////////////////////////////////////////////////

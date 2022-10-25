@@ -2093,10 +2093,14 @@ public:
 	double sla_max;
 	/// Min SLA in trait variation (m²/kgC)
 	double sla_min;
-	/// Max SLA in trait variation (m²/kgC)
+	/// Max WSG in trait variation (kgC/m³)
 	double wsg_max;
-	/// Min SLA in trait variation (m²/kgC)
+	/// Min WSG in trait variation (kgC/m³)
 	double wsg_min;
+	/// Max SRL in trait variation (m/kgC)
+	double srl_max;
+	/// Min SRL in trait variation (m/kgC)
+	double srl_min;
 
 	// Bioclimatic limits (all temperatures deg C)
 
@@ -3083,6 +3087,13 @@ public:
 	double sla;
 	/// sapwood and heartwood density (kgC/m3)
 	double wooddens;
+	/// specific root length (m/kgC)
+	double srl;
+
+	/// root diameter (m)
+	double d_root;
+	/// mycorrhiza colonization rate (-)
+	double myco_col;
 
 	/// minimum leaf C:N mass ratio allowed when nitrogen demand is determined
 	double cton_leaf_min;
@@ -3693,6 +3704,18 @@ public:
 		ctop_stem_avr = pft.ctop_stem_avr;
 		ctop_stem_max = pft.ctop_stem_max;
 
+	}
+
+	/// calculate root diameter and mycorrhiza colonization rate based on SRL tradeoff.
+	void srl_tradeoffs() {
+
+		d_root = 0.19587 * pow(srl, -0.57465); // Data from Ecuador, Pierick et al. 2021, R² = 0.87
+		myco_col = 1.0 / (1.0 + exp(-3.0 * (log(d_root) + 7.68))); //Data from GROOT database, custom logistic
+
+		if (myco_col < 0.0)
+			myco_col = 0.0;
+		if (myco_col > 1.0)
+			myco_col = 1.0;
 	}
 
 
