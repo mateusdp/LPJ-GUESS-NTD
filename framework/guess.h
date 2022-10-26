@@ -3198,6 +3198,8 @@ public:
 	double fpc;
 	/// foliar projective cover (FPC) this day as fraction of modelled area
 	double fpc_daily;
+	/// root projective cover (RPC) under full root cover as fraction of modelled area
+	double rpc;
 	/// fraction of PAR absorbed by foliage over projective area today, taking account of leaf phenological state
 	double fpar;
 	/// average density of individuals over patch (indiv/m2)
@@ -5050,6 +5052,8 @@ public:
 	int nday_growingseason;
 	/// total patch FPC
 	double fpc_total;
+	/// total patch RPC
+	double rpc_total;
 	/// whether patch was disturbed last year
 	bool disturbed;
 	/// patch age (years since last disturbance)
@@ -5289,6 +5293,9 @@ public:
 
 	/// FPC sum for this PFT as average for stand
 	double fpc_total;
+
+	/// RPC sum for this PFT as average for stand
+	double rpc_total;
 
 	/// Photosynthesis values for this PFT under non-water-stress conditions
 	PhotosynthesisResult photosynthesis;

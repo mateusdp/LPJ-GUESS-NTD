@@ -1059,11 +1059,15 @@ void dailyaccounting_patch(Patch& patch) {
 		patch.apet = 0.0;
 
 		// Calculate total FPC
+		// Added RPC
 		patch.fpc_total = 0;
+		patch.rpc_total = 0;
 		Vegetation& vegetation = patch.vegetation;
 		vegetation.firstobj();
 		while (vegetation.isobj) {
 			patch.fpc_total += vegetation.getobj().fpc;		// indiv.fpc
+			if(ifsrlvary)
+				patch.rpc_total += vegetation.getobj().rpc;		// indiv.rpc
 			vegetation.nextobj();
 		}
 		// Calculate rescaling factor to account for overlap between populations/

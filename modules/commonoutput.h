@@ -59,7 +59,7 @@ private:
 	xtring file_pmass, file_ctop_leaf, file_vmaxplim, file_soil_npool, file_soil_ppool, file_soil_nflux;
 
 	// traits
-	xtring file_sla, file_wsg;
+	xtring file_sla, file_wsg, file_srl;
 		
 	// BLAZE & SIMFIRE
 	xtring file_aburned_area_out, file_mburned_area_out;
@@ -87,7 +87,7 @@ private:
 	Table out_nmass, out_cton_leaf, out_nsources, out_npool, out_nlitter, out_nuptake, out_vmaxnlim, out_nflux, out_pflux, out_ngases;
 	Table out_pmass, out_ctop_leaf, out_vmaxplim, out_soil_npool, out_soil_ppool, out_soil_nflux;
 	
-	Table out_sla, out_wsg;
+	Table out_sla, out_wsg, out_srl;
 
 	// BLAZE && SIMFIRE
 	Table out_aburned_area, out_mburned_area;

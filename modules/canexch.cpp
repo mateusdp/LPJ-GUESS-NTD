@@ -1314,7 +1314,13 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// Maximum available soil mineral nitrogen for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
 		// 4 times smaller than the root area
-		double max_indiv_avail = min(1.0, indiv.fpc * 4.0) * nmin_avail;
+		// Added root projective cover	
+		double max_indiv_avail;
+
+		if(ifsrlvary)
+			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
+		else
+			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * nmin_avail;
 
 		// Maximum nitrogen uptake due to all scalars (times 2 because considering both NO3- and NH4+ uptake)
 		// and soil available nitrogen within individual projectived coverage
@@ -1481,7 +1487,13 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		// Maximum available soil mineral phosphorus for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
 		// 4 times smaller than the root area
-		double max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
+		// Added root projective cover
+		double max_indiv_avail;
+
+		if (ifsrlvary)
+			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
+		else
+			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
 
 		// Maximum phosphorus uptake due to all scalars
 		// and soil available phosphorus within individual projectived coverage
@@ -1539,10 +1551,21 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	// to down-regulation of vmax.
 
 	// Nitrogen within projective cover of all individuals
-	double tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.fpc_total);
+	// Added patch rpc
+	double tot_nmass_avail;
+
+	if(ifsrlvary)
+		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.rpc_total);
+	else
+		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.fpc_total);
 
 	// Phosphorus within projective cover of all individuals
-	double tot_pmass_avail = patch.soil.pmass_labile * min(1.0, patch.fpc_total);
+	// Added patch rpc
+	double tot_pmass_avail;
+	if(ifsrlvary)
+		tot_pmass_avail = patch.soil.pmass_labile * min(1.0, patch.rpc_total);
+	else
+		tot_pmass_avail = patch.soil.pmass_labile * min(1.0, patch.fpc_total);
 
 	// Calculate individual uptake fraction of nitrogen demand
 	if (patch.ndemand > tot_nmass_avail) {

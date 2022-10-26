@@ -1133,10 +1133,17 @@ bool allometry(Individual& indiv) {
 			// Increment deltafpc
 			indiv.deltafpc += fpc_new - indiv.fpc;
 			indiv.fpc = fpc_new;
+
+			// Root projective cover calculation, if SRL variation is activated.
+			if(ifsrlvary)
+				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+			else
+				indiv.rpc = 0.0;
 		}
 		else {
 			indiv.lai_indiv = 0.0;
 			indiv.fpc = 0.0;
+			indiv.rpc = 0.0;
 		}
 
 		// Bole height (Eqn 7)
@@ -1164,6 +1171,12 @@ bool allometry(Individual& indiv) {
 
 				// Stand-level LAI
 				indiv.lai = indiv.lai_indiv;
+
+				// Root projective cover calculation, if SRL variation is activated.
+				if (ifsrlvary)
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+				else
+					indiv.rpc = 0.0;
 			}
 			else {
 				return false;

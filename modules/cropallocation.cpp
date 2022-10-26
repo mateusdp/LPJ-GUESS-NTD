@@ -1091,6 +1091,12 @@ void allometry_crop(Individual& indiv) {
 		// Stand-level LAI
 		indiv.lai = indiv.lai_indiv;
 
+		// Root projective cover calculation, if SRL variation is activated.
+		if (ifsrlvary)
+			indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+		else
+			indiv.rpc = 0.0;
+
 	}
 	else {	// cropgreen
 		if (!negligible(indiv.cropindiv->cmass_leaf_max)) {
@@ -1102,6 +1108,12 @@ void allometry_crop(Individual& indiv) {
 			// FPC (Eqn 10)
 //			indiv.fpc = 1.0 - lambertbeer(indiv.lai_indiv);
 			indiv.fpc = 1.0;
+
+			// Root projective cover calculation, if SRL variation is activated.
+			if (ifsrlvary)
+				indiv.rpc = 1.0;
+			else
+				indiv.rpc = 0.0;
 
 			// Stand-level LAI
 			indiv.lai = indiv.lai_indiv;
