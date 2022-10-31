@@ -1262,8 +1262,12 @@ void transfer_litter(Patch& patch) {
 			// Calculate inputs to surface structural and metabolic litter
 
 			// Leaf litter lignin:N ratio
-			//double leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.pft.cton_leaf_avr); //maybe here is pft.pft.cmass_litter_leaf/pft.pft.nmass_litter_leaf
-			double leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.cmass_litter_leaf / pft.nmass_litter_leaf);
+			double leaf_lton;
+
+			if(!ifslavary)
+				leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.pft.cton_leaf_avr); //maybe here is pft.pft.cmass_litter_leaf/pft.pft.nmass_litter_leaf
+			else
+				leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.cmass_litter_leaf / pft.nmass_litter_leaf);
 
 			// Metabolic litter fraction for leaf litter
 			double fm = metabolic_litter_fraction(leaf_lton);
@@ -1314,8 +1318,12 @@ void transfer_litter(Patch& patch) {
 			// Calculate inputs to soil structural and metabolic litter
 
 			// Root litter lignin:N ratio
-			//double root_lton = lignin_to_n_ratio(cmass_litter_root, nmass_litter_root, LIGCFRAC_ROOT, pft.pft.cton_root_avr); //maybe here is pft.pft.cmass_litter_root/pft.pft.nmass_litter_root
-			double root_lton = lignin_to_n_ratio(cmass_litter_root, nmass_litter_root, LIGCFRAC_ROOT, pft.cmass_litter_root / pft.nmass_litter_root);
+			double root_lton;
+
+			if(!ifslavary)
+				root_lton = lignin_to_n_ratio(cmass_litter_root, nmass_litter_root, LIGCFRAC_ROOT, pft.pft.cton_root_avr); //maybe here is pft.pft.cmass_litter_root/pft.pft.nmass_litter_root
+			else
+				root_lton = lignin_to_n_ratio(cmass_litter_root, nmass_litter_root, LIGCFRAC_ROOT, pft.cmass_litter_root / pft.nmass_litter_root);
 
 			// Metabolic litter fraction for root litter
 			double fm = metabolic_litter_fraction(root_lton);
