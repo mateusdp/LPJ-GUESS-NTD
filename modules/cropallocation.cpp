@@ -117,11 +117,12 @@ void turnover_grass(Individual& indiv) {
 
 	turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
 		indiv.pft.turnover_sap, indiv.nrelocfrac, indiv.prelocfrac, indiv.pft.lifeform, indiv.pft.landcover,
-		indiv.cropindiv->grs_cmass_leaf, indiv.cropindiv->grs_cmass_root, indiv.cmass_sap, indiv.cmass_heart,
+		indiv.cropindiv->grs_cmass_leaf, indiv.cropindiv->grs_cmass_root, indiv.cropindiv->grs_cmass_myco, indiv.cmass_sap, indiv.cmass_heart,
 		indiv.nmass_leaf, indiv.nmass_root, indiv.nmass_sap, indiv.nmass_heart,
 		indiv.pmass_leaf, indiv.pmass_root, indiv.pmass_sap, indiv.pmass_heart,
 		patchpft.cmass_litter_leaf,
 		patchpft.cmass_litter_root,
+		patchpft.cmass_litter_myco,
 		patchpft.cmass_leaf_root_turnover,
 		patchpft.nmass_litter_leaf,
 		patchpft.nmass_litter_root,

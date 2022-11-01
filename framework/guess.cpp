@@ -331,6 +331,7 @@ void Patchpft::serialize(ArchiveStream& arch) {
 		& nsapling
 		& cmass_litter_leaf
 		& cmass_litter_root
+		& cmass_litter_myco
 		& cmass_litter_sap
 		& cmass_litter_heart
 		& cmass_litter_repr
@@ -557,6 +558,7 @@ double Patch::ccont(double scale_indiv, bool luc) {
 		Patchpft& ppft = pft[i];
 		ccont += ppft.cmass_litter_leaf;
 		ccont += ppft.cmass_litter_root;
+		ccont += ppft.cmass_litter_myco;
 		ccont += ppft.cmass_litter_sap;
 		ccont += ppft.cmass_litter_heart;
 		ccont += ppft.cmass_litter_repr;
@@ -1673,6 +1675,7 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 	densindiv         = 0.0;
 	cmass_leaf        = 0.0;
 	cmass_root        = 0.0;
+	cmass_myco		  = 0.0;
 	cmass_sap         = 0.0;
 	cmass_heart       = 0.0;
 	cmass_debt        = 0.0;
@@ -1809,6 +1812,7 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 void Individual::serialize(ArchiveStream& arch) {
 	arch & cmass_leaf
 		& cmass_root
+		& cmass_myco
 		& cmass_sap
 		& cmass_heart
 		& cmass_debt
@@ -2016,6 +2020,7 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 
 		double cmass_leaf_litter = mortality * cmass_leaf;
 		double cmass_root_litter = mortality * cmass_root;
+		double cmass_myco_litter = mortality * cmass_myco;
 
 		if (pft.landcover==CROPLAND) {
 			if (pft.aboveground_ho)
@@ -2028,6 +2033,7 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 
 		ppft.cmass_litter_leaf += cmass_leaf_litter * mortality_non_fire / mortality;
 		ppft.cmass_litter_root += cmass_root_litter;
+		ppft.cmass_litter_myco += cmass_myco_litter;
 
 		if (cmass_debt <= cmass_heart + cmass_sap) {
 			if (cmass_debt <= cmass_heart) {
@@ -2115,6 +2121,7 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 
 		cmass_leaf      *= remaining;
 		cmass_root      *= remaining;
+		cmass_myco		*= remaining;
 		cmass_sap       *= remaining;
 		cmass_heart     *= remaining;
 		cmass_debt      *= remaining;
@@ -2304,7 +2311,7 @@ double Individual::ccont(double scale_indiv, bool luc) const {
 		}
 		else {
 
-			ccont += (cmass_leaf + cmass_root + cmass_sap + cmass_heart - cmass_debt) * scale_indiv;
+			ccont += (cmass_leaf + cmass_root + cmass_sap + cmass_heart + cmass_myco - cmass_debt) * scale_indiv;
 
 			if (pft.landcover == CROPLAND) {
 				ccont += (cropindiv->cmass_ho + cropindiv->cmass_agpool) * scale_indiv;
@@ -2906,6 +2913,8 @@ void Individual::kill(bool harvest /* = false */) {
 			ppft.cmass_litter_root += cropindiv->grs_cmass_root;
 		else
 			ppft.cmass_litter_root += cmass_root;
+
+		ppft.cmass_litter_myco += cmass_myco;
 
 		if (pft.landcover == CROPLAND) {
 

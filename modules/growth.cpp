@@ -313,10 +313,10 @@ double calc_prelocfrac(lifeformtype lifeform, double turnover_leaf, double pmass
 // Internal function (do not call directly from framework)
 
 void turnover_np(double turnover_leaf, double turnover_root, double turnover_sap, double nreloc_ind, double preloc_ind,
-	lifeformtype lifeform, landcovertype landcover, double& cmass_leaf, double& cmass_root, double& cmass_sap,
+	lifeformtype lifeform, landcovertype landcover, double& cmass_leaf, double& cmass_root, double& cmass_myco, double& cmass_sap,
 	double& cmass_heart, double& nmass_leaf, double& nmass_root, double& nmass_sap, double& nmass_heart, double& pmass_leaf, 
 	double& pmass_root, double& pmass_sap, double& pmass_heart,
-	double& litter_leaf, double& litter_root, double& cmass_leaf_root_turnover,
+	double& litter_leaf, double& litter_root, double& litter_myco, double& cmass_leaf_root_turnover,
 	double& nmass_litter_leaf, double& nmass_litter_root,
 	double& pmass_litter_leaf, double& pmass_litter_root,
 	double& longterm_nstore, double &max_n_storage,
@@ -361,6 +361,10 @@ void turnover_np(double turnover_leaf, double turnover_root, double turnover_sap
 	// longterm_pstore		= longterm phosphorus storage (kgP/m2)
 
 	double turnover = 0.0;
+
+
+	double turnover_myco = 1.0;
+
 	// Calculate actual nitrogen retranslocation so maximum nitrogen storage capacity is not exceeded
 	double actual_nrelocfrac = calc_nrelocfrac(lifeform, turnover_leaf, nmass_leaf, turnover_root, nmass_root,
 		turnover_sap, nmass_sap, max_n_storage, longterm_nstore, nreloc_ind);
@@ -402,6 +406,12 @@ void turnover_np(double turnover_leaf, double turnover_root, double turnover_sap
 	pmass_root -= turnover;
 	pmass_litter_root += turnover * (1.0 - actual_prelocfrac);
 	longterm_pstore += turnover * actual_prelocfrac;
+
+	// Mycorrhiza turnover
+	turnover = turnover_myco * cmass_myco;
+	//if (turnover_myco > 1.0) cmass_turn_debt += (turnover_myco - 1.0) * cmass_myco;
+	cmass_myco = max(0.0, cmass_myco - turnover);
+	if (alive) litter_myco += turnover;
 
 	if (lifeform == TREE) {
 
@@ -491,14 +501,14 @@ inline double f(double& cmass_leaf_inc) {
 }
 
 
-void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sap,
-	double cmass_debt,double cmass_heart,double ltor,double height,double sla,
+void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_myco, double cmass_sap,
+	double cmass_debt,double cmass_heart,double ltor, double myco_col, double height,double sla,
 	double wooddens,lifeformtype lifeform,double k_latosa,double k_allom2,
-	double k_allom3,double& cmass_leaf_inc,double& cmass_root_inc,
+	double k_allom3,double& cmass_leaf_inc,double& cmass_root_inc, double& cmass_myco_inc,
 	double& cmass_sap_inc,
 	double& cmass_debt_inc,
 	double& cmass_heart_inc,double& litter_leaf_inc,
-	double& litter_root_inc,double& exceeds_cmass) {
+	double& litter_root_inc, double& litter_myco_inc, double& exceeds_cmass) {
 
 	// DESCRIPTION
 	// Calculates changes in C compartment sizes (leaves, roots, sapwood, heartwood)
@@ -613,9 +623,13 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 	exceeds_cmass   = 0.0;
 	cmass_leaf_inc  = 0.0;
 	cmass_root_inc  = 0.0;
+	cmass_myco_inc = 0.0;
 	cmass_sap_inc   = 0.0;
 	cmass_heart_inc = 0.0;
 	cmass_debt_inc = 0.0;
+
+	if (bminc > 0.0)
+		cmass_myco_inc = max_ctomyco_rate * myco_col * bminc;
 
 	if (!largerthanzero(ltor, -10)) {
 
@@ -758,12 +772,14 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 			// Calculate increments in other compartments
 
 			cmass_root_inc = (cmass_leaf_inc + cmass_leaf) / ltor - cmass_root; // Eqn (3)
-			cmass_sap_inc = bminc - cmass_leaf_inc - cmass_root_inc; // Eqn (1)
+			//cmass_sap_inc = bminc - cmass_leaf_inc - cmass_root_inc; // Eqn (1)
+			cmass_sap_inc = bminc - cmass_leaf_inc - cmass_root_inc - cmass_myco_inc; // Eqn (1)
 
 			// guess2008 - extra check - abnormal allocation can still happen if ltor is very small
 			if ((cmass_root_inc > 50 || cmass_root_inc < -50) && ltor < 0.0001) {
 				cmass_leaf_inc = 0.0;
-				cmass_root_inc = bminc;
+				//cmass_root_inc = bminc;
+				cmass_root_inc = bminc - cmass_myco_inc;
 				cmass_sap_inc = -cmass_sap;
 				cmass_heart_inc = -cmass_sap_inc;
 			}
@@ -778,8 +794,11 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 				// Attempt to distribute this year's production among leaves and roots only
 				// Eqn (3)
 
-				cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
-				cmass_root_inc = bminc - cmass_leaf_inc;
+				//cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
+				//cmass_root_inc = bminc - cmass_leaf_inc;
+
+				cmass_leaf_inc = (bminc - cmass_myco_inc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
+				cmass_root_inc = bminc - cmass_leaf_inc - cmass_myco_inc;
 
 				// Make sure we don't end up with negative cmass_leaf
 				cmass_leaf_inc = max(-cmass_leaf, cmass_leaf_inc);
@@ -787,9 +806,13 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 				// Make sure we don't end up with negative cmass_root
 				cmass_root_inc = max(-cmass_root, cmass_root_inc);
 
+				// Make sure we don't end up with negative cmass_myco
+				cmass_myco_inc = max(-cmass_myco, cmass_myco_inc);
+
 				// If biomass of roots and leaves can't meet biomass decrease then
 				// sapwood also needs to decrease
-				cmass_sap_inc = bminc - cmass_leaf_inc - cmass_root_inc;
+				//cmass_sap_inc = bminc - cmass_leaf_inc - cmass_root_inc;
+				cmass_sap_inc = bminc - cmass_leaf_inc - cmass_root_inc - cmass_myco_inc;
 
 				// No sapwood turned into heartwood
 				cmass_heart_inc = 0.0;
@@ -806,26 +829,34 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 		}
 		else {
 
+			if (bminc > 0.0)
+				cmass_myco_inc = max_ctomyco_rate * myco_col * bminc;
+
 			// Abnormal allocation: reduction in some biomass compartment(s) to
 			// satisfy allometry
 
 			// Attempt to distribute this year's production among leaves and roots only
 			// Eqn (3)
 
-			cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
+			//cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
+			cmass_leaf_inc = (bminc - cmass_myco_inc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
 
 			if (cmass_leaf_inc > 0.0) {
 
 				// Positive allocation to leaves
 
-				cmass_root_inc = bminc - cmass_leaf_inc; // Eqn (1)
+				//cmass_root_inc = bminc - cmass_leaf_inc; // Eqn (1)
+				cmass_root_inc = bminc - cmass_leaf_inc - cmass_myco_inc; // Eqn (1)
 
 				// Add killed roots (if any) to litter
 
 				// guess2008 - back to LPJF method in this case
 				// if (cmass_root_inc<0.0) litter_root_inc=-cmass_root_inc;
 				if (cmass_root_inc < 0.0) {
-					cmass_leaf_inc = bminc;
+					if (bminc > 0.0)
+						cmass_myco_inc = max_ctomyco_rate * myco_col * bminc;
+					//cmass_leaf_inc = bminc;
+					cmass_leaf_inc = bminc - cmass_myco_inc;
 					cmass_root_inc = (cmass_leaf_inc + cmass_leaf) / ltor - cmass_root; // Eqn (3)
 				}
 
@@ -834,8 +865,11 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 
 				// Negative or zero allocation to leaves
 				// Eqns (1), (3)
+				if (bminc > 0.0)
+					cmass_myco_inc = max_ctomyco_rate * myco_col * bminc;
 
-				cmass_root_inc = bminc;
+				//cmass_root_inc = bminc;
+				cmass_root_inc = bminc - cmass_myco_inc;
 				cmass_leaf_inc = (cmass_root + cmass_root_inc) * ltor - cmass_leaf;
 			}
 
@@ -851,11 +885,20 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 				cmass_root_inc = -cmass_root;
 			}
 
+			// Make sure we don't end up with negative cmass_myco
+			if (cmass_myco_inc < -cmass_myco) {
+				exceeds_cmass += -(cmass_myco + cmass_myco_inc);
+				cmass_myco_inc = -cmass_myco;
+			}
+
 			// Add killed leaves to litter
 			litter_leaf_inc = max(-cmass_leaf_inc, 0.0);
 
 			// Add killed roots to litter
 			litter_root_inc = max(-cmass_root_inc, 0.0);
+
+			// Add killed mycelle to litter
+			litter_myco_inc = max(-cmass_myco_inc, 0.0);
 
 			// Calculate increase in sapwood mass (which must be negative)
 			// Eqn (2)
@@ -880,8 +923,11 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 		//   (14) bminc = cmass_leaf_inc + cmass_root_inc
 		// while satisfying Eqn(3)
 
-		cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
-		cmass_root_inc = bminc - cmass_leaf_inc;
+		//cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
+		//cmass_root_inc = bminc - cmass_leaf_inc;
+
+		cmass_leaf_inc = (bminc - cmass_myco_inc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
+		cmass_root_inc = bminc - cmass_leaf_inc - cmass_myco_inc;
 
 		if (bminc >= 0.0) {
 
@@ -892,7 +938,8 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 				// Positive bminc, but ltor causes negative allocation to leaves,
 				// put all of bminc into roots
 
-				cmass_root_inc = bminc;
+				//cmass_root_inc = bminc;
+				cmass_root_inc = bminc - cmass_myco_inc;
 				cmass_leaf_inc = (cmass_root + cmass_root_inc) * ltor - cmass_leaf; // Eqn (3)
 			}
 			else if (cmass_root_inc < 0.0) {
@@ -900,8 +947,10 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 				// Positive bminc, but ltor causes negative allocation to roots,
 				// put all of bminc into leaves
 
-				cmass_leaf_inc = bminc;
-				cmass_root_inc = (cmass_leaf + bminc) / ltor - cmass_root;
+				//cmass_leaf_inc = bminc;
+				//cmass_root_inc = (cmass_leaf + bminc) / ltor - cmass_root;
+				cmass_leaf_inc = bminc - cmass_myco_inc;
+				cmass_root_inc = (cmass_leaf + bminc) / ltor - cmass_root - cmass_myco_inc;
 			}
 
 			// Make sure we don't end up with negative cmass_leaf
@@ -916,11 +965,20 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 				cmass_root_inc = -cmass_root;
 			}
 
+			// Make sure we don't end up with negative cmass_myco
+			if (cmass_myco_inc < -cmass_myco) {
+				exceeds_cmass += -(cmass_myco + cmass_myco_inc);
+				cmass_myco_inc = -cmass_myco;
+			}
+
 			// Add killed leaves to litter
 			litter_leaf_inc = max(-cmass_leaf_inc, 0.0);
 
 			// Add killed roots to litter
 			litter_root_inc = max(-cmass_root_inc, 0.0);
+
+			// Add killed myco to litter
+			litter_myco_inc = max(-cmass_myco_inc, 0.0);
 		}
 		else if (bminc < 0) {
 
@@ -929,14 +987,17 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 			// Negative increment is respiration (neg bminc) or/and increment in other
 			// compartments leading to no litter production
 
-			if (bminc < -(cmass_leaf + cmass_root)) {
+			//if (bminc < -(cmass_leaf + cmass_root)) {
+			if (bminc < -(cmass_leaf + cmass_root + cmass_myco)) {
 
 				// Biomass decrease is larger than existing biomass
 
-				exceeds_cmass = -(bminc + cmass_leaf + cmass_root);
+				//exceeds_cmass = -(bminc + cmass_leaf + cmass_root);
+				exceeds_cmass = -(bminc + cmass_leaf + cmass_root + cmass_myco);
 
 				cmass_leaf_inc = -cmass_leaf;
 				cmass_root_inc = -cmass_root;
+				cmass_myco_inc = -cmass_myco;
 			}
 			else if (cmass_root_inc < 0.0) {
 
@@ -944,7 +1005,8 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 				// Make sure we don't end up with negative cmass_root
 
 				if (cmass_root < -cmass_root_inc) {
-					cmass_leaf_inc = bminc + cmass_root;
+					//cmass_leaf_inc = bminc + cmass_root;
+					cmass_leaf_inc = bminc + cmass_root + cmass_myco;
 					cmass_root_inc = -cmass_root;
 				}
 			}
@@ -966,7 +1028,8 @@ void allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
 	// maximum carbon mismatch
 	double EPS = 1.0e-12;
 
-	assert(fabs(bminc + exceeds_cmass - (cmass_leaf_inc + cmass_root_inc + cmass_sap_inc + cmass_heart_inc + litter_leaf_inc + litter_root_inc)) < EPS);
+	//assert(fabs(bminc + exceeds_cmass - (cmass_leaf_inc + cmass_root_inc + cmass_sap_inc + cmass_heart_inc + litter_leaf_inc + litter_root_inc)) < EPS);
+	assert(fabs(bminc + exceeds_cmass - (cmass_leaf_inc + cmass_root_inc + cmass_myco_inc + cmass_sap_inc + cmass_heart_inc + litter_leaf_inc + litter_root_inc)) < EPS);
 }
 
 
@@ -986,15 +1049,17 @@ void allocation_init(double bminit, double ltor, Individual& indiv) {
 	double dval;
 	double cmass_leaf_ind;
 	double cmass_root_ind;
+	double cmass_myco_ind;
 	double cmass_sap_ind;
 
 	//allocation(bminit, 0.0, 0.0, 0.0, 0.0, 0.0, ltor, 0.0, indiv.pft.sla, indiv.pft.wooddens,
-	allocation(bminit, 0.0, 0.0, 0.0, 0.0, 0.0, ltor, 0.0, indiv.sla, indiv.wooddens,
+	allocation(bminit, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ltor, indiv.myco_col, 0.0, indiv.sla, indiv.wooddens,
 		indiv.pft.lifeform, indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
-		cmass_leaf_ind, cmass_root_ind, cmass_sap_ind, dval, dval, dval, dval, dval);
+		cmass_leaf_ind, cmass_root_ind, cmass_myco_ind, cmass_sap_ind, dval, dval, dval, dval, dval, dval);
 
 	indiv.cmass_leaf = cmass_leaf_ind * indiv.densindiv;
 	indiv.cmass_root = cmass_root_ind * indiv.densindiv;
+	indiv.cmass_myco = cmass_myco_ind * indiv.densindiv;
 
 	indiv.nmass_leaf = 0.0;
 	indiv.nmass_root = 0.0;
@@ -1135,15 +1200,20 @@ bool allometry(Individual& indiv) {
 			indiv.fpc = fpc_new;
 
 			// Root projective cover calculation, if SRL variation is activated.
-			if(ifsrlvary)
+			if (ifsrlvary) {
 				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
-			else
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
+			}
+			else {
 				indiv.rpc = 0.0;
+				indiv.rpc_myco = 0.0;
+			}
 		}
 		else {
 			indiv.lai_indiv = 0.0;
 			indiv.fpc = 0.0;
 			indiv.rpc = 0.0;
+			indiv.rpc_myco = 0.0;
 		}
 
 		// Bole height (Eqn 7)
@@ -1173,10 +1243,14 @@ bool allometry(Individual& indiv) {
 				indiv.lai = indiv.lai_indiv;
 
 				// Root projective cover calculation, if SRL variation is activated.
-				if (ifsrlvary)
+				if (ifsrlvary) {
 					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
-				else
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
+				}
+				else {
 					indiv.rpc = 0.0;
+					indiv.rpc_myco = 0.0;
+				}
 			}
 			else {
 				return false;
@@ -1280,6 +1354,8 @@ void growth(Stand& stand, Patch& patch) {
 	double cmass_leaf_inc = 0.0;
 	// increment in root C biomass following allocation, on individual basis (kgC)
 	double cmass_root_inc = 0.0;
+	// increment in mycorrhiza C biomass following allocation, on individual basis (kgC)
+	double cmass_myco_inc = 0.0;
 	// increment in sapwood C biomass following allocation, on individual basis (kgC)
 	double cmass_sap_inc = 0.0;
 	// increment in heartwood C biomass following allocation, on individual basis (kgC)
@@ -1296,6 +1372,8 @@ void growth(Stand& stand, Patch& patch) {
 	double litter_leaf_inc = 0.0;
 	// increment in root litter following allocation, on individual basis (kgC)
 	double litter_root_inc = 0.0;
+	// increment in mycorrhiza litter following allocation, on individual basis (kgC)
+	double litter_myco_inc = 0.0;
 	// negative increment that exceeds existing biomass following allocation, on individual basis (kgC)
 	double exceeds_cmass;
 	// C biomass of leaves in "excess" of set allocated last year to raingreen PFT last year (kgC/m2)
@@ -1526,11 +1604,13 @@ void growth(Stand& stand, Patch& patch) {
 					// Tissue turnover with both nitrogen and phosphorus and associated litter production
 					turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
 						indiv.pft.turnover_sap, indiv.nrelocfrac, indiv.prelocfrac, indiv.pft.lifeform, indiv.pft.landcover,
-						indiv.cmass_leaf, indiv.cmass_root, indiv.cmass_sap, indiv.cmass_heart,
+						indiv.cmass_leaf, indiv.cmass_root, indiv.cmass_myco, indiv.cmass_sap, indiv.cmass_heart,
 						indiv.nmass_leaf, indiv.nmass_root, indiv.nmass_sap, indiv.nmass_heart,
 						indiv.pmass_leaf, indiv.pmass_root, indiv.pmass_sap, indiv.pmass_heart,
 						patch.pft[indiv.pft.id].cmass_litter_leaf,
-						patch.pft[indiv.pft.id].cmass_litter_root, patch.pft[indiv.pft.id].cmass_leaf_root_turnover,
+						patch.pft[indiv.pft.id].cmass_litter_root,
+						patch.pft[indiv.pft.id].cmass_litter_myco,
+						patch.pft[indiv.pft.id].cmass_leaf_root_turnover,
 						patch.pft[indiv.pft.id].nmass_litter_leaf,
 						patch.pft[indiv.pft.id].nmass_litter_root,
 						patch.pft[indiv.pft.id].pmass_litter_leaf,
@@ -1565,15 +1645,15 @@ void growth(Stand& stand, Patch& patch) {
 					// to individual basis
 
 					allocation(bminc / indiv.densindiv, indiv.cmass_leaf / indiv.densindiv,
-						indiv.cmass_root / indiv.densindiv, indiv.cmass_sap / indiv.densindiv,
-						indiv.cmass_debt / indiv.densindiv,
-						indiv.cmass_heart / indiv.densindiv, indiv.ltor,
+						indiv.cmass_root / indiv.densindiv, indiv.cmass_myco / indiv.densindiv, 
+						indiv.cmass_sap / indiv.densindiv,	indiv.cmass_debt / indiv.densindiv,
+						indiv.cmass_heart / indiv.densindiv, indiv.ltor, indiv.myco_col,
 						//indiv.height, indiv.pft.sla, indiv.pft.wooddens, TREE,
 						indiv.height, indiv.sla, indiv.wooddens, TREE,
 						indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
-						cmass_leaf_inc, cmass_root_inc, cmass_sap_inc, cmass_debt_inc,
+						cmass_leaf_inc, cmass_root_inc, cmass_myco_inc, cmass_sap_inc, cmass_debt_inc,
 						cmass_heart_inc,
-						litter_leaf_inc, litter_root_inc, exceeds_cmass);
+						litter_leaf_inc, litter_root_inc, litter_myco_inc, exceeds_cmass);
 
 					// Update carbon pools and litter (on area basis)
 					// (litter not accrued for not 'alive' individuals - Ben 2007-11-28)
@@ -1583,6 +1663,9 @@ void growth(Stand& stand, Patch& patch) {
 
 					// Roots
 					indiv.cmass_root += cmass_root_inc * indiv.densindiv;
+
+					// Mycorrhiza
+					indiv.cmass_myco += cmass_myco_inc * indiv.densindiv;
 
 					// Sapwood
 					indiv.cmass_sap += cmass_sap_inc * indiv.densindiv;
@@ -1620,6 +1703,7 @@ void growth(Stand& stand, Patch& patch) {
 						patch.pft[indiv.pft.id].cmass_litter_leaf += litter_leaf_inc * indiv.densindiv;
 						patch.pft[indiv.pft.id].cmass_litter_root += litter_root_inc * indiv.densindiv;
 						patchpft.cmass_mort += (litter_leaf_inc + litter_root_inc) * indiv.densindiv;
+						patch.pft[indiv.pft.id].cmass_litter_myco += litter_myco_inc * indiv.densindiv;
 
 						// C litter exceeding existing biomass
 						indiv.report_flux(Fluxes::NPP, exceeds_cmass * indiv.densindiv);
@@ -1689,10 +1773,10 @@ void growth(Stand& stand, Patch& patch) {
 						exceeds_cmass = 0.0;	//exceeds_cmass not used for true crops
 					}
 					else {
-						allocation(bminc, indiv.cmass_leaf, indiv.cmass_root,
-							0.0, 0.0, 0.0, indiv.ltor, 0.0, 0.0, 0.0, indiv.pft.lifeform, 0.0,
-							0.0, 0.0, cmass_leaf_inc, cmass_root_inc, dval, dval, dval,
-							litter_leaf_inc, litter_root_inc, exceeds_cmass);
+						allocation(bminc, indiv.cmass_leaf, indiv.cmass_root, indiv.cmass_myco,
+							0.0, 0.0, 0.0, indiv.ltor, indiv.myco_col, 0.0, 0.0, 0.0, indiv.pft.lifeform, 0.0,
+							0.0, 0.0, cmass_leaf_inc, cmass_root_inc, cmass_myco_inc, dval, dval, dval,
+							litter_leaf_inc, litter_root_inc, litter_myco_inc, exceeds_cmass);
 					}
 
 					if(indiv.pft.landcover == CROPLAND) {
@@ -1711,6 +1795,9 @@ void growth(Stand& stand, Patch& patch) {
 					// Roots
 					indiv.cmass_root += cmass_root_inc;
 
+					// Mycorrhiza
+					indiv.cmass_myco += cmass_myco_inc;
+
 					if(indiv.pft.landcover == CROPLAND)	{
 						indiv.cropindiv->cmass_ho += cmass_ho_inc;
 						indiv.cropindiv->cmass_agpool += cmass_agpool_inc;
@@ -1724,6 +1811,7 @@ void growth(Stand& stand, Patch& patch) {
 
 							patch.pft[indiv.pft.id].cmass_litter_leaf += litter_leaf_inc;
 							patch.pft[indiv.pft.id].cmass_litter_root += litter_root_inc;
+							patch.pft[indiv.pft.id].cmass_litter_myco += litter_myco_inc;
 
 							patchpft.cmass_mort += litter_leaf_inc + litter_root_inc;
 
@@ -1866,12 +1954,18 @@ void growth(Stand& stand, Patch& patch) {
 					// ...now we can start counting its fluxes,
 					// debit current biomass as establishment flux
 					if (!indiv.istruecrop_or_intercropgrass()) {
-						indiv.report_flux(Fluxes::ESTC,
+						/*indiv.report_flux(Fluxes::ESTC,
 					                  - (indiv.cmass_leaf + indiv.cmass_root + indiv.cmass_sap +
+<<<<<<< HEAD
 									  indiv.cmass_heart - indiv.cmass_debt));
 
 						patchpft.cmass_est -= (indiv.cmass_leaf + indiv.cmass_root + indiv.cmass_sap +
 									  indiv.cmass_heart - indiv.cmass_debt);
+=======
+									  indiv.cmass_heart - indiv.cmass_debt));*/
+						indiv.report_flux(Fluxes::ESTC,
+							-(indiv.cmass_leaf + indiv.cmass_root + indiv.cmass_myco + indiv.cmass_sap +
+								indiv.cmass_heart - indiv.cmass_debt));
 					}
 				}
 

@@ -3222,6 +3222,8 @@ public:
 	double fpc_daily;
 	/// root projective cover (RPC) under full root cover as fraction of modelled area
 	double rpc;
+	/// Mycelle projective cover (RPC) under full mycorrhiza cover as fraction of modelled area
+	double rpc_myco;
 	/// fraction of PAR absorbed by foliage over projective area today, taking account of leaf phenological state
 	double fpar;
 	/// average density of individuals over patch (indiv/m2)
@@ -4871,6 +4873,8 @@ public:
 	double cmass_litter_leaf;
 	/// fine root-derived litter for PFT on modelled area basis (kgC/m2)
 	double cmass_litter_root;
+	/// Mycorrhiza-derived litter for PFT on modelled area basis (kgC/m2)
+	double cmass_litter_myco;
 	/// remaining sapwood-derived litter for PFT on modelled area basis (kgC/m2)
 	double cmass_litter_sap;
 	/// remaining heartwood-derived litter for PFT on modelled area basis (kgC/m2)
@@ -4966,6 +4970,7 @@ public:
 
 		cmass_litter_leaf = 0.0;
 		cmass_litter_root = 0.0;
+		cmass_litter_myco = 0.0;
 		cmass_litter_sap   = 0.0;
 		cmass_litter_heart = 0.0;
 		cmass_litter_repr = 0.0;

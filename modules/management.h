@@ -263,6 +263,7 @@ struct Harvest_CN {
 
 	double cmass_litter_leaf;
 	double cmass_litter_root;
+	double cmass_litter_myco;
 	double cmass_litter_sap;
 	double cmass_litter_heart;
 	double nmass_litter_leaf;
@@ -292,7 +293,7 @@ struct Harvest_CN {
 		cmass_leaf = cmass_root = cmass_myco = cmass_sap = cmass_heart = cmass_debt = cmass_ho = cmass_agpool = cmass_stem = cmass_dead_leaf = debt_excess = 0.0;
 		nmass_leaf = nmass_root = nmass_sap = nmass_heart = nmass_ho = nmass_agpool = nmass_dead_leaf = nstore_longterm = nstore_labile = max_n_storage = 0.0;
 		pmass_leaf = pmass_root = pmass_sap = pmass_heart = pmass_ho = pmass_agpool = pmass_dead_leaf = pstore_longterm = pstore_labile = max_p_storage = 0.0;
-		cmass_litter_leaf = cmass_litter_root = cmass_litter_sap = cmass_litter_heart = cmass_leaf_root_turnover = 0.0;
+		cmass_litter_leaf = cmass_litter_root = cmass_litter_myco = cmass_litter_sap = cmass_litter_heart = 0.0;
 		nmass_litter_leaf = nmass_litter_root = nmass_litter_sap = nmass_litter_heart = 0.0;
 		pmass_litter_leaf = pmass_litter_root = pmass_litter_sap = pmass_litter_heart = 0.0;
 		acflux_harvest = anflux_harvest = apflux_harvest = 0.0;

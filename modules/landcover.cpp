@@ -1684,11 +1684,12 @@ void donor_stand_change(Gridcell& gridcell, double& receiving_area, landcover_ch
 
 					turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
 						indiv.pft.turnover_sap, indiv.nrelocfrac, indiv.prelocfrac, indiv.pft.lifeform, indiv.pft.landcover,
-						cp.cmass_leaf, cp.cmass_root, cp.cmass_sap, cp.cmass_heart,
+						cp.cmass_leaf, cp.cmass_root, cp.cmass_myco, cp.cmass_sap, cp.cmass_heart,
 						cp.nmass_leaf, cp.nmass_root, cp.nmass_sap, cp.nmass_heart,
 						cp.pmass_leaf, cp.pmass_root, cp.pmass_sap, cp.pmass_heart,
 						cp.cmass_litter_leaf,
 						cp.cmass_litter_root,
+						cp.cmass_litter_myco,
 						cp.cmass_leaf_root_turnover,
 						cp.nmass_litter_leaf,
 						cp.nmass_litter_root,

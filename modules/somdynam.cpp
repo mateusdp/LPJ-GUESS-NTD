@@ -317,12 +317,14 @@ void som_dynamics_lpj(Patch& patch, double tillage_fact) {
 
 		decomp_litter+=(patch.pft[p].cmass_litter_leaf+
 			patch.pft[p].cmass_litter_root+
+			patch.pft[p].cmass_litter_myco +
 			patch.pft[p].cmass_litter_sap+
 			patch.pft[p].cmass_litter_heart+
 			patch.pft[p].cmass_litter_repr)*(1.0-fr_litter);
 
 		patch.pft[p].cmass_litter_leaf*=fr_litter;
 		patch.pft[p].cmass_litter_root*=fr_litter;
+		patch.pft[p].cmass_litter_myco *= fr_litter;
 		patch.pft[p].cmass_litter_sap*=fr_litter;
 		patch.pft[p].cmass_litter_heart*=fr_litter;
 		patch.pft[p].cmass_litter_repr*=fr_litter;
@@ -1210,6 +1212,7 @@ void transfer_litter(Patch& patch) {
 
 	double leaf_litter = 0.0;
 	double root_litter = 0.0;
+	double myco_litter = 0.0;
 	double wood_litter = 0.0;
 
 	patch.pft.firstobj();
@@ -1223,6 +1226,7 @@ void transfer_litter(Patch& patch) {
 
 		double cmass_litter_leaf, nmass_litter_leaf, pmass_litter_leaf;
 		double cmass_litter_root, nmass_litter_root, pmass_litter_root;
+		double cmass_litter_myco;
 
 		double frac_lr = 0.0;
 		//  Is a litter day, drop all leaf litter (crop)
@@ -1246,6 +1250,7 @@ void transfer_litter(Patch& patch) {
 		cmass_litter_root = pft.cmass_litter_root * frac_lr;
 		nmass_litter_root = pft.nmass_litter_root * frac_lr;
 		pmass_litter_root = pft.pmass_litter_root * frac_lr;
+		cmass_litter_myco = pft.cmass_litter_myco * frac_lr;
 
 		pft.cmass_litter_leaf -= cmass_litter_leaf;
 		pft.nmass_litter_leaf -= nmass_litter_leaf;
@@ -1253,6 +1258,7 @@ void transfer_litter(Patch& patch) {
 		pft.cmass_litter_root -= cmass_litter_root;
 		pft.nmass_litter_root -= nmass_litter_root;
 		pft.pmass_litter_root -= pmass_litter_root;
+		pft.cmass_litter_myco -= cmass_litter_myco;
 
 		// LEAF
 
@@ -1321,28 +1327,28 @@ void transfer_litter(Patch& patch) {
 			double root_lton;
 
 			if(!ifslavary)
-				root_lton = lignin_to_n_ratio(cmass_litter_root, nmass_litter_root, LIGCFRAC_ROOT, pft.pft.cton_root_avr); //maybe here is pft.pft.cmass_litter_root/pft.pft.nmass_litter_root
+				root_lton = lignin_to_n_ratio(cmass_litter_root + cmass_litter_myco, nmass_litter_root, LIGCFRAC_ROOT, pft.pft.cton_root_avr); //maybe here is pft.pft.cmass_litter_root/pft.pft.nmass_litter_root
 			else
-				root_lton = lignin_to_n_ratio(cmass_litter_root, nmass_litter_root, LIGCFRAC_ROOT, pft.cmass_litter_root / pft.nmass_litter_root);
+				root_lton = lignin_to_n_ratio(cmass_litter_root + cmass_litter_myco, nmass_litter_root, LIGCFRAC_ROOT, pft.cmass_litter_root / pft.nmass_litter_root);
 
 			// Metabolic litter fraction for root litter
 			double fm = metabolic_litter_fraction(root_lton);
 
-			ligcmass_new = cmass_litter_root * (1.0 - fm) * LIGCFRAC_ROOT;
+			ligcmass_new = (cmass_litter_root + cmass_litter_myco) * (1.0 - fm) * LIGCFRAC_ROOT;
 			ligcmass_old = soil.sompool[SOILSTRUCT].cmass * soil.sompool[SOILSTRUCT].ligcfrac;
 
 			// Add to pools and update lignin fraction in structural pool
-			soil.sompool[SOILSTRUCT].cmass += cmass_litter_root * (1.0 - fm);
+			soil.sompool[SOILSTRUCT].cmass += (cmass_litter_root + cmass_litter_myco) * (1.0 - fm);
 			soil.sompool[SOILSTRUCT].nmass += nmass_litter_root * (1.0 - fm);
 			soil.sompool[SOILSTRUCT].pmass += pmass_litter_root * (1.0 - fm);
-			soil.sompool[SOILMETA].cmass += cmass_litter_root * fm;
+			soil.sompool[SOILMETA].cmass += (cmass_litter_root + cmass_litter_myco) * fm;
 			soil.sompool[SOILMETA].nmass += nmass_litter_root * fm;
 			soil.sompool[SOILMETA].pmass += pmass_litter_root * fm;
 
 			// Save litter input for equilsom()
 			if (date.year >= soil.solvesomcent_beginyr && date.year <= soil.solvesomcent_endyr) {
-				soil.litterSolveSOM.add_litter(cmass_litter_root * (1.0 - fm), nmass_litter_root * (1.0 - fm), pmass_litter_root * (1.0 - fm), SOILSTRUCT);
-				soil.litterSolveSOM.add_litter(cmass_litter_root * fm, nmass_litter_root * fm, pmass_litter_root * fm, SOILMETA);
+				soil.litterSolveSOM.add_litter((cmass_litter_root + cmass_litter_myco) * (1.0 - fm), nmass_litter_root * (1.0 - fm), pmass_litter_root * (1.0 - fm), SOILSTRUCT);
+				soil.litterSolveSOM.add_litter((cmass_litter_root + cmass_litter_myco) * fm, nmass_litter_root * fm, pmass_litter_root * fm, SOILMETA);
 
 			}
 
