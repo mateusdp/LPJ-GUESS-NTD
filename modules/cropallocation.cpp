@@ -1139,6 +1139,7 @@ void growth_crop_year(Individual& indiv, double& cmass_leaf_inc, double& cmass_r
 
 		indiv.cmass_leaf = 0.0;
 		indiv.cmass_root = 0.0;
+		indiv.cmass_myco = 0.0;
 		indiv.cropindiv->cmass_ho = 0.0;
 		indiv.cropindiv->cmass_agpool = 0.0;
 		indiv.cropindiv->cmass_stem = 0.0;
@@ -1148,6 +1149,7 @@ void growth_crop_year(Individual& indiv, double& cmass_leaf_inc, double& cmass_r
 		if(indiv.continous_grass()) {
 			indiv.cmass_leaf = indiv.cmass_leaf_post_turnover;
 			indiv.cmass_root = indiv.cmass_root_post_turnover;
+			indiv.cmass_myco = indiv.cmass_myco_post_turnover;
 		}
 	}
 

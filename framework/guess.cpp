@@ -2735,6 +2735,15 @@ double Individual::cmass_root_today() const {
 		return cmass_root * phen;
 }
 
+/// Gets the individual's daily cmass_myco value
+double Individual::cmass_myco_today() const {
+
+	if (istruecrop_or_intercropgrass())
+		return patchpft().cropphen->growingseason ? cropindiv->grs_cmass_myco : 0;
+	else
+		return cmass_myco * phen;
+}
+
 /// Gets the individual's daily fpc value
 double Individual::fpc_today() const {
 

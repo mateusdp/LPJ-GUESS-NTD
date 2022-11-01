@@ -62,6 +62,7 @@ bool ifdynreloc;
 int sla_width;
 int wsg_width;
 int srl_width;
+double max_ctomyco_rate;
 
 //Maximum amount of NH4 nitrified
 double f_nitri_max;
@@ -540,6 +541,8 @@ void plib_declarations(int id,xtring setname) {
 			"Number of possible wsg values between min and maximum trait ranges (trait resolution)");
 		declareitem("srl_width", &srl_width, 0, 5000, 1, CB_NONE,
 			"Number of possible srl values between min and maximum trait ranges (trait resolution)");
+		declareitem("max_ctomyco_rate", &max_ctomyco_rate, 0.0, 1.0, 1, CB_NONE,
+			"Max rate of bminc to mycorrhiza annual increment (0 - 1)");
 
 
 		declareitem("k_N",    &k_N,    0.0001, 1.0, 1,CB_NONE, "Constant in denitrification");
@@ -1558,6 +1561,7 @@ void plib_callback(int callback) {
 		if (!itemparsed("sla_width")) badins("sla_width");
 		if (!itemparsed("wsg_width")) badins("wsg_width");
 		if (!itemparsed("srl_width")) badins("srl_width");
+		if (!itemparsed("max_ctomyco_rate")) badins("max_ctomyco_rate");
 
 
 		if (nyear_spinup <= freenyears) {

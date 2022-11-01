@@ -2209,6 +2209,8 @@ public:
 		double cmass_leaf;
 		/// fine root C biomass
 		double cmass_root;
+		/// mycorrhiza biomass
+		double cmass_myco;
 		/// sapwood C biomass
 		double cmass_sap;
 		/// heartwood C biomass
@@ -2635,6 +2637,8 @@ public:
 		}
 
 			regen.cmass_root = 1.0 / ltor_max * regen.cmass_leaf;
+
+			regen.cmass_myco = 0.0;
 	}
     
     // Inits root fractions in each soil layer through a shape parameter beta (see Jackson et al., 1996)
@@ -2789,6 +2793,8 @@ struct cropindiv_struct : public Serializable {
 	double dcmass_leaf;
 	/// today's increase of root C biomass
 	double dcmass_root;
+	/// today's increase of myco C biomass
+	double dcmass_myco;
 	/// today's increase of harvestable organ C biomass
 	double dcmass_ho;
 	/// today's increase of above-ground pool C biomass
@@ -2820,6 +2826,8 @@ struct cropindiv_struct : public Serializable {
 	double grs_cmass_leaf;
 	/// daily updated root C biomass, reset at harvest day
 	double grs_cmass_root;
+	/// daily updated myco C biomass, reset at harvest day
+	double grs_cmass_myco;
 	/// daily updated harvestable organ C biomass, reset at harvest day
 	double grs_cmass_ho;
 	/// daily updated above-ground pool C biomass, reset at harvest day
@@ -2833,6 +2841,8 @@ struct cropindiv_struct : public Serializable {
 	double grs_cmass_leaf_luc;
 	/// carbon content of harvestable organs saved on first day of land use change year
 	double grs_cmass_root_luc;
+	/// carbon content of harvestable organs saved on first day of land use change year
+	double grs_cmass_myco_luc;
 	/// carbon content of harvestable organs saved on first day of land use change year
 	double grs_cmass_ho_luc;
 	/// carbon content of above-ground pool saved on first day of land use change year
@@ -2848,6 +2858,8 @@ struct cropindiv_struct : public Serializable {
 	double ycmass_leaf;
 	/// daily updated root C biomass, reset at day 0
 	double ycmass_root;
+	/// daily updated myco C biomass, reset at day 0
+	double ycmass_myco;
 	/// daily updated harvestable organ C biomass, reset at day 0
 	double ycmass_ho;
 	/// daily updated above-ground pool C biomass, reset at day 0
@@ -2863,6 +2875,8 @@ struct cropindiv_struct : public Serializable {
 	double harv_cmass_leaf;
 	/// year's root C biomass at time of harvest (cumulative if several harvest events)
 	double harv_cmass_root;
+	/// year's myco C biomass at time of harvest (cumulative if several harvest events)
+	double harv_cmass_myco;
 	/// year's harvestable organ C biomass at time of harvest (cumulative if several harvest events)
 	double harv_cmass_ho;
 	/// year's above-ground pool C biomass at time of harvest (cumulative if several harvest events)
@@ -2976,12 +2990,14 @@ struct cropindiv_struct : public Serializable {
 		yield_harvest[1]=0.0;
 		dcmass_leaf=0.0;
 		dcmass_root=0.0;
+		dcmass_myco = 0.0;
 		dcmass_plant=0.0;
 		dcmass_ho=0.0;
 		dcmass_agpool=0.0;
 		dcmass_stem = 0.0;
 		grs_cmass_leaf=0.0;
 		grs_cmass_root=0.0;
+		grs_cmass_myco = 0.0;
 		grs_cmass_plant=0.0;
 		grs_cmass_ho=0.0;
 		grs_cmass_agpool=0.0;
@@ -2989,6 +3005,7 @@ struct cropindiv_struct : public Serializable {
 		grs_cmass_dead_leaf = 0.0;
 		grs_cmass_leaf_luc=0.0;
 		grs_cmass_root_luc=0.0;
+		grs_cmass_myco_luc = 0.0;
 		grs_cmass_ho_luc=0.0;
 		grs_cmass_agpool_luc=0.0;
 		grs_cmass_dead_leaf_luc = 0.0;
@@ -3001,6 +3018,7 @@ struct cropindiv_struct : public Serializable {
 		pmass_dead_leaf = 0.0;
 		ycmass_leaf=0.0;
 		ycmass_root=0.0;
+		ycmass_myco = 0.0;
 		ycmass_plant=0.0;
 		ycmass_ho=0.0;
 		ycmass_agpool=0.0;
@@ -3008,7 +3026,7 @@ struct cropindiv_struct : public Serializable {
 		ycmass_dead_leaf = 0.0;
 		harv_cmass_leaf=0.0;
 		harv_cmass_root=0.0;
-		harv_cmass_root=0.0;
+		harv_cmass_myco=0.0;
 		harv_cmass_ho=0.0;
 		harv_yield=0.0;
 		harv_cmass_agpool=0.0;
@@ -3137,6 +3155,8 @@ public:
 	double cmass_leaf;
 	/// fine root C biomass on modelled area basis (kgC/m2)
 	double cmass_root;
+	/// Mycorrhiza C biomass on modelled area basis (kgC/m2)
+	double cmass_myco;
 	/// sapwood C biomass on modelled area basis (kgC/m2)
 	double cmass_sap;
 	/// heartwood C biomass on modelled area basis (kgC/m2)
@@ -3149,6 +3169,8 @@ public:
 	double cmass_leaf_post_turnover;
 	/// root C mass after turnover
 	double cmass_root_post_turnover;
+	/// myco C mass after turnover
+	double cmass_myco_post_turnover;
 	/// Latest tunover day for this individual
 	int last_turnover_day;
 
@@ -3415,6 +3437,8 @@ public:
 	double daily_pmass_leafloss;
 	/// The daily C lossed from roots due to senescense, only crops.
 	double daily_cmass_rootloss;
+	/// The daily C lossed from myco due to senescense, only crops.
+	double daily_cmass_mycoloss;
 	/// The daily N lossed from roots due to senescense, only crops.
 	double daily_nmass_rootloss;
 	/// The daily P lossed from roots due to senescense, only crops.
@@ -3599,6 +3623,8 @@ public:
 	double cmass_leaf_today() const;
 	/// Gets the individual's daily cmass_root value
 	double cmass_root_today() const;
+	/// Gets the individual's daily cmass_myco value
+	double cmass_myco_today() const;
 
 	/// Gets the individual's daily LAI value (patch-level)
 	/** Based on total leaf area for whatever the individual represents

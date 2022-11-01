@@ -231,6 +231,7 @@ struct Harvest_CN {
 
 	double cmass_leaf;
 	double cmass_root;
+	double cmass_myco;
 	double cmass_sap;
 	double cmass_heart;
 	double cmass_debt;
@@ -288,7 +289,7 @@ struct Harvest_CN {
 	Harvest_CN() {
 
 
-		cmass_leaf = cmass_root = cmass_sap = cmass_heart = cmass_debt = cmass_ho = cmass_agpool = cmass_stem = cmass_dead_leaf = debt_excess = 0.0;
+		cmass_leaf = cmass_root = cmass_myco = cmass_sap = cmass_heart = cmass_debt = cmass_ho = cmass_agpool = cmass_stem = cmass_dead_leaf = debt_excess = 0.0;
 		nmass_leaf = nmass_root = nmass_sap = nmass_heart = nmass_ho = nmass_agpool = nmass_dead_leaf = nstore_longterm = nstore_labile = max_n_storage = 0.0;
 		pmass_leaf = pmass_root = pmass_sap = pmass_heart = pmass_ho = pmass_agpool = pmass_dead_leaf = pstore_longterm = pstore_labile = max_p_storage = 0.0;
 		cmass_litter_leaf = cmass_litter_root = cmass_litter_sap = cmass_litter_heart = cmass_leaf_root_turnover = 0.0;
@@ -413,6 +414,7 @@ struct Harvest_CN {
 
 			indiv.cmass_leaf = cmass_leaf;
 			indiv.cmass_root = cmass_root;
+			indiv.cmass_myco = cmass_myco;
 			indiv.cmass_sap = cmass_sap;
 			indiv.cmass_heart = cmass_heart;
 			indiv.cmass_debt = cmass_debt;

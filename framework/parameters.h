@@ -168,6 +168,7 @@ extern bool ifdynreloc;
 extern int sla_width;
 extern int wsg_width;
 extern int srl_width;
+extern double max_ctomyco_rate;
 
 /// number of years to allow spinup without nitrogen limitation
 extern int freenyears;
