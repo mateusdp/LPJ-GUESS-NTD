@@ -465,6 +465,7 @@ void Patch::serialize(ArchiveStream& arch) {
 		& nday_growingseason
 		& fpc_total
 		& rpc_total
+		& rpc_myco_total
 		& disturbed
 		& managed
 		& has_been_cut
@@ -754,6 +755,7 @@ void Standpft::serialize(ArchiveStream& arch) {
 		& anetps_ff_max
 		& fpc_total
 		& rpc_total
+		& rpc_myco_total
 		& active
 		& selection
 		& plant

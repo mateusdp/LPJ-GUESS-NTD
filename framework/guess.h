@@ -5085,6 +5085,8 @@ public:
 	double fpc_total;
 	/// total patch RPC
 	double rpc_total;
+	/// total patch mycorrhiza RPC
+	double rpc_myco_total;
 	/// whether patch was disturbed last year
 	bool disturbed;
 	/// patch age (years since last disturbance)
@@ -5327,6 +5329,9 @@ public:
 
 	/// RPC sum for this PFT as average for stand
 	double rpc_total;
+
+	/// RPC myco sum for this PFT as average for stand
+	double rpc_myco_total;
 
 	/// Photosynthesis values for this PFT under non-water-stress conditions
 	PhotosynthesisResult photosynthesis;

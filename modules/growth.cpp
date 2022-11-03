@@ -628,7 +628,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 	cmass_heart_inc = 0.0;
 	cmass_debt_inc = 0.0;
 
-	if (bminc > 0.0)
+	if (ifsrlvary && bminc > 0.0)
 		cmass_myco_inc = max_ctomyco_rate * myco_col * bminc;
 
 	if (!largerthanzero(ltor, -10)) {
@@ -799,6 +799,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 
 				cmass_leaf_inc = (bminc - cmass_myco_inc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
 				cmass_root_inc = bminc - cmass_leaf_inc - cmass_myco_inc;
+				//cmass_root_inc = bminc - cmass_leaf_inc;
 
 				// Make sure we don't end up with negative cmass_leaf
 				cmass_leaf_inc = max(-cmass_leaf, cmass_leaf_inc);
@@ -829,7 +830,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 		}
 		else {
 
-			if (bminc > 0.0)
+			if (ifsrlvary && bminc > 0.0)
 				cmass_myco_inc = max_ctomyco_rate * myco_col * bminc;
 
 			// Abnormal allocation: reduction in some biomass compartment(s) to
@@ -853,7 +854,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 				// guess2008 - back to LPJF method in this case
 				// if (cmass_root_inc<0.0) litter_root_inc=-cmass_root_inc;
 				if (cmass_root_inc < 0.0) {
-					if (bminc > 0.0)
+					if (ifsrlvary && bminc > 0.0)
 						cmass_myco_inc = max_ctomyco_rate * myco_col * bminc;
 					//cmass_leaf_inc = bminc;
 					cmass_leaf_inc = bminc - cmass_myco_inc;
@@ -865,7 +866,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 
 				// Negative or zero allocation to leaves
 				// Eqns (1), (3)
-				if (bminc > 0.0)
+				if (ifsrlvary && bminc > 0.0)
 					cmass_myco_inc = max_ctomyco_rate * myco_col * bminc;
 
 				//cmass_root_inc = bminc;
@@ -923,11 +924,14 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 		//   (14) bminc = cmass_leaf_inc + cmass_root_inc
 		// while satisfying Eqn(3)
 
-		//cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
-		//cmass_root_inc = bminc - cmass_leaf_inc;
+		//bminc += cmass_myco_inc;
+
+		/*cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
+		cmass_root_inc = bminc - cmass_leaf_inc;*/
 
 		cmass_leaf_inc = (bminc - cmass_myco_inc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
 		cmass_root_inc = bminc - cmass_leaf_inc - cmass_myco_inc;
+		//cmass_root_inc = bminc - cmass_leaf_inc;
 
 		if (bminc >= 0.0) {
 
@@ -941,6 +945,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 				//cmass_root_inc = bminc;
 				cmass_root_inc = bminc - cmass_myco_inc;
 				cmass_leaf_inc = (cmass_root + cmass_root_inc) * ltor - cmass_leaf; // Eqn (3)
+				//cmass_leaf_inc = (cmass_root + cmass_root_inc + cmass_myco_inc) * ltor - cmass_leaf; // Eqn (3)
 			}
 			else if (cmass_root_inc < 0.0) {
 
@@ -1005,8 +1010,8 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 				// Make sure we don't end up with negative cmass_root
 
 				if (cmass_root < -cmass_root_inc) {
-					//cmass_leaf_inc = bminc + cmass_root;
-					cmass_leaf_inc = bminc + cmass_root + cmass_myco;
+					cmass_leaf_inc = bminc + cmass_root;
+					//cmass_leaf_inc = bminc + cmass_root + cmass_myco;
 					cmass_root_inc = -cmass_root;
 				}
 			}
@@ -1020,6 +1025,16 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 					cmass_leaf_inc = -cmass_leaf;
 				}
 			}
+			//else if (cmass_myco_inc < 0.0) {
+
+			//	// Negative allocation to mycorrhiza
+			//	// Make sure we don't end up with negative cmass_leaf
+
+			//	if (cmass_myco < -cmass_myco_inc) {
+			//		//cmass_root_inc = bminc + cmass_leaf;
+			//		cmass_myco_inc = -cmass_myco;
+			//	}
+			//}
 		}
 	}
 
@@ -1029,7 +1044,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 	double EPS = 1.0e-12;
 
 	//assert(fabs(bminc + exceeds_cmass - (cmass_leaf_inc + cmass_root_inc + cmass_sap_inc + cmass_heart_inc + litter_leaf_inc + litter_root_inc)) < EPS);
-	assert(fabs(bminc + exceeds_cmass - (cmass_leaf_inc + cmass_root_inc + cmass_myco_inc + cmass_sap_inc + cmass_heart_inc + litter_leaf_inc + litter_root_inc)) < EPS);
+	assert(fabs(bminc + exceeds_cmass - (cmass_leaf_inc + cmass_root_inc + cmass_myco_inc + cmass_sap_inc + cmass_heart_inc + litter_leaf_inc + litter_root_inc + litter_myco_inc)) < EPS);
 }
 
 

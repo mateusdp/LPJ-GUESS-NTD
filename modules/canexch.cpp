@@ -1311,23 +1311,32 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics
 		double nmin_scale = kNmin + nmin_avail / (nmin_avail + gridcell.pft[indiv.pft.id].Km);
 
+		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics for mycorrhiza
+		double nmin_scale_myco = kNmin + nmin_avail / (nmin_avail + 2.03e-6 * gridcell.soiltype.wtot);
+
 		// Maximum available soil mineral nitrogen for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
 		// 4 times smaller than the root area
 		// Added root projective cover	
-		double max_indiv_avail;
+		double max_indiv_avail, max_indiv_avail_myco;
 
-		if(ifsrlvary)
+		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
-		else
+			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail;
+		}
+		else {
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * nmin_avail;
+		}
 
 		// Maximum nitrogen uptake due to all scalars (times 2 because considering both NO3- and NH4+ uptake)
 		// and soil available nitrogen within individual projectived coverage
 		double maxnup = min(2.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
 
+		double maxnup_myco = min(2.0 * 0.013 * nmin_scale_myco * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_myco);
+
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
-		double fractomax = ndemand_tot > 0.0 ? min(maxnup/ndemand_tot,1.0) : 0.0;
+		//double fractomax = ndemand_tot > 0.0 ? min(maxnup/ndemand_tot,1.0) : 0.0;
+		double fractomax = ndemand_tot > 0.0 ? min((maxnup + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
 
 		// Root and leaf demand from storage pools
 		indiv.leafndemand_store = indiv.leafndemand * (1.0 - fractomax);
@@ -1484,23 +1493,31 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
 		double pmin_scale = kPmin + pmin_avail / (pmin_avail + gridcell.pft[indiv.pft.id].Kmp);
 
+		double pmin_scale_myco = max(0.0, kPmin + pmin_avail / (pmin_avail + 1.63e-7 * gridcell.soiltype.wtot));
+
 		// Maximum available soil mineral phosphorus for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
 		// 4 times smaller than the root area
 		// Added root projective cover
-		double max_indiv_avail;
+		double max_indiv_avail, max_indiv_avail_myco;
 
-		if (ifsrlvary)
+		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
-		else
+			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * pmin_avail;
+		}
+		else {
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
+		}
 
 		// Maximum phosphorus uptake due to all scalars
 		// and soil available phosphorus within individual projectived coverage
 		double maxpup = min(indiv.pft.puptoroot * pmin_scale * temp_scale * indiv.ctop_status * indiv.cmass_root_today(), max_indiv_avail);
 
+		double maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * indiv.ctop_status * indiv.cmass_root_today(), max_indiv_avail_myco);
+
 		// Phosphorus demand limitation due to maximum phosphorus uptake capacity
-		double fractomax = pdemand_tot > 0.0 ? min(maxpup / pdemand_tot, 1.0) : 0.0;
+		//double fractomax = pdemand_tot > 0.0 ? min(maxpup / pdemand_tot, 1.0) : 0.0;
+		double fractomax = pdemand_tot > 0.0 ? min((maxpup + maxpup_myco) / pdemand_tot, 1.0) : 0.0;
 
 		// Root and leaf demand from storage pools
 		indiv.leafpdemand_store = indiv.leafpdemand * (1.0 - fractomax);
@@ -1555,7 +1572,7 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	double tot_nmass_avail;
 
 	if(ifsrlvary)
-		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.rpc_total);
+		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.rpc_total + patch.rpc_myco_total);
 	else
 		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.fpc_total);
 
@@ -1563,7 +1580,7 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	// Added patch rpc
 	double tot_pmass_avail;
 	if(ifsrlvary)
-		tot_pmass_avail = patch.soil.pmass_labile * min(1.0, patch.rpc_total);
+		tot_pmass_avail = patch.soil.pmass_labile * min(1.0, patch.rpc_total + patch.rpc_myco_total);
 	else
 		tot_pmass_avail = patch.soil.pmass_labile * min(1.0, patch.fpc_total);
 
@@ -2611,7 +2628,7 @@ void assimilation_wstress(const Pft& pft, double co2, double temp, double par,
 
 void respiration(double gtemp_air, double gtemp_soil, lifeformtype lifeform,
 	double respcoeff, double cton_sap, double cton_root,
-	double cmass_sap, double cmass_root_today, double assim, double& resp) {
+	double cmass_sap, double cmass_root_today, double cmass_myco_today, double assim, double& resp) {
 
 	// DESCRIPTION
 	// Calculation of daily maintenance and growth respiration for individual with
@@ -2648,6 +2665,7 @@ void respiration(double gtemp_air, double gtemp_soil, lifeformtype lifeform,
 
 	double resp_sap;    // sapwood respiration (kg/m2/day)
 	double resp_root;   // root respiration (kg/m2/day)
+	double resp_myco;   // mycorrhiza respiration (kg/m2/day)
 	double resp_growth; // growth respiration (kg/m2/day)
 
 	// Calculation of maintenance respiration components for each living tissue:
@@ -2721,6 +2739,9 @@ void respiration(double gtemp_air, double gtemp_soil, lifeformtype lifeform,
 
 		resp_root = respcoeff * K * cmass_root_today / cton_root * gtemp_soil;
 
+		//Mycorrhiza respiration, using critical C:N by Orwin
+		resp_myco = respcoeff * K * cmass_myco_today / 15.0 * gtemp_soil;
+
 		// Growth respiration = 0.25 ( GPP - maintenance respiration)
 
 		resp_growth = (assim - resp_sap - resp_root) * 0.25;
@@ -2731,13 +2752,16 @@ void respiration(double gtemp_air, double gtemp_soil, lifeformtype lifeform,
 
 		// Total respiration is sum of maintenance and growth respiration
 
-		resp = resp_sap + resp_root + resp_growth;
+		resp = resp_sap + resp_root + resp_myco + resp_growth;
 	}
 	else if (lifeform == GRASS || lifeform == MOSS) {
 
 		// Root respiration
 
 		resp_root = respcoeff * K * cmass_root_today / cton_root * gtemp_soil;
+
+		//Mycorrhiza respiration, using critical C:N by Orwin
+		resp_myco = respcoeff * K * cmass_myco_today / 15.0 * gtemp_soil;
 
 		// Growth respiration (see above)
 
@@ -2749,7 +2773,7 @@ void respiration(double gtemp_air, double gtemp_soil, lifeformtype lifeform,
 
 		// Total respiration (see above)
 
-		resp = resp_root + resp_growth;
+		resp = resp_root + resp_myco + resp_growth;
 	}
 	else fail ("Canopy exchange function respiration: unknown life form");
 }
@@ -2761,7 +2785,7 @@ void respiration(double gtemp_air, double gtemp_soil, lifeformtype lifeform,
 
 void respiration_acclimated(double gtemp_air, double gtemp_soil, double airtemp, double soiltemp, lifeformtype lifeform,
 	double cton_sap, double cton_root,
-	double cmass_sap, double cmass_root_today, double assim, double& resp) {
+	double cmass_sap, double cmass_root_today, double cmass_myco_today, double assim, double& resp) {
 
 	// DESCRIPTION
 	// Same function as above, but includes a respiration acclimation function based on
@@ -2795,6 +2819,7 @@ void respiration_acclimated(double gtemp_air, double gtemp_soil, double airtemp,
 
 	double resp_sap;    // sapwood respiration (kg/m2/day)
 	double resp_root;   // root respiration (kg/m2/day)
+	double resp_myco;   // mycorrhiza respiration (kg/m2/day)
 	double resp_growth; // growth respiration (kg/m2/day)
 
 						// Acclimated respiration
@@ -2827,6 +2852,9 @@ void respiration_acclimated(double gtemp_air, double gtemp_soil, double airtemp,
 
 		resp_root = 1.0 * pow(10, (-0.008 * (soiltemp - 10.15))) * K * cmass_root_today / cton_root * gtemp_soil;
 
+		//Mycorrhiza respiration, using critical C:N by Orwin
+		resp_myco = K * cmass_myco_today / 15.0 * gtemp_soil * 1.0 * pow(10, (-0.008 * (soiltemp - 10.15)));
+
 		// Growth respiration = 0.25 ( GPP - maintenance respiration)
 
 		resp_growth = (assim - resp_sap - resp_root) * 0.25;
@@ -2837,7 +2865,7 @@ void respiration_acclimated(double gtemp_air, double gtemp_soil, double airtemp,
 
 		// Total respiration is sum of maintenance and growth respiration
 
-		resp = resp_sap + resp_root + resp_growth;
+		resp = resp_sap + resp_root + resp_myco + resp_growth;
 	}
 	else if (lifeform == GRASS || lifeform == MOSS) {
 
@@ -2845,6 +2873,9 @@ void respiration_acclimated(double gtemp_air, double gtemp_soil, double airtemp,
 		// respcoeff parameter substituted by acclimation function
 
 		resp_root = 1.0 * pow(10, (-0.008 * (soiltemp - 10.15))) * K * cmass_root_today / cton_root * gtemp_soil;
+
+		//Mycorrhiza respiration, using critical C:N by Orwin
+		resp_myco = K * cmass_myco_today / 15.0 * gtemp_soil * 1.0 * pow(10, (-0.008 * (soiltemp - 10.15)));
 
 		// Growth respiration (see above)
 
@@ -2856,7 +2887,7 @@ void respiration_acclimated(double gtemp_air, double gtemp_soil, double airtemp,
 
 		// Total respiration (see above)
 
-		resp = resp_root + resp_growth;
+		resp = resp_root + resp_myco + resp_growth;
 	}
 	else fail("Canopy exchange function respiration: unknown life form");
 }
@@ -2955,6 +2986,8 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 			cton_root = pft.cton_root_avr;
 		}
 
+		double cmass_myco = indiv.cmass_myco_today();
+
 		//// Static root and sap wood C:P ratio if no P limitation
 
 		//double ctop_sap, ctop_root;
@@ -2971,11 +3004,11 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 		if(acclimated_respiration)
 			respiration_acclimated(gtemp, patch.soil.gtemp, temp, patch.soil.get_soil_temp_25(), indiv.pft.lifeform,
 				cton_sap, cton_root,
-				indiv.cmass_sap, cmass_root, assim, resp);
+				indiv.cmass_sap, cmass_root, cmass_myco, assim, resp);
 		else
 			respiration(gtemp, patch.soil.gtemp, indiv.pft.lifeform,
 				indiv.pft.respcoeff, cton_sap, cton_root,
-				indiv.cmass_sap, cmass_root, assim, resp);
+				indiv.cmass_sap, cmass_root, cmass_myco, assim, resp);
 
 		// Convert to averages for this period for accounting purposes
 		assim /= date.subdaily;
