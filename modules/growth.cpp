@@ -620,6 +620,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 	// initialise
 	litter_leaf_inc = 0.0;
 	litter_root_inc = 0.0;
+	litter_myco_inc = 0.0;
 	exceeds_cmass   = 0.0;
 	cmass_leaf_inc  = 0.0;
 	cmass_root_inc  = 0.0;
@@ -924,14 +925,11 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 		//   (14) bminc = cmass_leaf_inc + cmass_root_inc
 		// while satisfying Eqn(3)
 
-		//bminc += cmass_myco_inc;
-
 		/*cmass_leaf_inc = (bminc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
 		cmass_root_inc = bminc - cmass_leaf_inc;*/
 
 		cmass_leaf_inc = (bminc - cmass_myco_inc - cmass_leaf / ltor + cmass_root) / (1.0 + 1.0 / ltor);
 		cmass_root_inc = bminc - cmass_leaf_inc - cmass_myco_inc;
-		//cmass_root_inc = bminc - cmass_leaf_inc;
 
 		if (bminc >= 0.0) {
 
@@ -944,8 +942,8 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 
 				//cmass_root_inc = bminc;
 				cmass_root_inc = bminc - cmass_myco_inc;
-				cmass_leaf_inc = (cmass_root + cmass_root_inc) * ltor - cmass_leaf; // Eqn (3)
-				//cmass_leaf_inc = (cmass_root + cmass_root_inc + cmass_myco_inc) * ltor - cmass_leaf; // Eqn (3)
+				//cmass_leaf_inc = (cmass_root + cmass_root_inc) * ltor - cmass_leaf; // Eqn (3)
+				cmass_leaf_inc = (cmass_root + cmass_root_inc - cmass_myco_inc) * ltor - cmass_leaf; // Eqn (3)
 			}
 			else if (cmass_root_inc < 0.0) {
 
@@ -955,7 +953,7 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 				//cmass_leaf_inc = bminc;
 				//cmass_root_inc = (cmass_leaf + bminc) / ltor - cmass_root;
 				cmass_leaf_inc = bminc - cmass_myco_inc;
-				cmass_root_inc = (cmass_leaf + bminc) / ltor - cmass_root - cmass_myco_inc;
+				cmass_root_inc = (cmass_leaf + bminc - cmass_myco_inc) / ltor - cmass_root;
 			}
 
 			// Make sure we don't end up with negative cmass_leaf
@@ -1010,8 +1008,8 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 				// Make sure we don't end up with negative cmass_root
 
 				if (cmass_root < -cmass_root_inc) {
-					cmass_leaf_inc = bminc + cmass_root;
-					//cmass_leaf_inc = bminc + cmass_root + cmass_myco;
+					//cmass_leaf_inc = bminc + cmass_root;
+					cmass_leaf_inc = bminc + cmass_root + cmass_myco;
 					cmass_root_inc = -cmass_root;
 				}
 			}
@@ -1021,7 +1019,8 @@ void allocation(double bminc,double cmass_leaf,double cmass_root, double cmass_m
 				// Make sure we don't end up with negative cmass_leaf
 
 				if (cmass_leaf < -cmass_leaf_inc) {
-					cmass_root_inc = bminc + cmass_leaf;
+					//cmass_root_inc = bminc + cmass_leaf;
+					cmass_root_inc = bminc + cmass_leaf + cmass_myco;
 					cmass_leaf_inc = -cmass_leaf;
 				}
 			}
