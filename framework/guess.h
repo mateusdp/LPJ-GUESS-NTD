@@ -5458,6 +5458,8 @@ public:
 	double cmass_wood_harv;
 	/// C lost in mortality
 	double cmass_mort;
+	/// used for output from separate stands
+	double cmass_myco;
 
 	/// Seed for generating random numbers within this Stand
 	/** The reason why Stand has its own seed, rather than using for instance

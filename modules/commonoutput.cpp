@@ -28,6 +28,7 @@ REGISTER_OUTPUT_MODULE("common", CommonOutput)
 CommonOutput::CommonOutput() {
 	// Annual output variables
 	declare_parameter("file_cmass", &file_cmass, 300, "C biomass output file");
+	declare_parameter("file_cmass_myco", &file_cmass_myco, 300, "C mycorrhiza biomass output file");
 	declare_parameter("file_anpp", &file_anpp, 300, "Annual NPP output file");
 	declare_parameter("file_agpp", &file_agpp, 300, "Annual GPP output file");
 	declare_parameter("file_fpc", &file_fpc, 300, "FPC output file");
@@ -432,9 +433,12 @@ void CommonOutput::define_output_tables() {
 	srl_columns += ColumnDescriptor("Total", 13, 1);
 	srl_columns += ColumnDescriptors(landcovers, 13, 1);
 
+	ColumnDescriptors cmass_myco_columns = cmass_columns;
+
 	// *** ANNUAL OUTPUT VARIABLES ***
 
 	create_output_table(out_cmass,          file_cmass,          cmass_columns);
+	create_output_table(out_cmass_myco,			file_cmass_myco,			 cmass_myco_columns);
 	create_output_table(out_anpp,           file_anpp,           anpp_columns);
 	create_output_table(out_agpp,           file_agpp,           agpp_columns);
 	create_output_table(out_fpc,            file_fpc,            fpc_columns);
@@ -810,6 +814,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	aaet = apet = aevap = arunoff = aintercep = awetland_water_added = 0.0;
 
 	double landcover_cmass[NLANDCOVERTYPES]={0.0};
+	double landcover_cmass_myco[NLANDCOVERTYPES] = { 0.0 };
 	double landcover_nmass[NLANDCOVERTYPES]={0.0};
 	double landcover_cmass_leaf[NLANDCOVERTYPES]={0.0};
 	double landcover_nmass_leaf[NLANDCOVERTYPES]={0.0};
@@ -833,6 +838,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double landcover_vmaxplim[NLANDCOVERTYPES] = { 0.0 };
 
 	double mean_standpft_cmass=0.0;
+	double mean_standpft_cmass_myco = 0.0;
 	double mean_standpft_nmass=0.0;
 	double mean_standpft_pmass = 0.0;
 	double mean_standpft_cmass_leaf=0.0;
@@ -865,6 +871,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double mean_standpft_srl = 0.0;
 
 	double cmass_gridcell=0.0;
+	double cmass_myco_gridcell = 0.0;
 	double nmass_gridcell= 0.0;
 	double pmass_gridcell = 0.0;
 	double cmass_leaf_gridcell=0.0;
@@ -917,6 +924,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double c_org_leach_gridcell=0.0;
 
 	double standpft_cmass=0.0;
+	double standpft_cmass_myco = 0.0;
 	double standpft_nmass=0.0;
 	double standpft_pmass = 0.0;
 	double standpft_cmass_leaf=0.0;
@@ -958,6 +966,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 
 		// Sum C biomass, NPP, LAI and BVOC fluxes across patches and PFTs
 		mean_standpft_cmass=0.0;
+		mean_standpft_cmass_myco = 0.0;
 		mean_standpft_nmass=0.0;
 		mean_standpft_pmass = 0.0;
 		mean_standpft_cmass_leaf=0.0;
@@ -1015,6 +1024,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 
 			// Sum C biomass, NPP, LAI and BVOC fluxes across patches and PFTs
 			standpft_cmass=0.0;
+			standpft_cmass_myco = 0.0;
 			standpft_nmass=0.0;
 			standpft_pmass = 0.0;
 			standpft_cmass_leaf=0.0;
@@ -1111,6 +1121,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 									//standpft_wsg += indiv.wooddens / patcharea;
 									standpft_srl += indiv.srl / patcharea;
 								}
+								if(ifsrlvary)
+									standpft_cmass_myco += indiv.cmass_myco;
 								standpft_vmaxnlim += indiv.avmaxnlim * indiv.cmass_leaf;
 								standpft_vmaxplim += indiv.avmaxplim * indiv.cmass_leaf;
 								standpft_nuptake += indiv.anuptake;
@@ -1138,6 +1150,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				} // end of patch loop
 
 				standpft_cmass/=(double)stand.npatch();
+				standpft_cmass_myco /= (double)stand.npatch();
 				standpft_nmass/=(double)stand.npatch();
 				standpft_pmass /= (double)stand.npatch();
 				standpft_cmass_leaf/=(double)stand.npatch();
@@ -1176,6 +1189,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 
 				//Update landcover totals
 				landcover_cmass[stand.landcover]+=standpft_cmass*stand.get_landcover_fraction();
+				landcover_cmass_myco[stand.landcover] += standpft_cmass * stand.get_landcover_fraction();
 				landcover_nmass[stand.landcover]+=standpft_nmass*stand.get_landcover_fraction();
 				landcover_cmass_leaf[stand.landcover]+=standpft_cmass_leaf*stand.get_landcover_fraction();
 				landcover_nmass_leaf[stand.landcover]+=standpft_nmass_leaf*stand.get_landcover_fraction();
@@ -1203,6 +1217,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				//Update pft means for active stands
 				if(active_fraction) {
 					mean_standpft_cmass += standpft_cmass * stand.get_gridcell_fraction() / active_fraction;
+					mean_standpft_cmass_myco += standpft_cmass_myco * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_nmass += standpft_nmass * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_pmass += standpft_pmass * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_cmass_leaf += standpft_cmass_leaf * stand.get_gridcell_fraction() / active_fraction;
@@ -1235,10 +1250,16 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 					mean_standpft_srl += standpft_srl * stand.get_gridcell_fraction() / active_fraction;
 				}
 
+				//Update stand totals
+				stand.anpp += standpft_anpp;
+				stand.cmass += standpft_cmass;
+				stand.cmass_myco += standpft_cmass_myco;
+
 				// Update gridcell totals
 				double fraction_of_gridcell = stand.get_gridcell_fraction();
 
 				cmass_gridcell+=standpft_cmass*fraction_of_gridcell;
+				cmass_myco_gridcell += standpft_cmass_myco * fraction_of_gridcell;
 				nmass_gridcell+=standpft_nmass*fraction_of_gridcell;
 				pmass_gridcell += standpft_pmass * fraction_of_gridcell;
 				cmass_leaf_gridcell+=standpft_cmass_leaf*fraction_of_gridcell;
@@ -1281,6 +1302,11 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 							plot("Plant Leaf:Fine Root C mass [-]", pft.name, date.year, mean_standpft_cmass_leaf / mean_standpft_cmass_root);
 						plot("Vmax N lim",pft.name,date.year,mean_standpft_vmaxnlim);
 						plot("leaf C:N [kgC/kg N]",pft.name,date.year,mean_standpft_cmass_leaf/mean_standpft_nmass_leaf);
+						if (ifsrlvary) {
+							if (mean_standpft_densindiv_total > 0.0)
+								plot("Specific Root Length", pft.name, date.year, mean_standpft_srl / mean_standpft_densindiv_total);
+							plot("C mass Mycorrhiza [kgC/ha]", pft.name, date.year, mean_standpft_cmass_myco * M2_PER_HA);
+						}
 					}
 					if (mean_standpft_cmass_leaf > 0.0 && ifplim) {
 						plot("Vmax P lim", pft.name, date.year, mean_standpft_vmaxplim);
@@ -1315,6 +1341,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 		outlimit(out, out_vmaxplim, mean_standpft_vmaxplim);
 		outlimit(out,out_nuptake,   mean_standpft_nuptake * M2_PER_HA);
 		outlimit(out,out_nlitter,   mean_standpft_nlitter * M2_PER_HA);
+		outlimit(out, out_cmass_myco, mean_standpft_cmass_myco * M2_PER_HA);
 
 		if (mean_standpft_densindiv_total > 0.0) {
 			outlimit(out, out_sla, mean_standpft_sla / mean_standpft_densindiv_total);
@@ -1623,6 +1650,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	outlimit(out,out_runoff,				baserunoff_gridcell);
 	outlimit(out,out_runoff,				runoff_gridcell);
 	outlimit(out,out_wetland_water_added,	wetland_water_added_gridcell);
+
+	outlimit(out, out_cmass_myco, cmass_myco_gridcell  * M2_PER_HA);
 	
 	outlimit(out,out_aiso,		aiso_gridcell);
 	outlimit(out,out_amon,		amon_gridcell);
@@ -1676,6 +1705,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				outlimit(out,out_amon,  landcover_amon[i]);
 				outlimit(out,out_amon_mt1,  landcover_amon_mt1[i]);
 				outlimit(out,out_amon_mt2,  landcover_amon_mt2[i]);
+
+				outlimit(out, out_cmass_myco, landcover_cmass_myco[i]);
 
 				double landcover_cton_leaf = limited_cton(landcover_cmass_leaf[i],
 						landcover_nmass_leaf[i]);

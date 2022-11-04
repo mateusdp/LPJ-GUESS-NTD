@@ -838,6 +838,7 @@ Stand::Stand(int i, Gridcell* gc, Soiltype& st, landcovertype landcoverX, int np
 	cmass = 0.0;
 	cmass_wood = 0.0;
 	cmass_mort = 0.0;
+	cmass_myco = 0.0;
 	scale_LC_change = 1.0;
 }
 
