@@ -830,6 +830,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double mean_standpft_nmass=0.0;
 	double mean_standpft_pmass = 0.0;
 	double mean_standpft_cmass_leaf=0.0;
+	double mean_standpft_cmass_root = 0.0;
 	double mean_standpft_nmass_leaf=0.0;
 	double mean_standpft_pmass_leaf = 0.0;
 	double mean_standpft_cmass_veg=0.0;
@@ -911,6 +912,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	double standpft_nmass=0.0;
 	double standpft_pmass = 0.0;
 	double standpft_cmass_leaf=0.0;
+	double standpft_cmass_root = 0.0;
 	double standpft_nmass_leaf=0.0;
 	double standpft_pmass_leaf = 0.0;
 	double standpft_cmass_veg=0.0;
@@ -950,6 +952,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 		mean_standpft_nmass=0.0;
 		mean_standpft_pmass = 0.0;
 		mean_standpft_cmass_leaf=0.0;
+		mean_standpft_cmass_root = 0.0;
 		mean_standpft_nmass_leaf=0.0;
 		mean_standpft_pmass_leaf = 0.0;
 		mean_standpft_cmass_veg=0.0;
@@ -1005,6 +1008,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 			standpft_nmass=0.0;
 			standpft_pmass = 0.0;
 			standpft_cmass_leaf=0.0;
+			standpft_cmass_root = 0.0;
 			standpft_nmass_leaf=0.0;
 			standpft_pmass_leaf = 0.0;
 			standpft_cmass_veg=0.0;
@@ -1074,6 +1078,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 							if (indiv.pft.id==pft.id) {
 
 								standpft_cmass_leaf += indiv.cmass_leaf;
+								standpft_cmass_root += indiv.cmass_root;
 								standpft_cmass += indiv.ccont();
 								standpft_nmass += indiv.ncont();
 								standpft_pmass += indiv.pcont();
@@ -1123,6 +1128,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				standpft_nmass/=(double)stand.npatch();
 				standpft_pmass /= (double)stand.npatch();
 				standpft_cmass_leaf/=(double)stand.npatch();
+				standpft_cmass_root /= (double)stand.npatch();
 				standpft_nmass_leaf/=(double)stand.npatch();
 				standpft_pmass_leaf /= (double)stand.npatch();
 				standpft_cmass_veg/=(double)stand.npatch();
@@ -1186,6 +1192,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 					mean_standpft_nmass += standpft_nmass * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_pmass += standpft_pmass * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_cmass_leaf += standpft_cmass_leaf * stand.get_gridcell_fraction() / active_fraction;
+					mean_standpft_cmass_root += standpft_cmass_root * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_nmass_leaf += standpft_nmass_leaf * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_pmass_leaf += standpft_pmass_leaf * stand.get_gridcell_fraction() / active_fraction;
 					mean_standpft_cmass_veg += standpft_cmass_veg * stand.get_gridcell_fraction() / active_fraction;
@@ -1254,6 +1261,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 					plot("LAI [m2/m2]",pft.name,date.year,mean_standpft_lai);
 					if (pft.lifeform == TREE) plot("Dens [indiv/ha]",pft.name,date.year,mean_standpft_densindiv_total*M2_PER_HA);
 					if (mean_standpft_cmass_leaf > 0.0 && ifnlim) {
+						if(mean_standpft_cmass_root > 0.0)
+							plot("Plant Leaf:Fine Root C mass [-]", pft.name, date.year, mean_standpft_cmass_leaf / mean_standpft_cmass_root);
 						plot("Vmax N lim",pft.name,date.year,mean_standpft_vmaxnlim);
 						plot("leaf C:N [kgC/kg N]",pft.name,date.year,mean_standpft_cmass_leaf/mean_standpft_nmass_leaf);
 					}
