@@ -1406,7 +1406,8 @@ void growth(Stand& stand, Patch& patch) {
 		if(!ifdynltor)
 			indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
 		else
-			if (indiv.wscal_mean() < 1.0)
+			// In the future, add influence of water stress on ltor, when root mass has an impact on water uptake.
+			if (indiv.wstress)
 				indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.ltor;
 			else
 				indiv.ltor = npscal * indiv.ltor;
