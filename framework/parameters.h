@@ -164,6 +164,7 @@ extern bool ifslavary;
 extern bool ifwsgvary;
 extern bool ifsrlvary;
 extern bool ifdynltor;
+extern bool ifdynreloc;
 extern int sla_width;
 extern int wsg_width;
 extern int srl_width;

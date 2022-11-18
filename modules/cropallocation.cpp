@@ -116,7 +116,7 @@ void turnover_grass(Individual& indiv) {
 		true);*/
 
 	turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
-		indiv.pft.turnover_sap, indiv.pft.lifeform, indiv.pft.landcover,
+		indiv.pft.turnover_sap, indiv.nrelocfrac, indiv.prelocfrac, indiv.pft.lifeform, indiv.pft.landcover,
 		indiv.cropindiv->grs_cmass_leaf, indiv.cropindiv->grs_cmass_root, indiv.cmass_sap, indiv.cmass_heart,
 		indiv.nmass_leaf, indiv.nmass_root, indiv.nmass_sap, indiv.nmass_heart,
 		indiv.pmass_leaf, indiv.pmass_root, indiv.pmass_sap, indiv.pmass_heart,
@@ -136,8 +136,8 @@ void turnover_grass(Individual& indiv) {
 
 	// Nitrogen longtime storage
 	// Nitrogen approx retranslocated next season
-	double retransn_nextyear = cmass_leaf_pre_turnover * indiv.pft.turnover_leaf / cton_leaf_bg * nrelocfrac +
-		cmass_root_pre_turnover * indiv.pft.turnover_root / cton_root_bg * nrelocfrac;
+	double retransn_nextyear = cmass_leaf_pre_turnover * indiv.pft.turnover_leaf / cton_leaf_bg * indiv.nrelocfrac +
+		cmass_root_pre_turnover * indiv.pft.turnover_root / cton_root_bg * indiv.nrelocfrac;
 
 	// Max longterm nitrogen storage
 	indiv.max_n_storage = max(0.0, max(cmass_root_pre_turnover * indiv.pft.fnstorage / cton_leaf_bg, retransn_nextyear));
@@ -152,8 +152,8 @@ void turnover_grass(Individual& indiv) {
 
 	// Phosphorus longtime storage
 	// Phosphorus approx retranslocated next season
-	double retransp_nextyear = cmass_leaf_pre_turnover * indiv.pft.turnover_leaf / ctop_leaf_bg * prelocfrac +
-		cmass_root_pre_turnover * indiv.pft.turnover_root / cton_root_bg * prelocfrac;
+	double retransp_nextyear = cmass_leaf_pre_turnover * indiv.pft.turnover_leaf / ctop_leaf_bg * indiv.prelocfrac +
+		cmass_root_pre_turnover * indiv.pft.turnover_root / cton_root_bg * indiv.prelocfrac;
 
 	// Max longterm nitrogen storage
 	indiv.max_p_storage = max(0.0, max(cmass_root_pre_turnover * indiv.pft.fpstorage / cton_leaf_bg, retransp_nextyear));

@@ -58,6 +58,7 @@ bool ifslavary;
 bool ifwsgvary;
 bool ifsrlvary;
 bool ifdynltor;
+bool ifdynreloc;
 int sla_width;
 int wsg_width;
 int srl_width;
@@ -531,6 +532,8 @@ void plib_declarations(int id,xtring setname) {
 			"Activation of specific root length trait variation. Ranges defined by PFT.");
 		declareitem("ifdynltor", &ifdynltor, 1, CB_NONE,
 			"Whether leaf to fine root ratio is allowed to accumulatively vary with stress");
+		declareitem("ifdynreloc", &ifdynreloc, 1, CB_NONE,
+			"Whether nitrogen and phosphorus resorption is allowed to accumulatively vary with stress");
 		declareitem("sla_width", &sla_width, 0, 5000, 1, CB_NONE,
 			"Number of possible sla values between min and maximum trait ranges (trait resolution)");
 		declareitem("wsg_width", &wsg_width, 0, 5000, 1, CB_NONE,
@@ -1547,6 +1550,7 @@ void plib_callback(int callback) {
 		if (!itemparsed("ifwsgvary")) badins("ifwsgvary");
 		if (!itemparsed("ifsrlvary")) badins("ifsrlvary");
 		if (!itemparsed("ifdynltor")) badins("ifdynltor");
+		if (!itemparsed("ifdynreloc")) badins("ifdynreloc");
 		if (!itemparsed("sla_width")) badins("sla_width");
 		if (!itemparsed("wsg_width")) badins("wsg_width");
 		if (!itemparsed("srl_width")) badins("srl_width");

@@ -3216,6 +3216,10 @@ public:
 	double aaet;
 	/// leaf to root mass ratio
 	double ltor;
+	/// individual current nrelocfrac
+	double nrelocfrac;
+	/// individual current prelocfrac
+	double prelocfrac;
 	/// plant height (m)
 	double height;
 	// stem diameter (m)

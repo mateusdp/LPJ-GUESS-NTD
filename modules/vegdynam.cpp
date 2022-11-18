@@ -574,6 +574,9 @@ void establishment_guess(Stand& stand,Patch& patch) {
 
 						indiv.pft_to_individual();
 
+						indiv.nrelocfrac = nrelocfrac;
+						indiv.prelocfrac = prelocfrac;
+
 						if (ifslavary) {
 							indiv.sla = randomize_trait(pft.sla_min, pft.sla_max, sla_width, stand.seed);
 							indiv.ctonp_tradeoffs();
@@ -738,6 +741,9 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						//////////////////////// TRAIT DIVERSITY FUNCTIONS //////////////////////////
 						
 						indiv.pft_to_individual();
+
+						indiv.nrelocfrac = nrelocfrac;
+						indiv.prelocfrac = prelocfrac;
 
 						if (ifslavary) {
 							indiv.sla = randomize_trait(pft.sla_min, pft.sla_max, sla_width, stand.seed);
