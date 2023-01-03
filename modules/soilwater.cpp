@@ -12,7 +12,7 @@
 /// determines if the original (Gerten et al) scheme is used or the newer scheme.
 ///
 /// \author Ben Smith
-/// $Date: 2021-04-22 18:36:50 +0200 (Thu, 22 Apr 2021) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -425,9 +425,10 @@ void irrigation(Patch& patch) {
 	for (int i = 0; i < npft; i++) {
 
 		Patchpft& ppft = patch.pft[i];
-		if (patch.stand.pft[i].irrigated && ppft.growingseason()) {
+		Standpft& spft = patch.stand.pft[i];
+		if (spft.active && spft.irrigated && ppft.growingseason()) {
 			if (ppft.water_deficit_d < 0.0) {
-				fail("irrigation: Negative water deficit for PFT %s!\n", (char*)ppft.pft.name);
+				fail("irrigation(): Negative water deficit for PFT %s!\n", (char*)ppft.pft.name);
 			}
 			patch.irrigation_d += ppft.water_deficit_d;
 		}

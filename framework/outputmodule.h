@@ -3,7 +3,7 @@
 /// \brief Base class for output modules and a container class for output modules
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-07-13 18:38:50 +0200 (Sat, 13 Jul 2019) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,7 +56,7 @@ public:
 
 	/// Called by the framework at the end of the last day of each simulation year
 	/** Creates output files for new stands */
-	virtual void openlocalfiles(Gridcell& gridcell) = 0;
+	virtual void openlocalfiles(Gridcell& gridcell, int coordinates_precision) = 0;
 
 	/// Called by the framework after the last simulation year
 	/** Closes stand level output files */

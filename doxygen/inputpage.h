@@ -31,5 +31,6 @@ Input classes that do not inherit from InputModule.
 - \ref LandcoverInput
 - \ref ManagementInput
 - \ref SoilInput
+- \ref MiscInput
 
 */

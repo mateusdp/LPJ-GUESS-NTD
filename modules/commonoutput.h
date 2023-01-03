@@ -3,7 +3,7 @@
 /// \brief Output module for the most commonly needed output files
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-10-28 18:48:52 +0100 (Mon, 28 Oct 2019) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +33,7 @@ public:
 
 	void outdaily(Gridcell& gridcell);
 
-	void openlocalfiles(Gridcell& gridcell) {};
+	void openlocalfiles(Gridcell& gridcell, int coordinates_precision) {};
 
 	void closelocalfiles(Gridcell& gridcell) {};
 
@@ -46,7 +46,7 @@ private:
 	xtring file_cmass,file_anpp,file_agpp,file_fpc,file_aaet,file_dens,file_lai,file_cflux,file_doc,file_cpool,file_clitter,file_runoff;
 	xtring file_mnpp,file_mlai,file_mgpp,file_mra,file_maet,file_mpet,file_mevap,file_mrunoff,file_mintercep,file_mrh;
 	xtring file_mnee,file_mwcont_upper,file_mwcont_lower;
-	xtring file_firert,file_speciesheights;
+	xtring file_firert,file_speciesheights,file_speciesdiam;
 	xtring file_wetland_water_added;
 
 	// bvoc
@@ -71,7 +71,7 @@ private:
 
 	// Output tables
 	Table out_cmass, out_anpp, out_agpp, out_fpc, out_aaet, out_dens, out_lai, out_cflux, out_doc, out_cpool, out_clitter, out_firert, out_runoff, out_speciesheights;
-	Table out_wetland_water_added;
+	Table out_speciesdiam, out_wetland_water_added;
 
 	Table out_mnpp, out_mlai, out_mgpp, out_mra, out_maet, out_mpet, out_mevap, out_mrunoff, out_mintercep;
 	Table out_mrh, out_mnee, out_mwcont_upper, out_mwcont_lower;

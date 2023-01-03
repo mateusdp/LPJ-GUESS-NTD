@@ -493,6 +493,7 @@ double survival_probability(Patch& patch, Individual& indiv) {
 bool blaze(Patch& patch, Climate& climate) {
 
 	Gridcell& gridcell = climate.gridcell;
+	ManagementType& mt = patch.stand.get_current_management();
 	
 	// Flammable area witin gridcell
 	double flammable_area = gridcell.landcover.frac[PASTURE]+gridcell.landcover.frac[NATURAL];
@@ -629,7 +630,7 @@ bool blaze(Patch& patch, Climate& climate) {
 			else {
 				// TREE PFT
 
-				if (ifstochmort) {
+				if (ifstochmort && mt.stochmort) {
 					/* Impose stochastic mortality.
 					 * Each individual in cohort dies with probability 'mort_fire'
 					 * Number of individuals represented by 'indiv'
@@ -877,6 +878,8 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
 	// Deal with c-debt before asserting to litter & atm pool
 	double saploss = csapw2atm + csapw2str + csapw2fwd;
 	double hrtloss = chrtw2atm + chrtw2str + chrtw2cwd;
+
+	ppft.cmass_fire += saploss + hrtloss + cleaf2atm + cleaf2met + cleaf2str + croot2met + croot2str;
 
 	if ( cmass_debt > 0. ) { 
 		if ( cmass_debt <= saploss + hrtloss ) {

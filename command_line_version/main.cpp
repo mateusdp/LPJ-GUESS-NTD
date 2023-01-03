@@ -3,7 +3,7 @@
 /// \brief Main module for command line version of LPJ-GUESS
 ///
 /// \author Ben Smith
-/// $Date: 2013-07-17 09:22:52 +0200 (Wed, 17 Jul 2013) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +48,11 @@ int main(int argc,char* argv[]) {
 	// LPJ-GUESS.
 
 	umask(S_IWGRP | S_IWOTH); // only disable write access for group and others
+
+#else
+
+	// Maximizing capacity of number of open files
+	_setmaxstdio(2048);
 
 #endif
 

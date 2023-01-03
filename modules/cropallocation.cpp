@@ -105,6 +105,7 @@ void turnover_grass(Individual& indiv) {
 		patchpft.cmass_litter_root,
 		patchpft.nmass_litter_leaf,
 		patchpft.nmass_litter_root,
+		patchpft.cmass_leaf_root_turnover,
 		indiv.nstore_longterm, indiv.max_n_storage,
 		true);
 
@@ -532,7 +533,7 @@ void growth_crop_daily(Patch& patch) {
 						cmass_seed = 0.1 * CMASS_SEED;
 						nmass_seed = 0.1 * CMASS_SEED / indiv.pft.cton_leaf_min;
 					}
-				} 
+				}
 				else {
 					// add seed carbon on sowing date
 					if(date.day == ppftcrop.sdate) {
@@ -956,7 +957,6 @@ void growth_crop_year(Individual& indiv, double& cmass_leaf_inc, double& cmass_r
 // Neitsch SL, Arnold JG, Kiniry JR et al.2002 Soil and Water Assessment Tool, Theorethical
 //   Documentation + User's Manual. USDA_ARS-SR Grassland, Soil and Water Research Laboratory.
 //   Agricultural Reasearch Service, Temple,Tx, US.
-// S. Olin, G. Schurgers, M. Lindeskog, D. W�rlind, B. Smith, P. Bodin, J. Holm�r, and A. Arneth. 2015
+// S. Olin, G. Schurgers, M. Lindeskog, D. Wårlind, B. Smith, P. Bodin, J. Holmér, and A. Arneth. 2015
 //   Biogeosciences 12, 2489-2515. Modelling the response of yields and tissue C:N to changes in
 //   atmospheric CO2 and N management in the main wheat regions of western Europe
-   

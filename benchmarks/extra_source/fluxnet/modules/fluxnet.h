@@ -37,7 +37,17 @@ public:
 	void getlandcover(Gridcell& gridcell);
 
 	/// Obtains land management data for one day
-	void getmanagement(Gridcell& gridcell) { management_input.getmanagement(gridcell); }
+	void getmanagement(Gridcell& gridcell) { management_input.getmanagement(gridcell, landcover_input); }
+
+	/// Obtains additional environmental data that are not dynamic (e.g. elevation)
+	void getmiscinput_static(Gridcell& gridcell) {
+		misc_input.getmiscinput_static(gridcell);
+	}
+
+	/// Obtains additional environmental data (e.g. disturbance) for one year
+	void getmiscinput_yearly(Gridcell& gridcell) {
+		misc_input.getmiscinput_yearly(gridcell);
+	}
 
 	// Constants associated with historical climate data set
 
@@ -116,6 +126,8 @@ private:
 	LandcoverInput landcover_input;
 	/// Management input module
 	ManagementInput management_input;
+	/// Additional data input module
+	MiscInput misc_input;
 
 	/// search radius to use when finding CRU data
 	double searchradius;

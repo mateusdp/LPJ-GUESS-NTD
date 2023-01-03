@@ -21,7 +21,7 @@
 /// functions.
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-10-28 18:48:52 +0100 (Mon, 28 Oct 2019) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -204,40 +204,52 @@ extern bool lcfrac_fixed;
 /// Whether fractions of stand types of a specific land cover are not read from input file.
 extern bool frac_fixed[NLANDCOVERTYPES];
 
+/// Whether BARREN landcover excluded from area fraction correction in cases of non-unity sum
+extern bool no_barren_frac_corr;
+
 /// Set to false by initio( ) if fraction input files have yearly data.
 extern bool all_fracs_const;
 
-/// If a slow harvested product pool is included in patchpft.
+/// Whether a fraction of harvested wood is put into a product pool
 extern bool ifslowharvestpool;
 
-// If grass is allowed to grow between crop growingseasons
+/// Whether grass is allowed to grow between crop growingseasons
 extern bool ifintercropgrass;
 
-// Whether to calculate dynamic potential heat units
+/// Whether to calculate dynamic potential heat units
 extern bool ifcalcdynamic_phu;
 
-// Whether to use gross land transfer: simulate gross lcc (1); read landcover transfer matrix input file (2); read stand type transfer matrix input file (3), or not (0)
+/// Whether to use gross land transfer: read landcover transfer matrix input file (1), read stand type transfer matrix input file (2), or not (0)
 extern int gross_land_transfer;
 
-// Whether gross land transfer input read for this gridcell
+/// Whether gross land transfer input read for this gridcell
 extern bool gross_input_present;
 
-// Whether to use primary/secondary land transition info in landcover transfer input file (1). or not (0)
+/// Whether to use primary/secondary land transition info in landcover transfer input file (1). or not (0)
 extern bool ifprimary_lc_transfer;
 
-// Whether to use primary-to-secondary land transition info (within land cover type) in landcover transfer input file (1). or not (0)
+/// Distinguish between primary and secondary natural stands at area reduction
+extern bool use_primary_lc_transfer;
+
+/// Whether to use primary-to-secondary land transition info (within land cover type) in landcover transfer input file (1). or not (0)
 extern bool ifprimary_to_secondary_transfer;
 
-// Pooling level of land cover transitions; 0: one big pool; 1: land cover-level; 2: stand type-level
+/// Pooling level of land cover transitions; 0: one big pool; 1: land cover-level; 2: stand type-level
 extern int transfer_level;
 
-// Whether to create new stands in transfer_to_new_stand() according to the rules in copy_stand_type()
+/// Whether to create new stands in transfer_to_new_stand() according to the rules in copy_stand_type()
 extern bool iftransfer_to_new_stand;
 
-// Whether to limit dynamic phu calculation to a period specified by nyear_dyn_phu
+/// Whether to suppress disturbance and fire in forestry stands created as NATURAL stands in transfer_to_new_stand_from_stand() or transfer_to_new_stand_from_st_lc() (eg. LUH2 input)
+extern bool suppress_disturbance_in_forestry_stands;
+
+/// Whether to harvest (remove) wood at natural-to-forest transitions
+extern bool harvest_natural_to_forest;
+
+/// Whether to limit dynamic phu calculation to a period specified by nyear_dyn_phu
 extern bool ifdyn_phu_limit;
 
-// Number of years to calculate dynamic phu if dynamic_phu_limit is true
+/// Number of years to calculate dynamic phu if dynamic_phu_limit is true
 extern int nyear_dyn_phu;
 
 /// number of spinup years
@@ -255,10 +267,40 @@ extern bool readNfert;
 /// Whether to read manure N fertilization from input file
 extern bool readNman;
 
-/// Whether to read N fertilization (stand tyoe level) from input file
+/// Whether to read N fertilization (stand type level) from input file
 extern bool readNfert_st;
 
-/// Whether to print multiple stands within a land cover type (except cropland) separately
+/// Whether to use forest harvested fraction from input file (using LUC functionality)
+extern bool readwoodharvest_frac;
+
+/// Whether to use wood harvest C mass from input file (using LUC functionality)
+extern bool readwoodharvest_cmass;
+
+/// Whether to create new stands at clearcut of secondary stands when using wood harvest input (LUC functionality)
+extern bool harvest_secondary_to_new_stand;
+
+/// Whether to read disturbance intervals from input file
+extern bool readdisturbance;
+
+/// Whether to read disturbance intervals for stand types from input file
+extern bool readdisturbance_st;
+
+/// Whether to read cutinterval for stand types from input file
+extern bool readcutinterval_st;
+
+/// Whether to read stand type elevation from input file
+extern bool readelevation_st;
+
+/// Whether to read firstmanageyear for stand types from input file
+extern bool readfirstmanageyear_st;
+
+// Whether to read target-cutting distribution for selection in mt from input file
+extern bool readtargetcutting;
+
+/// Whether to burn thin trees during tree harvest (ignoring pft.harvest_slow_frac)
+extern bool harvest_burn_thin_trees;
+
+/// Whether to print multiple stands within a stand type (except cropland) separately
 extern bool printseparatestands;
 
 /// Whether to simulate tillage by increasing soil respiration

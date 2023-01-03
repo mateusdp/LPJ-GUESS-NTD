@@ -3,7 +3,7 @@
 /// \brief Input module for the CRU-NCEP data set
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-11-06 17:45:44 +0100 (Wed, 06 Nov 2019) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +50,19 @@ public:
 	void getlandcover(Gridcell& gridcell);
 
 	/// Obtains land management data for one day
-	void getmanagement(Gridcell& gridcell) {management_input.getmanagement(gridcell);}
+	void getmanagement(Gridcell& gridcell) {
+		management_input.getmanagement(gridcell, landcover_input);
+	}
+
+	/// Obtains additional environmental data that are not dynamic (e.g. elevation)
+	void getmiscinput_static(Gridcell& gridcell) {
+		misc_input.getmiscinput_static(gridcell);
+	}
+
+	/// Obtains additional environmental data (e.g. disturbance) for one year
+	void getmiscinput_yearly(Gridcell& gridcell) {
+		misc_input.getmiscinput_yearly(gridcell);
+	}
 
 	// Constants associated with historical climate data set
 
@@ -119,8 +131,12 @@ private:
 
 	/// Land cover input module
 	LandcoverInput landcover_input;
+
 	/// Management input module
 	ManagementInput management_input;
+
+	/// Additional text data input module
+	MiscInput misc_input;
 
 	/// search radius to use when finding CRU data
 	double searchradius;

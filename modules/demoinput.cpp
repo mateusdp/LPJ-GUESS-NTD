@@ -4,7 +4,7 @@
 ///
 ///
 /// \author Ben Smith
-/// $Date: 2021-08-25 17:21:41 +0200 (Wed, 25 Aug 2021) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -211,6 +211,8 @@ void DemoInput::init() {
 	landcover_input.init();
 	// Open management files
 	management_input.init();
+	// Open additional files
+	misc_input.init();
 
 	// Retrieve input file names as read from ins file
 
@@ -254,6 +256,12 @@ bool DemoInput::getgridcell(Gridcell& gridcell) {
 
 			// Retrieve coordinate of next grid cell from linked list
 			Coord& c = gridlist.getobj();
+
+			if(readdisturbance || readdisturbance_st || readelevation_st) {
+				// Not all gridcells have to be included in input file
+				misc_input.loaddisturbance(gridlist.getobj().lon, gridlist.getobj().lat);
+				misc_input.loadelevation(gridlist.getobj().lon, gridlist.getobj().lat);
+			}
 
 			// Load environmental data for this grid cell from files
 			if(run_landcover) {

@@ -3,7 +3,7 @@
 /// \brief Vegetation dynamics and disturbance
 ///
 /// \author Ben Smith
-/// $Date: 2012-08-27 11:11:14 +0200 (Mon, 27 Aug 2012) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -17,5 +17,6 @@
 #include "guess.h"
 
 void vegetation_dynamics(Stand& stand,Patch& patch);
+void planting(Patch& patch);
 
 #endif // LPJ_GUESS_VEGDYNAM_H

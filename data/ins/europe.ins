@@ -11,13 +11,25 @@
 !// with a generalized dynamic vegetation model. In press, Global Ecology & Biogeography.
 !//
 !// are commented with ! THdiff
-!///////////////////////////////////////////////////////////////////////////////
+!//
+!// Lar_dec is adapted from Scherstjanoi, M., Kaplan, J. O., and Lischke, H.: Application of a computationally 
+!// efficient method to approximate gap model results with a probabilistic approach, Geosci. Model Dev., 7, 1543–
+!// 1571, https://doi.org/10.5194/gmd-7-1543-2014, 2014.
+!///////////////////////////////////////////////////////////////////////////////////////
 
 import "global_soiln.ins"
 
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
+! Input files
+!///////////////////////////////////////////////////////////////////////////////////////
+
+param "file_disturbance" (str "")
+param "file_disturbance_st" (str "")
+param "file_elevation_st" (str "")
+
+!///////////////////////////////////////////////////////////////////////////////////////
 ! Output files
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 
 ! outputdirectory is mandatory. Should be "./" for parallel runs.
 outputdirectory "./"
@@ -44,6 +56,7 @@ file_cpool "cpool.out"
 !file_amon_mt1 "amon_mt1.out"
 !file_amon_mt2 "amon_mt2.out"
 !file_speciesheights "height.out"
+!file_speciesdiam "diam.out"
 
 file_nmass "nmass.out"
 file_cton_leaf "cton_leaf.out"
@@ -87,10 +100,9 @@ file_nflux "nflux.out"
 
 !file_mburned_area_out "monthly_burned_area.out"
 
-
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 !// RUN PARAMETERS AND OPTIONS
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 
 ! Settings recognised by Plib
 ! Run GUESS with -help option for list of keywords and their meanings
@@ -128,9 +140,9 @@ ifrainonwetdaysonly 1		! Whether to rain on wet days only (1), or to rain a bit 
 ifbvoc 0			! Whether to include BVOC calculations (1) or not (0)
 
 
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 ! PROCESS SETTINGS SPECIFIC TO NITROGEN
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 
 ifcentury 1			! Whether to use CENTURY SOM dynamics (mandatory for N cycling)
 ifnlim 1			! Whether plant growth limited by available N
@@ -140,9 +152,9 @@ nfix_b 0.524			! Second term in N fixation eqn (Conservative 0.524, Central -0.1
 nrelocfrac 0.5			! Fraction of N retranslocated prior to leaf and root shedding
 
 
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 ! ARCTIC AND WETLAND SWITCHES
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 
 iftwolayersoil 0		! Use the original LPJ-GUESS v4 two layer soil and snow scheme, or not (0, by default). 
 				! Of the switches below, iforganicsoilproperties, ifcarbonfreeze and 
@@ -163,9 +175,9 @@ ifmethane 0			! Whether to run the methane model and calculate methane fluxes
 ifsaturatewetlands 0		! Whether to take water from runoff to saturate low latitide wetlands (1), or not (0)
 
 
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 ! SERIALIZATION SETTINGS
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 
 !state_year 500			! Year to save/start state file (no setting = after spinup)
 restart 0			! Whether to start from a state file
@@ -173,21 +185,20 @@ save_state 0			! Whether to save a state file
 !state_path ""			! Directory to put state files in
 
 
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 ! LANDCOVER PARAMETERS
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 
 run_landcover 0        		! Whether to use (and change) landcover fractions (1) or not (0)
 
 
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 !// PARAMETERS FOR STAND TYPES
-!///////////////////////////////////////////////////////////////////////////////
+!///////////////////////////////////////////////////////////////////////////////////////
 
 group "common_stand" (
 
 	intercrop "nointercrop"
-	restrictpfts 0		! Use all pft:s defined for a land cover (pft parameter landcover)
 )
 
 st "Natural" (
@@ -202,6 +213,7 @@ st "Natural" (
 !///////////////////////////////////////////////////////////////////////////////////////
 !// PARAMETERS FOR PFTS
 !// Run GUESS with -help option for list of keywords and their meanings
+!///////////////////////////////////////////////////////////////////////////////////////
 
 group "common" (
 
@@ -231,6 +243,8 @@ group "common" (
 	gdd0_max 100000		! [degC day] max GDD0, i.e. No restriction here
 	gdd0_min 0		! [degC day] min GDD0, i.e. No restriction here
 	has_aerenchyma 0	! PFTs do not have aerenchyma for gas transport by default
+	stem_frac 1
+	twig_frac 0
 )
 
 group "tree" (
@@ -262,10 +276,12 @@ group "tree" (
 	k_chillk 0.05
 	litterme 0.3
 
-	harv_eff 0.95
-	res_outtake 0.75
+	harv_eff 0.9		! Value for forestry
+	res_outtake 0.4		! Value for forestry
 	turnover_harv_prod 0.04 ! Turnover rate for long-lived harvested products (wood) : 0.04 corresponds to a 25-year turnover time (as in Bondeau 2007)
 	harvest_slow_frac 0.33	! Bondeau 0.33
+	stem_frac 0.65
+	twig_frac 0.13
 )
 
 group "shrub" (
@@ -295,6 +311,8 @@ group "shrub" (
 	root_beta 0.982
 	longevity 100
 
+	harv_eff 0.9		! Value for forestry
+	res_outtake 0.4		! Value for forestry
 	turnover_harv_prod 1 ! Turnover rate for long-lived harvested products (wood) : 1-year turnover time
 	harvest_slow_frac 0
 )
@@ -434,8 +452,8 @@ pft "Abi_alb" (
 	leaflong 3		! THdiff: 4
 	turnover_leaf 0.33	! THdiff: 0.25
 	phengdd5ramp 0
-	tcmin_surv -2		! from GS. THdiff: -4.5 ! Sykes96: -4.5
-	tcmin_est -2		! from GS. THdiff: -3.5 ! Sykes96: -4.5
+	tcmin_surv -7.5		! from GS. THdiff: -4.5 ! Sykes96: -4.5 ; ML
+	tcmin_est  -6.5		! from GS. THdiff: -3.5 ! Sykes96: -4.5 ; ML
 	tcmax_est 2		! from GS. THdiff: -2
 	twmin_est 6		! limit not implemented
 	gdd5min_est 1600	! from GS ! THdiff: -1450 ! Sykes96: 1450
@@ -522,6 +540,7 @@ pft "Bet_pen" (
 	seas_iso 1
 	eps_mon 2.1 3.9 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 500
 
 	greff_min 0.135 	! Version 4.1 update, as in global.ins. Improves B(I)NE/IBS balance in boreal regions.
 )
@@ -555,6 +574,7 @@ pft "Bet_pub" (
 	seas_iso 1
 	eps_mon 0.1 0.9 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 1000
 
 	greff_min 0.135 	! Version 4.1 update, as in global.ins. Improves B(I)NE/IBS balance in boreal regions.
 )
@@ -636,8 +656,8 @@ pft "Fag_syl" (
 	phenology "summergreen"
 	fnstorage 0.15
 	phengdd5ramp 200
-	tcmin_surv -3.5		! Sykes96
-	tcmin_est -3.5
+	tcmin_surv -8		! -3.5 Sykes96 ; ch ML
+	tcmin_est -6		! -3.5 ; ch ML
 	tcmax_est 6		! THdiff: -
 	twmin_est 5		! THdiff: - Sykes96
 	gdd5min_est 1500	! Sykes96 990 (with greater chilling)
@@ -652,6 +672,7 @@ pft "Fag_syl" (
 	seas_iso 1
 	eps_mon 3.5 6.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 800
 )
 
 
@@ -683,6 +704,7 @@ pft "Fra_exc" (
 	seas_iso 1
 	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 200
 )
 
 
@@ -724,6 +746,40 @@ pft "Jun_oxy" (
 	storfrac_mon 0.5 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 )
 
+pft "Lar_dec" (
+
+! 	Adapted from Scherstjanoi et al. (2014) (Sch)
+	include 0
+	tree
+	intermediate_shade_tolerant
+	boreal
+	needleleaved
+	k_latosa 5000		! THdiff: 2000 ! Sch
+!	sla 9.3			! Not used if ifcalcsla is set
+	gmin 0.3		! needle-leaf value
+	phenology "summergreen"	! Sch
+	fnstorage 0.05		! needle-leaf value
+	leaflong 0.5		! Sch			
+	turnover_leaf 1		! (Sch)
+	phengdd5ramp 100	! Sch
+	tcmin_surv -30		! (Sch)
+	tcmin_est -30		! Sch -29
+	tcmax_est -2.0		! Sykes96	! Sch
+	twmin_est 5		! THdiff: -	! Picea, Pinus value
+	gdd5min_est 300		! Sykes96	! Sch
+	k_chilla 0		! needle-leaf value
+	k_chillb 100		! (Sch)
+	k_chillk 0.05		! needle-leaf value
+	fireresist 0.2		!
+	intc 0.06		! needle-leaf value
+	longevity 500		! THdiff: 500	! Sch
+	drought_tolerance 0.3	! Sch
+	eps_iso 0.
+	seas_iso 0
+	eps_mon 3.2 0.8 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	storfrac_mon 0.5 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 2000
+)
 
 pft "MRS" (
 
@@ -796,6 +852,7 @@ pft "Pic_abi" (
 	seas_iso 0
 	eps_mon 3.9 2.1 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	storfrac_mon 0.5 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 2000
 )
 
 
@@ -872,6 +929,7 @@ pft "Pin_syl" (
 	seas_iso 0
 	eps_mon 3.2 0.8 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	storfrac_mon 0.5 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 2000
 )
 
 
@@ -943,6 +1001,7 @@ pft "Pop_tre" (
 	seas_iso 1
 	eps_mon 2.4 1.6 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 300
 )
 
 
@@ -1080,6 +1139,7 @@ pft "Que_rob" (
 	seas_iso 1
 	eps_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 	storfrac_mon 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+	plantdensity 1000
 )
 
 

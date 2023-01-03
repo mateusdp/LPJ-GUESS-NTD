@@ -12,14 +12,14 @@
 #include "config.h"
 #include "guess.h"
 
-using namespace InData;
+using namespace TextInput;
 
 /// Default value for gridlist and text input spatial resolution.
 /*  Input data will be parsed for finer resolution than the default value. For coarser resolutions, raise default value.or set manually */
 const double DEFAULT_SPATIAL_RESOLUTION = 0.5;
 
 /// Write land use fraction data to memory; enables efficient usage of randomised gridlists for parallell simulations
-const bool LUTOMEMORY = true;
+const bool LUTOMEMORY = false;
 
 // Mapping of input file data when LUTOMEMORY not defined
 const bool MAPFILE = true;
@@ -48,6 +48,7 @@ void TimeDataD::CheckIfPresent(ListArray_id<Coord>& gridlist) { //Requires gutil
 
 	if(checkdata) {
 		delete[] checkdata;
+		checkdata = NULL;
 		year = NULL;
 	}
 
@@ -170,7 +171,7 @@ double TimeDataD::Get(int calender_year, int column) const {
 	return data[nColumns * yearX + column];
 }
 
-double TimeDataD::Get(int calender_year, const char* name) const {
+double TimeDataD::Get(int calender_year, const char* name, bool suppress_warning) const {
 
 	if(memory_copy && !(format == GLOBAL_STATIC || format == GLOBAL_YEARLY))
 		return memory_copy->Get(calender_year, name);
@@ -187,8 +188,8 @@ double TimeDataD::Get(int calender_year, const char* name) const {
 
 	if(column == -1) {
 
-		if(calender_year == firstyear)
-		printf("WARNING: Value for %s not found in %s.\n", name, fileName);
+		if(calender_year == firstyear && !suppress_warning)
+			dprintf("WARNING. TimeDataD::Get(): Value for %s not found in %s.\n", name, fileName);
 		return NOTFOUND;
 	}
 	else {
@@ -209,7 +210,7 @@ int TimeDataD::GetColumn(const char* name) const {
 	}
 
 	if(column == -1) {
-		printf("WARNING: Data for %s not found in %s.\n", name, fileName);
+		dprintf("WARNING. TimeDataD::GetColumn: Data for %s not found in %s.\n", name, fileName);
 		return -1;
 	}
 	else {
@@ -240,24 +241,25 @@ bool TimeDataD::Open(const char* name) {
 		fileName = new char[strlen(name) + 1];
 
 		if(!fileName) {
-			printf("Cannot allocate memory for file name string !\n");
+			dprintf("TimeDataD::Open: Cannot allocate memory for file name string !\n");
 			return false;
 		}
 		else {
+			fileName[0] = '\0';
 			strcpy(fileName,name);
 		}
 
 		format_parsed = ParseFormat();
 
 		if(format != format_parsed) {	// Checks format (sets it if header), sets nColumns, ifheader and header_arr[]
-			printf("Wrong format in file %s (failing ParseFormat()!\n", name);
+			dprintf("TimeDataD::Open: Wrong format in file %s (failing ParseFormat()!\n", name);
 			return false;
 		}
 		else if(format == GLOBAL_YEARLY || format == LOCAL_YEARLY) {
 
 			nYears = ParseNYears();	// Parse numbers of years in input file
 			if(nYears == 0)	{
-				printf("Wrong format in file %s (nYears=0)!\n", name);
+				dprintf("TimeDataD::Open: Wrong format in file %s (nYears=0)!\n", name);
 				return false;
 			}
 		}
@@ -265,14 +267,17 @@ bool TimeDataD::Open(const char* name) {
 			nYears = 1;
 		}
 		else if(format == EMPTY) {	//should be set by now
-			printf("Please set data format at initialization !\n");
+			dprintf("TimeDataD::Open: Please set data format at initialization !\n");
 			return false;
 		}
 
 		if(!Allocate())	{			//Allocate memory for dynamic data
-			printf("Could not allocate memory for data from file %s!\n", name);
+			dprintf("TimeDataD::Open: Could not allocate memory for data from file %s!\n", name);
 			return false;
 		}
+
+		ParsePrecision(); // Must be done before call to Load(), where file is closed.
+
 		// Load global data.
 		if(format == GLOBAL_STATIC || format == GLOBAL_YEARLY) {
 			Load();
@@ -281,7 +286,7 @@ bool TimeDataD::Open(const char* name) {
 		spatial_resolution = ParseSpatialResolution();
 	}
 	else {
-		printf("TimeDataD::Open: File %s could not be opened for input !\n\n", name);
+		dprintf("TimeDataD::Open: File %s could not be opened for input !\n\n", name);
 		return false;
 	}
 
@@ -317,12 +322,82 @@ bool TimeDataD::NormalisedData() {
 	return unity_data;
 }
 
+void TimeDataD::ParsePrecision() {
+
+	char line[MAXLINE]={0}, s1[MAXRECORDS][MAXNAMESIZE] = {'\0'};
+	char *chp = NULL, *p = NULL;
+	int count1 = 0, line_no = 0;
+	const int maxnsample = 2000;
+	int nsample = min(maxnsample, GetNCells() * nYears);
+	int first_data_column = 0;
+
+	switch(format) {
+
+	case GLOBAL_YEARLY:
+		first_data_column = 1;
+		break;
+	case LOCAL_STATIC:
+		first_data_column = 2;
+		break;
+	case LOCAL_YEARLY:
+		first_data_column = 3;
+		break;
+	case GLOBAL_STATIC:
+		first_data_column = 1;
+		break;
+	default:	// format EMPTY
+		printf("Format is not set correctly in file %s !\n", fileName);
+	}
+
+	Rewind();
+	bool firstline = true;
+	while(!feof(ifp)) {
+		count1=0;
+		line[0]=0;
+		if(fgets(line,sizeof(line),ifp)) {
+			line_no++;
+			p=strtok(line, "\t\n ");
+
+			if(p) {
+				strncpy(s1[count1], p, MAXNAMESIZE-1);
+			}
+			count1++;
+			do {
+				p=strtok(NULL, "\t\n ");
+				if(p) {
+					strncpy(s1[count1], p, MAXNAMESIZE-1);
+					count1++;
+				}
+			}
+			while(p);
+			p=NULL;
+
+			if(ifheader && firstline) {
+				firstline = false;
+			}
+			else {
+				for(int i=first_data_column ;i<count1;i++) {
+					char word_copy[MAXNAMESIZE] = {'\0'};
+					strncpy(word_copy, s1[i], MAXNAMESIZE-1);
+					int str_length  = int(strlen(word_copy));
+					if(chp = strrchr(word_copy, '.'))
+						*chp='\0';
+					int precision_local = str_length - int(strlen(word_copy)) - 1;
+					if(precision_local > precision)
+					precision = precision_local;
+				}
+			}
+		}
+	}
+	Rewind();
+}
+
 void TimeDataD::CreateFileMap() {
 
 	if(format == GLOBAL_STATIC || format == GLOBAL_YEARLY)
 		return;
 
-	long int pos;
+	filepos pos;
 	int i = 0;
 	nCells = GetNCells();
 
@@ -338,7 +413,7 @@ void TimeDataD::CreateFileMap() {
 		lSize = ftell(ifp_map);
 		rewind(ifp_map);
 		if(lSize != nCells * sizeof(CoordPos)) {
-			dprintf("Text data map file format is not up to date. New mapping started.\n");
+			dprintf("TimeDataD::CreateFileMap: Text data map file format is not up to date. New mapping started.\n");
 			fclose(ifp_map);
 			ifp_map = NULL;
 		}
@@ -360,7 +435,7 @@ void TimeDataD::CreateFileMap() {
 			fclose(ifp_map);
 		FILE *ofp_map = fopen(mapname,"wb");
 		if(!ofp_map)
-			fail("File could not be opened for output, quitting\n");
+			fail("TimeDataD::CreateFileMap: File could not be opened for output, quitting\n");
 		fwrite(filemap, sizeof(CoordPos), nCells, ofp_map);
 		fclose(ofp_map);
 	}
@@ -429,8 +504,10 @@ fileformat TimeDataD::ParseFormat() {
 	}
 	while(!(count1 > 0));
 
-	for(int q=0;q<count1;q++)
+	for(int q=0;q<count1;q++) {
 		header_arr[q]=new char[MAXNAMESIZE];
+		header_arr[q][0] = '\0';
+	}
 
 	if(!strcmp(s1[0], "lon") || !strcmp(s1[0], "Lon") || !strcmp(s1[0], "LON")) {
 
@@ -493,7 +570,7 @@ fileformat TimeDataD::ParseFormat() {
 		if(ifheader)
 			format = format_local;
 		else
-			printf("Please set data format at initialization !\n");
+			dprintf("TimeDataD::ParseFormat: Please set data format at initialization !\n");
 	}
 
 	switch(format) {
@@ -504,7 +581,7 @@ fileformat TimeDataD::ParseFormat() {
 			return GLOBAL_YEARLY;
 		}
 		else {
-			printf("Format in input file is incompatible with GLOBAL_YEARLY flag\n");
+			dprintf("TimeDataD::ParseFormat: Format in input file is incompatible with GLOBAL_YEARLY flag\n");
 			return EMPTY;
 		}
 		break;
@@ -514,7 +591,7 @@ fileformat TimeDataD::ParseFormat() {
 			return LOCAL_STATIC;
 		}
 		else {
-			printf("Format in input file is incompatible with LOCAL_STATIC flag\n");
+			dprintf("TimeDataD::ParseFormat: Format in input file is incompatible with LOCAL_STATIC flag\n");
 			return EMPTY;
 		}
 		break;
@@ -524,7 +601,7 @@ fileformat TimeDataD::ParseFormat() {
 			return LOCAL_YEARLY;
 		}
 		else {
-			printf("Format in input file is incompatible with LOCAL_YEARLY flag\n");
+			dprintf("TimeDataD::ParseFormat: Format in input file is incompatible with LOCAL_YEARLY flag\n");
 			return EMPTY;
 		}
 		break;
@@ -534,7 +611,7 @@ fileformat TimeDataD::ParseFormat() {
 			return GLOBAL_STATIC;
 		}
 	default:
-		printf("Format is not set correctly in file %s !\n", fileName);
+		dprintf("TimeDataD::ParseFormat: Format is not set correctly in file %s !\n", fileName);
 		return EMPTY;
 	}
 }
@@ -552,7 +629,7 @@ int TimeDataD::ParseNYears() {
 		n_yearsX = ParseNYearsLocal();
 		break;
 	default:
-		printf("Format in is uncorrectly set by program for file %s !\n", fileName);
+		dprintf("FTimeDataD::ParseNYears: ormat in is uncorrectly set by program for file %s !\n", fileName);
 		return 0;
 	}
 
@@ -606,12 +683,12 @@ void TimeDataD::ParseNCells() {
 	}
 
 	float d1;
-	long int oldpos;
+	filepos oldpos;
 	int i = 0, count = 0;
 	char line[MAXLINE];
 	bool error = false;
 
-	oldpos=ftell(ifp);
+	oldpos=filetell(ifp);
 	if(oldpos!=0)
 		rewind(ifp);
 
@@ -641,9 +718,9 @@ void TimeDataD::ParseNCells() {
 	}
 
 	if(error)
-		dprintf("Unexpected number of lines ! No.lines=%d, No.cells=%d, No.years=%d\n", i, nCells, nYears);
+		dprintf("TimeDataD::ParseNCells: Unexpected number of lines ! No.lines=%d, No.cells=%d, No.years=%d\n", i, nCells, nYears);
 
-	fseek(ifp, oldpos, 0);
+	fileseek(ifp, oldpos, 0);
 }
 
 int TimeDataD::ParseNYearsLocal() {
@@ -673,7 +750,7 @@ int TimeDataD::ParseNYearsLocal() {
 				if(new_coord) {
 
 					if((nyears1 != nyears2 || firstyear1 != firstyear2) && n > 1) {
-						printf("FORMAT ERROR in input file %s\n%s\n\n", fileName, message);
+						dprintf("TimeDataD::ParseNCells: FORMAT ERROR in input file %s\n%s\n\n", fileName, message);
 						return 0;
 					}
 					nyears1 = nyears2;		//NB. not set if input file has data for only one coordinate !
@@ -702,7 +779,7 @@ int TimeDataD::ParseNYearsLocal() {
 			nyears2 = i - prevLine - 1;
 		}
 		if((nyears1 != nyears2 || firstyear1 != firstyear2) && n>1) {
-			printf("FORMAT ERROR in input file %s\n%s\n\n", fileName, message);
+			dprintf("TimeDataD::ParseNCells: FORMAT ERROR in input file %s\n%s\n\n", fileName, message);
 			return 0;
 		}
 	}
@@ -734,7 +811,7 @@ int TimeDataD::ParseNYearsGlobal() {
 						firstyear = (int)d1;
 				}
 				else {
-					printf("FORMAT ERROR in input file %s !\n", fileName);
+					dprintf("TimeDataD::ParseNYearsGlobal: FORMAT ERROR in input file %s !\n", fileName);
 					nyears = 0;
 					break;
 				}
@@ -857,7 +934,7 @@ bool TimeDataD::Load() {	// for GLOBAL_YEARLY and GLOBAL_STATIC data
 					sscanf(p, "%d", &yearX);
 
 					if(yearX != yearX_previous + 1)	{
-						printf("FORMAT ERROR in input file %s: Load(). Wrong year in data file ! Missing line ?\n", fileName);
+						dprintf("FORMAT ERROR in input file %s: TimeDataD::Load(). Wrong year in data file ! Missing line ?\n", fileName);
 						error = true;
 						break;
 					}
@@ -881,14 +958,14 @@ bool TimeDataD::Load() {	// for GLOBAL_YEARLY and GLOBAL_STATIC data
 								data[nColumns * i + j] = d[j];
 						}
 						else {
-							printf("FORMAT ERROR in input file %s: Load(), count!=%d\n", fileName, i+1);
+							dprintf("FORMAT ERROR in input file %s: TimeDataD::Load(), count!=%d, year %d\n", fileName, nColumns, i+1);
 							error = true;
 						}
 						i++;
 					}
 				}
 				else {
-					printf("An ERROR occurred reading file %s\n", fileName);
+					dprintf("TimeDataD::Load: An ERROR occurred reading file %s\n", fileName);
 					error = true;
 				}
 			}
@@ -903,7 +980,7 @@ bool TimeDataD::Load() {	// for GLOBAL_YEARLY and GLOBAL_STATIC data
 						p = strtok(line," \t");	//"static"
 					}
 					else {
-						printf("An ERROR occurred reading file %s\n", fileName);
+						dprintf("TimeDataD::Load: An ERROR occurred reading file %s\n", fileName);
 						error = true;
 					}
 				}
@@ -920,22 +997,22 @@ bool TimeDataD::Load() {	// for GLOBAL_YEARLY and GLOBAL_STATIC data
 						data[i] = d[i];
 				}
 				else {
-					printf("FORMAT ERROR in input file %sf: Load(), count!=%d\n", fileName, nColumns+1);
+					dprintf("FORMAT ERROR in input file %sf: TimeDataD::Load(), count!=%d\n", fileName, nColumns+1);
 					error = true;
 				}
 			}
 			else {
-				printf("An ERROR occurred reading file %s\n", fileName);
+				dprintf("TimeDataD::Load: An ERROR occurred reading file %s\n", fileName);
 				error = true;
 			}
 		}
 		else {
-			printf("Wrong usage of Load(void)\n");
+			dprintf("Wrong usage of TimeDataD::Load(void)\n");
 			error = true;
 		}
 	}
 	else {
-		printf("Cannot load from unopened file !\n");
+		dprintf("TimeDataD::Load: Cannot load from unopened file !\n");
 		error = true;
 	}
 
@@ -958,7 +1035,7 @@ bool TimeDataD::LoadFromMap(Coord c) {
 
 	double searchradius = min(spatial_resolution / 2.0, MAX_SEARCHRADIUS);
 	double min_dist = 1000;
-	long int found_pos = -1;
+	filepos found_pos = -1;
 	int found_i;
 
 	for(int i=0; i<nCells; i++) {
@@ -977,7 +1054,7 @@ bool TimeDataD::LoadFromMap(Coord c) {
 		SetPosition(found_pos);
 		LoadNext();
 		if(currentStand.lon != filemap[found_i].lon || currentStand.lat != filemap[found_i].lat)
-			fail("Error in saved file map for %s. Delete map.bin file and retry\n", fileName);
+			fail("TimeDataD::LoadFromMap: Error in saved file map for %s. Delete map.bin file and retry\n", fileName);
 		loaded = true;
 	}
 	else {
@@ -1042,8 +1119,9 @@ bool TimeDataD::Load(Coord c) {
 							p = strtok(NULL, " \t");	//year
 
 							if(fabs(lonX - c.lon) > spatial_resolution / 2.0 || fabs(latX - c.lat) > spatial_resolution / 2.0) {
-								printf("FORMAT ERROR in input file %s for stand at Coordinate %.2f,%.2f: Load(). Wrong coordinates in data file !\n", fileName, c.lon, c.lat);
-								printf("Make sure file has correct DOS/Unix text format\n");				
+								dprintf("FORMAT ERROR in input file %s for stand at Coordinate %.2f,%.2f: TimeDataD::Load(). Wrong coordinates in data file !\n", 
+									fileName, c.lon, c.lat);
+								dprintf("Make sure file has correct DOS/Unix text format\n");				
 								error = true;
 								break;
 							}
@@ -1062,7 +1140,8 @@ bool TimeDataD::Load(Coord c) {
 						sscanf(p, "%d", &yearX);
 
 						if(yearX != yearX_previous + 1) {
-							printf("FORMAT ERROR in input file %s for stand at Coordinate %.2f,%.2f: Load(). Wrong year in data file ! Missing line ?\n", fileName, c.lon, c.lat);
+							dprintf("FORMAT ERROR in input file %s for stand at Coordinate %.2f,%.2f: TimeDataD::Load(). Wrong year in data file ! Missing line ?\n",
+								fileName, c.lon, c.lat);
 							error=1;
 						}
 
@@ -1086,7 +1165,8 @@ bool TimeDataD::Load(Coord c) {
 									data[nColumns * i + j] = d[j];
 							}
 							else {
-								printf("FORMAT ERROR in input file %s for stand at Coordinate %.2f,%.2f: Load(), count!=%d, year %d\n", fileName, c.lon, c.lat, nColumns+1, i+1);
+								dprintf("FORMAT ERROR in input file %s for stand at Coordinate %.2f,%.2f: TimeDataD::Load(), count!=%d, year %d\n", 
+									fileName, c.lon, c.lat, nColumns+1, i+1);
 								error = true;
 								break;
 							}
@@ -1094,14 +1174,14 @@ bool TimeDataD::Load(Coord c) {
 						}
 					}
 					else {
-						printf("An ERROR occurred reading file %s\n", fileName);
+						dprintf("TimeDataD::Load: An ERROR occurred reading file %s\n", fileName);
 						error = true;
 						break;
 					}
 				}
 			}
 			else {
-				printf("COULD NOT FIND DATA for %.2f, %.2f in file %s\n", c.lon, c.lat, fileName);
+				dprintf("TimeDataD::Load: COULD NOT FIND DATA for %.2f, %.2f in file %s\n", c.lon, c.lat, fileName);
 				error = true;
 			}
 		}
@@ -1144,28 +1224,29 @@ bool TimeDataD::Load(Coord c) {
 								data[j] = d[j];
 						}
 						else {
-							printf("FORMAT ERROR in input file %s for stand at Coordinate %.2f,%.2f: Load(), count!=%d, year %d\n", fileName, c.lon, c.lat, nColumns+1, i+1);
+							dprintf("FORMAT ERROR in input file %s for stand at Coordinate %.2f,%.2f: TimeDataD::Load(), count!=%d, year %d\n", 
+								fileName, c.lon, c.lat, nColumns+1, i+1);
 							error=1;
 						}
 					}
 				}
 				else {
-					printf("An ERROR occurred reading file %s\n", fileName);
+					dprintf("TimeDataD::Load: An ERROR occurred reading file %s\n", fileName);
 					error = true;
 				}
 			}
 			else {
-				printf("COULD NOT FIND DATA for %.2f, %.2f in file %s\n",c.lon,c.lat,fileName);
+				dprintf("TimeDataD::Load: COULD NOT FIND DATA for %.2f, %.2f in file %s\n",c.lon,c.lat,fileName);
 				error = true;
 			}
 		}
 		else {
-			printf("Wrong usage of Load(Coord)\n");
+			dprintf("Wrong usage of TimeDataD::Load(Coord)\n");
 			error = true;
 		}
 	}
 	else {
-		printf("Cannot load from unopened file !\n");
+		dprintf("TimeDataD::Load: Cannot load from unopened file !\n");
 		error = true;
 	}
 
@@ -1188,7 +1269,7 @@ bool TimeDataD::isloaded() {
 }
 
 
-bool TimeDataD::LoadNext(long int *pos) {
+bool TimeDataD::LoadNext(filepos *pos) {
 	// To be called after ParseFormat(), ParseNYears() and Allocate()
 	// Only implemented for LOCAL_YEARLY and LOCAL_STATIC
 	// Needs to be modified to handle missing lines in data files with header ! (see Load)
@@ -1200,7 +1281,7 @@ bool TimeDataD::LoadNext(long int *pos) {
 	char line[MAXLINE], *p=NULL;
 	double d1, d2, d3, d[MAXRECORDS]={0.0};
 	bool error = false, firstyear = true;
-	long int fpos;
+	filepos fpos;
 
 	if(ifp && !feof(ifp)) {
 
@@ -1216,7 +1297,7 @@ bool TimeDataD::LoadNext(long int *pos) {
 			}
 			if(ifheader) {
 
-				fpos = ftell(ifp);
+				fpos=filetell(ifp);
 				if(fpos == 0) {
 					fgets(line,sizeof(line), ifp);	//ignore header line
 					fpos = ftell(ifp);
@@ -1237,12 +1318,12 @@ bool TimeDataD::LoadNext(long int *pos) {
 						currentStand.lat = d2;
 					}
 					else {
-						printf("FORMAT ERROR in input file %s: LoadNext(), count!=2\n", fileName);
+						dprintf("FORMAT ERROR in input file %s: TimeDataD::LoadNext(), count!=2\n", fileName);
 						error = true;
 					}
 				}
 				else {
-					printf("WARNING: blank line in file %s: LoadNext(), count==0\n", fileName);
+					dprintf("WARNING: blank line in file %s: TimeDataD::LoadNext(), count==0\n", fileName);
 				}
 			}
 			else {
@@ -1293,8 +1374,8 @@ bool TimeDataD::LoadNext(long int *pos) {
 								data[nColumns * i + j] = d[j];
 						}
 						else {
-							printf("FORMAT ERROR in input file %s: LoadNext(), count!=%d, year %d\n", fileName, nColumns+1, i+1);
-							printf("Make sure file has correct DOS/Unix text format\n");
+							dprintf("FORMAT ERROR in input file %s: TimeDataD::LoadNext(), count!=%d, year %d\n", fileName, nColumns+1, i+1);
+							dprintf("Make sure file has correct DOS/Unix text format\n");
 							error = true;
 							break;
 						}
@@ -1302,7 +1383,7 @@ bool TimeDataD::LoadNext(long int *pos) {
 					}
 				}
 				else {
-					printf("An ERROR occurred reading file %s\n", fileName);
+					dprintf("TimeDataD::LoadNext: An ERROR occurred reading file %s\n", fileName);
 					error=true;
 					break;
 				}
@@ -1316,7 +1397,7 @@ bool TimeDataD::LoadNext(long int *pos) {
 			}
 
 			if(ifheader) {
-				fpos = ftell(ifp);
+				fpos=filetell(ifp);
 				if(fpos == 0) {
 					fgets(line,sizeof(line), ifp);	//ignore header line
 					fpos = ftell(ifp);
@@ -1337,12 +1418,12 @@ bool TimeDataD::LoadNext(long int *pos) {
 						currentStand.lat = d2;
 					}
 					else {
-						printf("FORMAT ERROR in input file %s: LoadNext(), count!=2\n", fileName);
+						dprintf("FORMAT ERROR in input file %s: TimeDataD::LoadNext(), count!=2\n", fileName);
 						error = true;
 					}
 				}
 				else {
-					printf("WARNING: blank line in file %s: LoadNext(), count==0\n", fileName);
+					dprintf("WARNING: blank line in file %s: TimeDataD::LoadNext(), count==0\n", fileName);
 				}
 			}
 			else {
@@ -1387,8 +1468,8 @@ bool TimeDataD::LoadNext(long int *pos) {
 								data[nColumns * i + j] = d[j];
 						}
 						else {
-							printf("FORMAT ERROR in input file %s: LoadNext(), count!=%d, year %d\n", fileName, nColumns+1, i+1);
-							printf("Make sure file has correct DOS/Unix text format\n");
+							dprintf("FORMAT ERROR in input file %s: TimeDataD::LoadNext(), count!=%d, year %d\n", fileName, nColumns+1, i+1);
+							dprintf("Make sure file has correct DOS/Unix text format\n");
 							error = true;
 							break;
 						}
@@ -1397,7 +1478,7 @@ bool TimeDataD::LoadNext(long int *pos) {
 				}
 				else
 				{
-					printf("An ERROR occurred reading file %s\n", fileName);
+					dprintf("TimeDataD::LoadNext: An ERROR occurred reading file %s\n", fileName);
 					error = true;
 					break;
 				}
@@ -1421,7 +1502,7 @@ bool TimeDataD::FindRecord(Coord c) const {
 	char line[MAXLINE], *p = NULL;
 	double d1 = 0.0,d2 = 0.0,d3 = 0.0;
 	bool found = false, error = false, start = true;
-	long int oldpos;
+	filepos oldpos;
 
 	do {
 		i = 0;
@@ -1430,7 +1511,7 @@ bool TimeDataD::FindRecord(Coord c) const {
 		while(!feof(ifp)) {
 			if(ifheader) {
 				if(!(i%nYears))
-					oldpos = ftell(ifp);
+					oldpos=filetell(ifp);
 			}
 
 			if(fgets(line,sizeof(line), ifp)) {
@@ -1461,15 +1542,15 @@ bool TimeDataD::FindRecord(Coord c) const {
 						}
 						else {
 							if(ifheader)
-								dprintf("FORMAT ERROR in input file %s: FindRecord(), wrong firstyear, line %d\n", fileName, i);
+								dprintf("FORMAT ERROR in input file %s: TimeDataD::FindRecord(), wrong firstyear, line %d\n", fileName, i);
 							else
-								dprintf("FORMAT ERROR in input file %s: FindRecord(), count!=2, line %d\n", fileName, i);
+								dprintf("FORMAT ERROR in input file %s: TimeDataD::FindRecord(), count!=2, line %d\n", fileName, i);
 							error = true;
 							break;
 						}
 					}
 					else {
-						dprintf("WARNING: blank line in file %s: FindRecord(), count==0\n", fileName);
+						dprintf("WARNING: blank line in file %s: TimeDataD::FindRecord(), count==0\n", fileName);
 						continue;
 					}
 				}
@@ -1489,7 +1570,7 @@ bool TimeDataD::FindRecord(Coord c) const {
 
 	if(found && !error) {
 		if(ifheader)
-			fseek(ifp, oldpos, 0);
+			fileseek(ifp, oldpos, 0);
 		return true;
 	}
 	else
@@ -1503,7 +1584,7 @@ bool TimeDataD::FindRecord2(Coord c) const {
 	char line[MAXLINE], *p = NULL;
 	double d1 = 0.0, d2 = 0.0, d3 = 0.0;
 	bool found = false, error = false, start = true;
-	long int oldpos;
+	filepos oldpos;
 
 	lastyear = firstyear + nYears - 1;
 
@@ -1516,7 +1597,7 @@ bool TimeDataD::FindRecord2(Coord c) const {
 
 			if(ifheader) {
 				if(d3==lastyear || start)
-					oldpos = ftell(ifp);
+					oldpos=filetell(ifp);
 			}
 
 			if(fgets(line,sizeof(line),ifp)) {
@@ -1546,7 +1627,7 @@ bool TimeDataD::FindRecord2(Coord c) const {
 					}
 				}
 				else {
-					dprintf("WARNING: blank line in file %s: FindRecord2(), count==0\n",fileName);
+					dprintf("WARNING: blank line in file %s: TimeDataD::FindRecord2(), count==0\n",fileName);
 					continue;
 				}
 				i++;
@@ -1562,7 +1643,7 @@ bool TimeDataD::FindRecord2(Coord c) const {
 
 	if(found && !error) {
 		if(ifheader)
-			fseek(ifp, oldpos, 0);
+			fileseek(ifp, oldpos, 0);
 		return true;
 	}
 	else {
@@ -1673,6 +1754,7 @@ TimeDataD::TimeDataD(fileformat formatX) {
 	spatial_resolution = DEFAULT_SPATIAL_RESOLUTION;
 	offset = 0.0;
 	loaded = false;
+	precision = 0;
 }
 
 //Deconstructor
@@ -1752,7 +1834,7 @@ double TimeDataDmem::Get(int calender_year, int column) const {
 		return 0.0;
 }
 
-double TimeDataDmem::Get(int calender_year, const char* name) const {
+double TimeDataDmem::Get(int calender_year, const char* name, bool suppress_warning) const {
 
 	int column = -1;
 
@@ -1764,8 +1846,8 @@ double TimeDataDmem::Get(int calender_year, const char* name) const {
 	}
 
 	if(column == -1) {
-		if(calender_year == firstyear)	// firstyear set to -1 for static inputs
-		printf("WARNING: Value for %s not found in input file\n", name);
+		if(calender_year == firstyear && !suppress_warning)	// firstyear set to -1 for static inputs
+			dprintf("WARNING. TimeDataDmem::Get: Value for %s not found in input file\n", name);
 		return NOTFOUND;
 	}
 	else {
@@ -1826,6 +1908,10 @@ void TimeDataDmem::Open(int nCellsX, int nColumnsX, int nYearsX) {
 			for(int y=0;y<nColumns*nYears;y++)
 				data[i][y] = 0.0;
 		}
+		gridlist[i].descrip = "";
+		gridlist[i].id = 0;
+		gridlist[i].lat = 0.0;
+		gridlist[i].lon = 0.0;
 	}
 }
 
@@ -1839,8 +1925,10 @@ void TimeDataDmem::Close() {
 		gridlist = NULL;
 	}
 	for(int i=0; i<nCells; i++) {
-		if(data[i])
+		if(data[i]) {
 			delete[] data[i];
+			data[i] = NULL;
+		}
 	}
 	if(data) {
 		delete[] data;
@@ -1859,8 +1947,10 @@ void TimeDataDmem::CopyFromTimeDataD(TimeDataD& Data, ListArray_id<Coord>& gridl
 
 	int cell_no = 0;
 
-	for(int q=0;q<Data.GetnColumns();q++)
+	for(int q=0;q<Data.GetnColumns();q++) {
 		header_arr[q]=new char[MAXNAMESIZE];
+		header_arr[q][0] = '\0';
+	}
 
 	if(Data.GetHeader(header_arr))
 		ifheader = true;
@@ -1870,8 +1960,10 @@ void TimeDataDmem::CopyFromTimeDataD(TimeDataD& Data, ListArray_id<Coord>& gridl
 	double searchradius = min(spatial_resolution / 2.0, MAX_SEARCHRADIUS);
 	double offset = Data.GetOffset();
 
-	double *celldata;
-	celldata = new double[Data.GetnColumns() * Data.GetnYears()];
+	double *celldata = new double[Data.GetnColumns() * Data.GetnYears()];
+	for(int i=0;i<Data.GetnColumns() * Data.GetnYears();i++) {
+		celldata[i] = 0.0;
+	}
 
 	if(Data.GetFormat() == GLOBAL_STATIC) {
 		Data.Get(celldata);

@@ -3,7 +3,7 @@
 /// \brief Input module for CF conforming NetCDF files
 ///
 /// \author Joe Siltberg
-/// $Date: 2020-03-03 16:31:01 +0100 (Tue, 03 Mar 2020) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -494,10 +494,12 @@ void CFInput::init() {
 
 	current_gridcell = gridlist.begin();
 
-	// Open landcover files
+	// Open landcover files. May reduce pftlist, stlist and mtlist. Must be called before management_input->init()
 	landcover_input.init();
 	// Open management files
 	management_input.init();
+	// Open additional files
+	misc_input.init();
 
 	date.set_first_calendar_year(cf_temp->get_date_time(0).get_year() - nyear_spinup);
 
@@ -532,6 +534,16 @@ bool CFInput::getgridcell(Gridcell& gridcell) {
 		// simulation finished
 		return false;
 	}
+
+	if(readdisturbance || readdisturbance_st || readelevation_st) {
+		// Not all gridcells have to be included in input file
+		misc_input.loaddisturbance(lon, lat);
+		misc_input.loadelevation(lon, lat);
+	}
+
+//	gridcell.climate.mean_elevation = elevation;		// Get elevation from cru_ncep
+//	if(readelevation_st)
+//		dprintf("Mean elevation = %d\n", elevation);
 
 	if (run_landcover) {
 		bool LUerror = false;

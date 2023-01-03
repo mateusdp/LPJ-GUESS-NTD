@@ -1,5 +1,6 @@
 import "../../../data/ins/arctic.ins"
 import "../../../data/ins/wetlandpfts.ins"
+import "../../../data/ins/landcover.ins"
 import "../../paths.ins"
 
 param "file_gridlist" (str "gridlist.txt")
@@ -59,8 +60,6 @@ run_barren 0			! Whether to simulate barren land (1) or not (0)
 
 ifslowharvestpool 0			! If a slow harvested product pool is included in patchpft.
 printseparatestands 0			! Whether to print multiple stands within a land cover type (except cropland) separately
-gross_land_transfer 0			! Whether to use gross land transfer: simulate gross lcc (1); read landcover transfer matrix input file (2); 
-					! read stand type transfer matrix input file (3), or not (0)
 ifprimary_lc_transfer 0			! Whether to use primary/secondary land transition info in landcover transfer input file (1). or not (0)
 ifprimary_to_secondary_transfer 0 	! Whether to use primary-to-secondary land transition info (within land cover type) in landcover 
 					! transfer input file (1). or not (0)

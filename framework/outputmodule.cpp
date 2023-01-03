@@ -3,7 +3,7 @@
 /// \brief Implementation of OutputModule and its container class
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-07-13 18:38:50 +0200 (Sat, 13 Jul 2019) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +80,7 @@ void OutputModuleContainer::outdaily(Gridcell& gridcell) {
 
 void OutputModuleContainer::openlocalfiles(Gridcell& gridcell) {
 	for (size_t i = 0; i < modules.size(); ++i) {
-		modules[i]->openlocalfiles(gridcell);
+		modules[i]->openlocalfiles(gridcell, coordinates_precision);
 	}
 }
 

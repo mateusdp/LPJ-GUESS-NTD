@@ -3,7 +3,7 @@
 /// \brief Implementation of the framework() function
 ///
 /// \author Ben Smith
-/// $Date: 2021-04-22 18:36:50 +0200 (Thu, 22 Apr 2021) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,17 +59,20 @@ void simulate_day(Gridcell& gridcell, InputModule* input_module) {
 	// Calculate daylength, insolation and potential evapotranspiration
 	daylengthinsoleet(gridcell.climate);
 
+	// Read miscellanous dynamic data, e.g. disturbance interval.
+	input_module->getmiscinput_yearly(gridcell);
+
 	// Update crop sowing date calculation framework
 	crop_sowing_gridcell(gridcell);
-
-	// Dynamic landcover and crop fraction data during historical
-	// period and create/kill stands.
-	landcover_dynamics(gridcell, input_module);
 
 	// Update dynamic management options
 	input_module->getmanagement(gridcell);
 
-	// Set forest management for all stands this year
+	// Update dynamic landcover and crop fraction data during historical
+	// period and create/kill stands.
+	landcover_dynamics(gridcell, input_module);
+
+	// Perform forest management for all stands this year
 	manage_forests(gridcell);
 
 	Gridcell::iterator gc_itr = gridcell.begin();
@@ -235,6 +238,9 @@ int framework(const CommandLineArguments& args) {
 			date.year = state_year;
 		}
 
+		// Read miscellanous static data, e.g. local elevation.
+		input_module->getmiscinput_static(gridcell);
+
 		// Call input/output to obtain climate, insolation and CO2 for this
 		// day of the simulation. Function getclimate returns false if last year
 		// has already been simulated for this grid cell
@@ -249,8 +255,7 @@ int framework(const CommandLineArguments& args) {
 
 			if (date.islastday && date.islastmonth) {
 				// LAST DAY OF YEAR
-				if(printseparatestands)
-					output_modules.openlocalfiles(gridcell);
+				output_modules.openlocalfiles(gridcell);
 				// Call output module to output results for end of year
 				// or end of simulation for this grid cell
 				output_modules.outannual(gridcell);
@@ -274,8 +279,7 @@ int framework(const CommandLineArguments& args) {
 			// End of loop through simulation days
 		}	//while (getclimate())
 
-		if(printseparatestands)
-			output_modules.closelocalfiles(gridcell);
+		output_modules.closelocalfiles(gridcell);
 
 		gridcell.balance.check_period(gridcell);
 

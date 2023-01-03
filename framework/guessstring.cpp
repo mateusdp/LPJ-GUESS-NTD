@@ -3,7 +3,7 @@
 /// \brief Utility functions for working with strings (std::string and char*)
 ///
 /// \author Joe Siltberg
-/// $Date: 2014-02-13 10:31:34 +0100 (Thu, 13 Feb 2014) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,4 +62,43 @@ std::string format_string(const char* format, ...) {
 	va_start(args, format);
 	vsnprintf(buffer, buffer_size, format, args);
 	return std::string(buffer);
+}
+
+int split_string(char* str) {
+
+	char *p = strtok(str, "\t\n ");
+	int count = 0;
+	while(p) {
+		count++;
+		p = strtok(NULL, "\t\n ");
+	}
+
+	return count;
+}
+
+bool issubstring(const char* string, const char* substring) {
+
+	bool found = false;
+
+	char *p = NULL, string_copy[200] = {0};
+
+	strcpy(string_copy, string);
+	p = strtok(string_copy, "\t\n ");
+	if(p) {
+		if(!strcmp(substring, p)) {
+			found = true;
+		}
+	}
+
+	do {
+		p = strtok(NULL, "\t\n ");
+		if(p) {
+			if(!strcmp(substring, p)) {
+				found = true;
+			}
+		}
+	}
+	while(p && !found);
+
+	return found;
 }

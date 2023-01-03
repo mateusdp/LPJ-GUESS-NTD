@@ -3,7 +3,7 @@
 /// \brief Base class for input modules
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-04-23 14:48:43 +0200 (Tue, 23 Apr 2019) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -83,6 +83,12 @@ public:
 
 	/// Obtains land management data for one day
 	virtual void getmanagement(Gridcell& gridcell) = 0;
+
+	/// Obtains additional environmental data that are not dynamic (e.g. elevation)
+	virtual void getmiscinput_static(Gridcell& gridcell) = 0;
+
+	/// Obtains additional environmental data (e.g. disturbance) for one year
+	virtual void getmiscinput_yearly(Gridcell& gridcell) = 0;
 };
 
 

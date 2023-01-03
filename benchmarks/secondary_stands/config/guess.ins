@@ -1,0 +1,96 @@
+! This is a test that verifies that updates to the code don't introduce errors when simulating
+! multiple stands (e.g. by initialisations at the start of the simulation), and that forest 
+! management starts at firstmanageyear (1951). Cloning functionality is also tested.
+! Natural and mixed stand types should have identical output (in e.g. cmass_sts.out) until 1951, 
+! when fire and disturbance stops in the mixed stand and wood harvest starts.
+! Restart should also be tested and the files should be identical with and without restart.
+! At the start of the simulation, one natural stand and one mixed forest stand 
+! (identical with the natural stand until 1951, when management starts) are created.
+! A new mixed forest stand is created in 1875 by cloning. This should be identical 
+! with the first mixed forest stand for the rest of the simulation (if needed verified by
+! comparing cmass_mixed_14.75_46.25_1.out and cmass_mixed_14.75_46.25_2.out, which
+! should be identical)
+
+import "../../europe.ins"
+import "../../../data/ins/landcover.ins"
+
+!outputdirectory "./save_n_restart/"
+
+param "file_gridlist" (str "gridlist.txt")
+param "file_lu"       (str "/data/benchmark_data/2019_04_29/landuse/benchmark_secondary_stands/lufrac_multiplestands_test_C.txt")
+
+file_cmass_sts "cmass_sts.out"
+
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// RUN PARAMETERS AND OPTIONS 
+!///////////////////////////////////////////////////////////////////////////////////////
+
+
+title 'LPJ-GUESS test Secondary stands'
+
+npatch 5			! number of replicate patches to simulate
+npatch_secondarystand 1
+
+printseparatestands 1		! cmass_mixed_14.75_46.25_1.out and cmass_mixed_14.75_46.25_2.out should be identical
+print_cmass_stand 1
+
+searchradius 1
+
+!///////////////////////////////////////////////////////////////////////////////////////
+
+iftransfer_to_new_stand 1
+transfer_level 1
+
+run_crop 0	      ! whether to simulate crop vegetation (1) or not (0)
+run_forest 1	      ! whether to simulate managed forest (1) or not (0)
+run_pasture 0	      ! whether to simulate pasture (1) or not (0)
+run_natural 1	      ! whether to simulate natural vegetation (1) or not (0)				!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!firemodel "GLOBFIRM"
+!firemodel "NOFIRE"
+
+!///////////////////////////////////////////////////////////////////////////////
+! SERIALIZATION SETTINGS 
+!///////////////////////////////////////////////////////////////////////////////
+
+state_year 570			! Year to save/start state file (no setting = after spinup)
+!save_state 1			! wheter to save a state file
+!restart 0			! wheter to start from a state file
+state_path "./"			! directory to put state files in
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR STAND TYPES
+!///////////////////////////////////////////////////////////////////////////////////////
+
+group "managed" (
+
+	common_stand
+	landcover "forest"
+	naturalveg "all"
+	reestab "all"
+)
+
+! mixed stand created at start of simulation, management starting 1901, continuous cutting
+st "mixed" (
+
+	managed
+	stinclude 1
+	suppress_fire 1
+	suppress_disturbance 1
+	relaxed_establishment 1
+	harvest_system "continuous"
+	secondintervalstart 0
+	secondcutinterval 20
+	secondthintime 0 0 0 0 0
+	secondthinstrength 0.3 0 0 0 0
+	secondthinselectdiam 2 0 0 0 0
+	cutfirstyear 0		! iftransfer_to_new_stand must be 1 !
+	firstmanageyear 1951
+)
+
+st "Forest" (
+
+	stinclude 0
+)
+

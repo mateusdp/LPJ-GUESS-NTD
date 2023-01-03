@@ -2,7 +2,7 @@
 /// \file spinupdata.h
 /// \brief Management of climate data for spinup
 ///
-/// $Date: 2019-04-23 14:48:43 +0200 (Tue, 23 Apr 2019) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -95,6 +95,7 @@ public:
 		if (endyear - startyear + 1 == nyear) {
 
 			int y,m;
+			thisyear=0;
 			for (y=startyear-1;y<endyear;y++) {
 				for (m=0;m<12;m++) {
 					data[(y-(startyear-1))*12+m]=source[y][m];

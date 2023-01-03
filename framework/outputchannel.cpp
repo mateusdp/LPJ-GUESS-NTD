@@ -3,7 +3,7 @@
 /// \brief Classes for formatting and printing output from the model
 ///
 /// \author Joe Siltberg
-/// $Date: 2019-02-08 15:55:08 +0100 (Fri, 08 Feb 2019) $
+/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -150,7 +150,8 @@ FileOutputChannel::FileOutputChannel(const char* out_dir,
 
 FileOutputChannel::~FileOutputChannel() {
 	 for (size_t i = 0; i < files.size(); i++) {
-		  fclose(files[i]);
+		 if(files[i] != NULL)
+			fclose(files[i]);
 	 }
 }
 
@@ -202,6 +203,7 @@ void FileOutputChannel::close_table(Table& table) {
 
 	 FILE* file = files[table.id()];
 	 fclose(file);
+	 files[table.id()] = NULL;
 }
 
 void FileOutputChannel::finish_row(const Table& table, 

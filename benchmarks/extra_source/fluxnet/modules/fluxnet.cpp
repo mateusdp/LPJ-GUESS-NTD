@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////////////////////////
 /// \file fluxnet.cpp
 /// \brief Input and output modules for the fluxnet benchmarks
 /// \this module is most of all a copy of CRUInput and do use CRU data for its climate.
@@ -120,6 +120,8 @@ void FluxnetInput::init() {
 	landcover_input.init();
 	// Open management files
 	management_input.init();
+	// Open additional files
+	misc_input.init();
 	// Read in soil data
 	soilinput.init(param["file_soildata"].str, translate_gridlist_to_coord(gridlist));
 
@@ -189,6 +191,18 @@ bool FluxnetInput::getgridcell(Gridcell& gridcell) {
 				if (gridfound) // Get more historical CRU data for this grid cell
 					gridfound = CRU_FastArchive::searchcru_misc(file_cru_misc, lon, lat, elevation,
 						hist_mfrs, hist_mwet, hist_mdtr, hist_mwind, hist_mrhum);
+
+				if(gridfound) {
+					if(readdisturbance || readdisturbance_st || readelevation_st) {
+						// Not all gridcells have to be included in input file
+						misc_input.loaddisturbance(gridlist.getobj().lon, gridlist.getobj().lat);
+						misc_input.loadelevation(gridlist.getobj().lon, gridlist.getobj().lat);
+					}
+				}
+
+				gridcell.climate.mean_elevation = elevation;
+				if(readelevation_st)
+					dprintf("Mean elevation = %d\n", elevation);
 
 				if (run_landcover && gridfound) {
 					LUerror = landcover_input.loadlandcover(lon, lat);
