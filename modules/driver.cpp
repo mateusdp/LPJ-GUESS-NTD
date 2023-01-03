@@ -3,7 +3,7 @@
 /// \brief Environmental driver calculation/transformation
 ///
 /// \author Ben Smith
-/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
+/// $Date: 2022-12-22 12:26:09 +0100 (Thu, 22 Dec 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -797,6 +797,8 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 	          (climate.lat < 0.0 && date.day == WARMEST_DAY_SHEMISPHERE) ) {
 		climate.ifsensechill = true;
 	}
+
+	climate.aprec += climate.prec;
 
 	// Update GDD counters and chill day count
 	climate.gdd5 += max(0.0, climate.temp - 5.0);

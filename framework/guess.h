@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
+/// $Date: 2022-12-22 12:26:09 +0100 (Thu, 22 Dec 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -541,6 +541,12 @@ class MassBalance : public Serializable  {
 	double nflux;
 	double nflux_zero;
 
+	double water_cont;
+	double water_cont_zero;
+	double water_cont_zero_scaled;
+	double water_flux;
+	double water_flux_zero;
+
 public:
 	MassBalance() {
 
@@ -555,6 +561,11 @@ public:
 		ncont_zero_scaled = 0.0;
 		nflux = 0.0;
 		nflux_zero = 0.0;
+		water_cont = 0.0;
+		water_cont_zero = 0.0;
+		water_cont_zero_scaled = 0.0;
+		water_flux = 0.0;
+		water_flux_zero = 0.0;
 	}
 
 	MassBalance(int start_yearX) {
@@ -570,6 +581,11 @@ public:
 		ncont_zero_scaled = 0.0;
 		nflux = 0.0;
 		nflux_zero = 0.0;
+		water_cont = 0.0;
+		water_cont_zero = 0.0;
+		water_cont_zero_scaled = 0.0;
+		water_flux = 0.0;
+		water_flux_zero = 0.0;
 	}
 
 	void init(Gridcell& gridcell);
@@ -584,10 +600,12 @@ public:
 	bool check_patch(Patch& patch, bool check_harvest = false);
 	bool check_patch_C(Patch& patch, bool check_harvest = false);
 	bool check_patch_N(Patch& patch, bool check_harvest = false);
+	bool check_patch_water(Patch& patch);
 
 	void check_year(Gridcell& gridcell); // calls both check_year_C and check_year_N
 	void check_year_C(Gridcell& gridcell);
 	void check_year_N(Gridcell& gridcell);
+	void check_year_water(Gridcell& gridcell);
 	void check_period(Gridcell& gridcell);
 
 	void serialize(ArchiveStream& arch);
@@ -3487,8 +3505,6 @@ public:
 	double T_soil[NLAYERS];
 	/// Record the monthly average soil temp at SOILTEMPOUT layers [deg C]
 	double T_soil_monthly[12][SOILTEMPOUT];
-	/// soil temperature from previous time step
-	double T_old[NLAYERS];
 	/// soil temperature in each layer YESTERDAY
 	double T_soil_yesterday[NLAYERS];
 	/// soil temperature at 25 cm depth, as calculated using previous versions of the model [deg C]
@@ -3918,9 +3934,10 @@ private:
 
 	// Soil temperature and hydrology methods
 	void update_from_yesterday();
-	void update_snow_properties(const int& daynum, const double& dailyairtemp, double& Dsnow, double& Csnow, double& Ksnow);
+	void update_snow_properties(const double& dailyairtemp, double& Dsnow, double& Csnow, double& Ksnow);
 	void snowpack_dynamics(const double &snowdepth, const int& soilsurfaceindex, int& snow_active_layers);
-	void update_soil_diffusivities(const int& daynum, bool ansoln);
+	void update_soil_diffusivities(bool ansoln);
+	double heatcapacity(double Frac_min, double Frac_org, double Frac_ice, double Frac_water, double Frac_peat, double Frac_air);
 	void update_ice_fraction(const int& daynum, const int& MIDX);
 	void update_layer_fractions(const int& daynum, const int& mixedl, const int& MIDX);
 
@@ -4526,10 +4543,14 @@ public:
 	double ccont(double scale_indiv = 1.0, bool luc = false);
 	/// Total patch nitrogen biomass and litter
 	double ncont(double scale_indiv = 1.0, bool luc = false);
+	/// Total patch water and ice mass
+	double water_content();
 	/// Total patch carbon fluxes so far this year
 	double cflux();
 	/// Total patch nitrogen fluxes so far this year
 	double nflux();
+	/// Total patch water fluxes so far this year
+	double water_flux();
 	
 	/// Get 5-year mean of tree wood C mass increase (periodic annual increment)
 	double get_tree_cmass_wood_inc_5() {
@@ -4778,10 +4799,14 @@ public:
 	double ccont(double scale_indiv = 1.0);
 	/// Total stand nitrogen biomass and litter
 	double ncont(double scale_indiv = 1.0);
+	/// Total stand water and ice
+	double water_content();
 	/// Total stand carbon fluxes so far this year
 	double cflux();
 	/// Total stand nitrogen fluxes so far this year
 	double nflux();
+	/// Total stand water fluxes so far this year
+	double water_flux();
 	/// Returns true if stand is true high-latitude peatland stand, as opposed to a wetland < PEATLAND_WETLAND_LATITUDE_LIMIT N
 	bool is_highlatitude_peatland_stand() const;
 	/// Returns true if stand is wetland stand, as opposed to a peatland >= PEATLAND_WETLAND_LATITUDE_LIMIT N
@@ -5202,7 +5227,7 @@ public:
 	/// list array [0...nst-1] of Gridcellst (initialised in constructor)
 	ListArray_idin1<Gridcellst,StandType> st;
 
-	/// object for keeping track of carbon and nitrogen balance
+	/// object for keeping track of carbon, nitrogen and water balance
 	MassBalance balance;
 
 	// SIMFIRE
@@ -5292,10 +5317,14 @@ public:
 	double ccont();
 	/// Total gridcell nitrogen biomass and litter
 	double ncont();
+	/// Total gridcell water and ice
+	double water_content();
 	/// Total gridcell carbon fluxes so far this year
 	double cflux();
 	/// Total gridcell nitrogen fluxes so far this year
 	double nflux();
+	/// Total gridcell water fluxes so far this year
+	double water_flux();
 
 	/// Deletes the stand which the iterator is pointing at
 	/** Returns an iterator pointing to the object following the erased object.

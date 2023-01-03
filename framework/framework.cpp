@@ -3,7 +3,7 @@
 /// \brief Implementation of the framework() function
 ///
 /// \author Ben Smith
-/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
+/// $Date: 2022-12-22 12:26:09 +0100 (Thu, 22 Dec 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -77,7 +77,7 @@ void simulate_day(Gridcell& gridcell, InputModule* input_module) {
 
 	Gridcell::iterator gc_itr = gridcell.begin();
 	while (gc_itr != gridcell.end()) {
-
+	
 		// START OF LOOP THROUGH STANDS
 		Stand& stand = *gc_itr;
 
@@ -90,6 +90,7 @@ void simulate_day(Gridcell& gridcell, InputModule* input_module) {
 
 			// Get reference to this patch
 			Patch& patch = stand.getobj();
+
 			// Update daily soil drivers including soil temperature
 			dailyaccounting_patch(patch);
 

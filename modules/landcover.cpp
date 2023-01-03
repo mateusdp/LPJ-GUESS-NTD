@@ -7,7 +7,7 @@
 /// \author Mats Lindeskog,
 /// \Part of code in this file as well as in cropphenology.cpp, cropallocation.cpp and
 /// \management.cpp based on LPJ-mL C++ code received from Alberte Bondeau in 2008.
-/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
+/// $Date: 2022-12-22 12:26:09 +0100 (Thu, 22 Dec 2022) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1958,16 +1958,37 @@ void receiving_stand_change(Gridcell& gridcell, landcover_change_transfer& from,
 					patch.soil.NO_mass_d = (patch.soil.NO_mass_d * old_frac + from.transfer_NO_mass_d * added_frac) / new_frac;
 					patch.soil.N2O_mass_d = (patch.soil.N2O_mass_d * old_frac + from.transfer_N2O_mass_d * added_frac) / new_frac;
 
+					double wcont_evap_new = 0.0;
+					double awc_evap = 0.0;
+					double Faw_evap = 0.0;
 
-					// add other soil stuff:
+					// Add soil water/ice fractions and recalculate wcont
 					for(int i=0; i<NSOILLAYER; i++) {
-						double wcont_new = (patch.soil.get_layer_soil_water(i) * old_frac + from.transfer_wcont[i] * added_frac) / new_frac;
+						unsigned int lix = patch.soil.IDX; // layer index
+
+						patch.soil.Frac_water[i + lix] = (patch.soil.Frac_water[i + lix] * old_frac + from.transfer_Fwater[i] * added_frac) / new_frac;
+						patch.soil.Frac_water_belowpwp[i + lix] = (patch.soil.Frac_water_belowpwp[i + lix] * old_frac + from.transfer_Fwater_below_wp[i] * added_frac) / new_frac;
+						patch.soil.Frac_air[i + lix] = (patch.soil.Frac_air[i + lix] * old_frac + from.transfer_Fair[i] * added_frac) / new_frac;
+						patch.soil.Frac_ice[i + lix] = (patch.soil.Frac_ice[i + lix] * old_frac + from.transfer_Fice[i] * added_frac) / new_frac;
+						patch.soil.Frac_ice_yesterday[i + lix] = (patch.soil.Frac_ice_yesterday[i + lix] * old_frac + from.transfer_Fice_yesterday[i] * added_frac) / new_frac;
+						
+						double wcont_new = patch.soil.Frac_water[i + lix] * patch.soil.Dz[i + lix] / patch.soil.soiltype.awc[i];
+
+						// Update alwhc and whc using the rescaled values
+						patch.soil.alwhc[i] = patch.soil.alwhc_init[i] - patch.soil.Frac_ice[i + lix];
+						patch.soil.whc[i] = max(0.0, patch.soil.soiltype.awc[i] - patch.soil.Frac_ice[i + lix] * patch.soil.Dz[i + lix]);
+
 						oob_check_wcont(wcont_new); // Remove tiny errors > 1 or < 0
-						patch.soil.set_layer_soil_water(i,wcont_new);
+						patch.soil.set_layer_soil_water(i, wcont_new);
+
+						if (i < 2){
+							Faw_evap += patch.soil.Frac_water[i + patch.soil.IDX] * patch.soil.Dz[i + patch.soil.IDX];
+							awc_evap += patch.soil.soiltype.awc[i];
+						}
 					}
 
-					double wcont_evap_new = 
-						(patch.soil.get_layer_soil_water_evap() * old_frac + from.transfer_wcont_evap * added_frac) / new_frac;
+					wcont_evap_new = Faw_evap / awc_evap;
+
 					oob_check_wcont(wcont_evap_new); // Remove tiny errors > 1 or < 0
 					patch.soil.set_layer_soil_water_evap(wcont_evap_new);
 
@@ -3431,8 +3452,14 @@ landcover_change_transfer::landcover_change_transfer() {
 	transfer_NH4_mass_d = transfer_NO3_mass_d = transfer_N2O_mass_d = transfer_NO2_mass_d = transfer_NO_mass_d = 0.0;
 	transfer_NH4_mass_w = transfer_NO3_mass_w = transfer_N2O_mass_w = transfer_NO2_mass_w = transfer_NO_mass_w = 0.0;
 
-	for(int i=0;i<NSOILLAYER;i++)
+	for(int i=0;i<NSOILLAYER;i++) {
 		transfer_wcont[i] = 0.0;
+		transfer_Fwater[i] = 0.0;
+		transfer_Fwater_below_wp[i] = 0.0;
+		transfer_Fair[i] = 0.0;
+		transfer_Fice[i] = 0.0;
+		transfer_Fice_yesterday[i] = 0.0;
+	}
 
 	for(int i=0; i<NSOMPOOL; i++)
 		transfer_sompool[i].ntoc = 0.0;
