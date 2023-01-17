@@ -130,6 +130,25 @@ private:
 
 	GuessNC::CF::GridcellOrderedVariable* cf_wind;
 
+	// monthly mean dry nitrogen deposition (NHx kg m-2 d-1) in netCDF
+	GuessNC::CF::GridcellOrderedVariable* cf_mNHxdrydep;
+
+	// monthly mean dry nitrogen deposition (NOy, kg m-2 d-1) in netCDF
+	GuessNC::CF::GridcellOrderedVariable* cf_mNOydrydep;
+
+	// monthly mean wet nitrogen deposition (NHx, kg m-2 d-1) in netCDF
+	GuessNC::CF::GridcellOrderedVariable* cf_mNHxwetdep;
+
+	// monthly mean wet nitrogen deposition (NOy, kg m-2 d-1) in netCDF
+	GuessNC::CF::GridcellOrderedVariable* cf_mNOywetdep;
+
+	// monthly mean dry phosphorus deposition (PO4, kg m-2 d-1) in netCDF
+	GuessNC::CF::GridcellOrderedVariable* cf_mPOxdrydep;
+
+	// monthly mean wet phosphorus deposition (PO4, kg m-2 d-1) in netCDF
+	GuessNC::CF::GridcellOrderedVariable* cf_mPOxwetdep;
+
+
 	// Spinup data for each variable
 
 	GenericSpinupData spinup_temp;
