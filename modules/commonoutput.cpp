@@ -1807,7 +1807,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 			}
 			else {
 				plot("N flux [kgN/ha/yr]","fix",   date.year, -anfix_gridcell * M2_PER_HA);
-				plot("N flux [kgN/ha/yr]","dep",   date.year, -(aNH4dep_gridcell - aNO3dep_gridcell) * M2_PER_HA);
+				plot("N flux [kgN/ha/yr]","dep",   date.year, -(aNH4dep_gridcell + aNO3dep_gridcell) * M2_PER_HA);
 				plot("N flux [kgN/ha/yr]","fert",  date.year, -anfert_gridcell * M2_PER_HA);
 				plot("N flux [kgN/ha/yr]","leach", date.year, (n_min_leach_gridcell + n_org_leach_gridcell) * M2_PER_HA);
 				plot("N flux [kgN/ha/yr]","emissions",  date.year, flux_ntot * M2_PER_HA);

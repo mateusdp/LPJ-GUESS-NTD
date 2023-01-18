@@ -7,6 +7,7 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
+// Include N-deposition data read in as netCDF (author: Tim Anders, with adaptations by Mateus Dantas)
 #include "config.h"
 #include "cfinput.h"
 
@@ -241,6 +242,21 @@ void check_wind_variable(const GuessNC::CF::GridcellOrderedVariable* cf_var) {
 	}
 }
 
+// Verifies that a CF variable with dry NHx deposition data contains what we expect
+void check_NHxdrydep_variable(const GuessNC::CF::GridcellOrderedVariable* cf_var) {
+	const char* standard_name = "mNHxdrydep";
+	if (cf_var->get_standard_name() != standard_name) {
+		fail("Dry NHx deposition variable should have standard name %s ", standard_name);
+	}
+	if (cf_var->get_units() != "kg N m-2 d-1") { //Changed unit by Dantas, from s-1 to d-1
+		fail("Dry NHx deposition data must be given in kg N m-2 d-1 !");  //Changed unit by Dantas
+	}
+	else {
+		dprintf("All fine with NHxdrydep netCDF file.\n");
+	}
+} //TA added check for NHxdrydep data (Changed unit by Dantas)
+
+
 // Checks if two variables contain data for the same time period
 //
 // Compares start and end of time series, the day numbers are only compared if
@@ -335,6 +351,12 @@ CFInput::CFInput()
 	  cf_specifichum(0),
 	  cf_relhum(0),
 	  cf_wind(0),
+	  cf_mNHxdrydep(0),
+	  cf_mNOydrydep(0),
+	  cf_mNHxwetdep(0),
+	  cf_mNOywetdep(0),
+	  cf_mPOxdrydep(0),
+	  cf_mPOxwetdep(0),
 	  ndep_timeseries("historic") {
 
 	// Declare instruction file parameters
@@ -353,6 +375,13 @@ CFInput::~CFInput() {
 	delete cf_specifichum;
 	delete cf_relhum;
 	delete cf_wind;
+	delete cf_mNHxdrydep;
+	delete cf_mNOydrydep;
+	delete cf_mNHxwetdep;
+	delete cf_mNOywetdep;
+	delete cf_mPOxdrydep;
+	delete cf_mPOxwetdep;
+
 
 	cf_temp = 0;
 	cf_prec = 0;
@@ -364,6 +393,12 @@ CFInput::~CFInput() {
 	cf_specifichum = 0;
 	cf_relhum = 0;
 	cf_wind = 0;
+	cf_mNHxdrydep = 0;
+	cf_mNOydrydep = 0;
+	cf_mNHxwetdep = 0;
+	cf_mNOywetdep = 0;
+	cf_mPOxdrydep = 0;
+	cf_mPOxwetdep = 0;
 }
 
 void CFInput::init() {
@@ -404,6 +439,32 @@ void CFInput::init() {
 		if (param["file_wind"].str != "") {
 			cf_wind = new GridcellOrderedVariable(param["file_wind"].str, param["variable_wind"].str);
 		}
+
+		if (param.isparam("file_mNHxdrydep") && param["file_mNHxdrydep"].str != "") {
+			cf_mNHxdrydep = new GridcellOrderedVariable(param["file_mNHxdrydep"].str, param["variable_mNHxdrydep"].str);
+			dprintf("Opening of mNHxdrydep netcdf successful.\n"); //TA test opening of NHxdrydep netcdf data
+		}
+
+		if (param.isparam("file_mNOydrydep") && param["file_mNOydrydep"].str != "") {
+			cf_mNOydrydep = new GridcellOrderedVariable(param["file_mNOydrydep"].str, param["variable_mNOydrydep"].str);
+		}
+
+		if (param.isparam("file_mNHxwetdep") && param["file_mNHxwetdep"].str != "") {
+			cf_mNHxwetdep = new GridcellOrderedVariable(param["file_mNHxwetdep"].str, param["variable_mNHxwetdep"].str);
+		}
+
+		if (param.isparam("file_mNOywetdep") && param["file_mNOywetdep"].str != "") {
+			cf_mNOywetdep = new GridcellOrderedVariable(param["file_mNOywetdep"].str, param["variable_mNOywetdep"].str);
+		}
+
+		if (param.isparam("file_mPOxdrydep") && param["file_mPOxdrydep"].str != "") {
+			cf_mPOxdrydep = new GridcellOrderedVariable(param["file_mPOxdrydep"].str, param["variable_mPOxdrydep"].str);
+		}
+
+		if (param.isparam("file_mPOxwetdep") && param["file_mPOxwetdep"].str != "") {
+			cf_mPOxwetdep = new GridcellOrderedVariable(param["file_mPOxwetdep"].str, param["variable_mPOxwetdep"].str);
+		}
+
 	}
 	catch (const std::runtime_error& e) {
 		fail(e.what());
@@ -446,6 +507,41 @@ void CFInput::init() {
 	check_compatible_timeseries(all_variables());
 
 	check_same_spatial_domains(all_variables());
+
+	if (cf_mNHxdrydep) {
+		if (!cf_mNHxdrydep->same_spatial_domain(*cf_temp)) {
+			fail("dry ndep %s has not the same spatial domain as climate data", (char*)param["file_mNHxdrydep"].str);
+		};
+	}
+
+	if (cf_mNOydrydep) {
+		if (!cf_mNOydrydep->same_spatial_domain(*cf_temp)) {
+			fail("dry ndep %s has not the same spatial domain as climate data", (char*)param["file_mNOydrydep"].str);
+		};
+	}
+
+	if (cf_mNHxwetdep) {
+		if (!cf_mNHxwetdep->same_spatial_domain(*cf_temp)) {
+			fail("wet ndep %s has not the same spatial domain as climate data", (char*)param["file_mNHxwetdep"].str);
+		};
+	}
+
+	if (cf_mNOywetdep) {
+		if (!cf_mNOywetdep->same_spatial_domain(*cf_temp)) {
+			fail("wet ndep %s has not the same spatial domain as climate data", (char*)param["file_mNOywetdep"].str);
+		};
+	}
+
+	if (cf_mPOxdrydep) {
+		if (!cf_mPOxdrydep->same_spatial_domain(*cf_temp)) {
+			fail("dry pdep %s has not the same spatial domain as climate data", (char*)param["file_mPOxdrydep"].str);
+		};
+	}
+	if (cf_mPOxwetdep) {
+		if (!cf_mPOxwetdep->same_spatial_domain(*cf_temp)) {
+			fail("wet pdep %s has not the same spatial domain as climate data", (char*)param["file_mPOxwetdep"].str);
+		};
+	}
 
 	extensive_precipitation = cf_prec->get_standard_name() == "precipitation_amount";
 
@@ -599,7 +695,23 @@ bool CFInput::getgridcell(Gridcell& gridcell) {
 	// Get nitrogen deposition, using the found CRU coordinates
 	/* Since the historic data set does not reach decade 2010-2019,
 	* we need to use the RCP data for the last decade. */
-	ndep.getndep(param["file_ndep"].str, cru_lon, cru_lat, Lamarque::RCP60);
+	//ndep.getndep(param["file_ndep"].str, cru_lon, cru_lat, Lamarque::RCP60);
+
+	if (param["file_ndep"].str != "") {
+		double cru_lon;
+		double cru_lat;
+		// this tries to calculate the 0.5deg cru lon lat, might not work if that lon lat is not within the ndep data
+		cru_lon = floor(lon * 2.0) / 2.0 + 0.25;
+		cru_lat = floor(lat * 2.0) / 2.0 + 0.25;
+		//dprintf("lon = %3.2f, lat = %3.2f)\n", lon, lat); // TA inserted print
+		//dprintf("Cru_lon = %3.2f, Cru_lat = %3.2f)\n", cru_lon, cru_lat); // TA inserted print
+
+		dprintf("Using Nitrogen deposition for (%3.2f,%3.2f)\n", cru_lon, cru_lat);
+		// Get nitrogen deposition, using the estimated CRU coordinates
+		//ndep.getndep(param["file_ndep"].str, cru_lon, cru_lat,Lamarque::parse_timeseries(ndep_timeseries));
+		ndep.getndep(param["file_ndep"].str, cru_lon, cru_lat, Lamarque::RCP60); //TA parse_timeseries is not working, have to use RCP60
+	}
+
 
 	soilinput.get_soil(lon, lat, gridcell);
 
@@ -642,7 +754,13 @@ bool CFInput::load_data_from_files(double& lon, double& lat){
 		    (cf_pres && !cf_pres->load_data_for(landid)) ||
 		    (cf_specifichum && !cf_specifichum->load_data_for(landid)) ||
 		    (cf_relhum && !cf_relhum->load_data_for(landid)) ||
-		    (cf_wind && !cf_wind->load_data_for(landid))) {
+		    (cf_wind && !cf_wind->load_data_for(landid)) ||
+			(cf_mNHxdrydep && true) || //TA landid not implemented for the ff. nc's, hence fail
+			(cf_mNOydrydep && true) ||
+			(cf_mNHxwetdep && true) ||
+			(cf_mNOywetdep && true) ||
+			(cf_mPOxdrydep && true) ||
+			(cf_mPOxwetdep && true)){
 			dprintf("Failed to load data for (%d) from NetCDF files, skipping.\n", landid);
 			return false;
 		}
@@ -657,7 +775,13 @@ bool CFInput::load_data_from_files(double& lon, double& lat){
 		    (cf_pres && !cf_pres->load_data_for(rlon, rlat))||
 		    (cf_specifichum && !cf_specifichum->load_data_for(rlon, rlat))||
 		    (cf_relhum && !cf_relhum->load_data_for(rlon, rlat))||
-		    (cf_wind && !cf_wind->load_data_for(rlon, rlat)) ) {
+		    (cf_wind && !cf_wind->load_data_for(rlon, rlat)) ||
+			(cf_mNHxdrydep && !cf_mNHxdrydep->load_data_for(rlon, rlat)) ||
+			(cf_mNOydrydep && !cf_mNOydrydep->load_data_for(rlon, rlat)) ||
+			(cf_mNHxwetdep && !cf_mNHxwetdep->load_data_for(rlon, rlat)) ||
+			(cf_mNOywetdep && !cf_mNOywetdep->load_data_for(rlon, rlat)) ||
+			(cf_mPOxdrydep && !cf_mPOxdrydep->load_data_for(rlon, rlat)) || 
+			(cf_mPOxwetdep && !cf_mPOxwetdep->load_data_for(rlon, rlat))) {
 			dprintf("Failed to load data for (%d, %d) from NetCDF files, skipping.\n", rlon, rlat);
 			return false;
 		}
@@ -1045,22 +1169,84 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 	}
 	
 	// Get monthly ndep values and convert to daily
+	int ndep_year = date.get_calendar_year();
+	// dprintf("Ndep_year = %d\n", ndep_year); //TA print year
+
 
 	double mNHxdrydep[12], mNOydrydep[12];
 	double mNHxwetdep[12], mNOywetdep[12];
 
-	ndep.get_one_calendar_year(date.get_calendar_year(),
+	/*ndep.get_one_calendar_year(date.get_calendar_year(),
 	                           mNHxdrydep, mNOydrydep,
-							   mNHxwetdep, mNOywetdep);
+							   mNHxwetdep, mNOywetdep);*/
 
-	// Phosphorus deposition
-	double gridcell_mpdep[12];
-	get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), gridcell_mpdep);
+	if (!(cf_mNHxdrydep && cf_mNOydrydep && cf_mNHxwetdep && cf_mNOywetdep)) {
+		//dprintf("No N-deposition netCDF data used. Data of binary file is used.\n"); //TA print year
+		ndep.get_one_calendar_year(date.get_calendar_year(),
+			mNHxdrydep, mNOydrydep,
+			mNHxwetdep, mNOywetdep);
+	}
+	else {
+		int timestep = 0; // could just calculate the timestep (year-1850)*12
+		GuessNC::CF::DateTime dd = cf_mNHxdrydep->get_date_time(timestep);
+		GuessNC::CF::DateTime last_dd = cf_mNHxdrydep->get_date_time(cf_mNHxdrydep->get_timesteps() - 1);
+		if (ndep_year > last_dd.get_year()) {
+			ndep_year = last_dd.get_year();
+		}
+		if (ndep_year > dd.get_year()) { // advance timestep to Jan in the year
+			while (dd.get_year() < ndep_year) {
+				timestep++;
+				dd = cf_mNHxdrydep->get_date_time(timestep);
+			}
+		}
+
+		// read 12 monthly values
+		for (int m = 0; m < 12; m++) {
+			//dprintf("Ndep_year = %d\n", ndep_year); //TA print year
+			mNHxdrydep[m] = cf_mNHxdrydep->get_value(timestep); // NO convert kg m-2 s-1 -> kg m-2 d-1
+			mNOydrydep[m] = cf_mNOydrydep->get_value(timestep); //
+			mNHxwetdep[m] = cf_mNHxwetdep->get_value(timestep); //
+			mNOywetdep[m] = cf_mNOywetdep->get_value(timestep); //
+			timestep++;
+			//dprintf("mNHxdrydep = %f\n", mNHxdrydep[1]); //TA print mNHxdrydep of first month
+		}
+	}
+
+
 	// Divide pdep into dry and wet
 	double mpdrydep[12], mpwetdep[12];
-	for (int m = 0; m < 12; m++) {
-		mpdrydep[m] = gridcell_mpdep[m] / 2.0;
-		mpwetdep[m] = gridcell_mpdep[m] / 2.0;
+
+	// Phosphorus deposition
+	if (!(cf_mPOxdrydep && cf_mPOxwetdep)) {
+		double gridcell_mpdep[12];
+		get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), gridcell_mpdep);
+		for (int m = 0; m < 12; m++) {
+			mpdrydep[m] = gridcell_mpdep[m] / 2.0;
+			mpwetdep[m] = gridcell_mpdep[m] / 2.0;
+		}
+	}
+	else {
+		int timestep = 0; // could just calculate the timestep (year-1850)*12
+		GuessNC::CF::DateTime dd = cf_mPOxdrydep->get_date_time(timestep);
+		GuessNC::CF::DateTime last_dd = cf_mPOxdrydep->get_date_time(cf_mPOxdrydep->get_timesteps() - 1);
+		if (ndep_year > last_dd.get_year()) {
+			ndep_year = last_dd.get_year();
+		}
+		if (ndep_year > dd.get_year()) { // advance timestep to Jan in the year
+			while (dd.get_year() < ndep_year) {
+				timestep++;
+				dd = cf_mPOxdrydep->get_date_time(timestep);
+			}
+		}
+
+		// read 12 monthly values
+		for (int m = 0; m < 12; m++) {
+			//dprintf("Ndep_year = %d\n", ndep_year); //TA print year
+			mpdrydep[m] = cf_mPOxdrydep->get_value(timestep); // NO convert kg m-2 s-1 -> kg m-2 d-1
+			mpwetdep[m] = cf_mPOxwetdep->get_value(timestep); //
+			timestep++;
+			//dprintf("mNHxdrydep = %f\n", mNHxdrydep[1]); //TA print mNHxdrydep of first month
+		}
 	}
 
 	// Distribute N deposition
