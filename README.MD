@@ -1,4 +1,4 @@
-LPJ-GUESS 4.1 WITH PHOSPHORUS CYCLE AND TRAIT VARIATION
+LPJ-GUESS 4.1 WITH PHOSPHORUS CYCLE, TRAIT VARIATION AND MYCORRHIZAE (CF input implemented)
 ========
 
 Branch of Frankfurt-BiK-F Data Modelling center Gitlab repository
@@ -8,6 +8,16 @@ Branch of Frankfurt-BiK-F Data Modelling center Gitlab repository
 
 PLEASE NOTE:
 ==============
+
+-- 30.1.2023
+
+To add, turnover tradeoff with a maximum of 1 (limitation of yearly growth/dynamics)
+
+
+-- 24.1.2023
+
+Added differential NO3 or NH4 uptake for roots and mycorrhiza
+
 
 -- 21.10.2022
 
