@@ -90,7 +90,7 @@ void TimeDataD::CheckIfPresent(ListArray_id<Coord>& gridlist) { //Requires gutil
 
 bool TimeDataD::GetHeader(char *cropnames[MAXRECORDS]) const {
 
-	if(ifheader && header_arr) {
+	if(ifheader) {
 		for(int i=0; i<nColumns; i++)
 			strncpy(cropnames[i], header_arr[i], MAXNAMESIZE*sizeof(char));
 		return true;
@@ -102,7 +102,7 @@ bool TimeDataD::GetHeader(char *cropnames[MAXRECORDS]) const {
 
 bool TimeDataD::GetHeaderFull(char *header_line) const {
 
-	if(ifheader && header_arr) {
+	if(ifheader) {
 		if(format==LOCAL_YEARLY)
 			strcpy(header_line, "   Lon\t   Lat\t  Year");
 		else if(format==GLOBAL_YEARLY)
@@ -125,10 +125,12 @@ bool TimeDataD::GetHeaderFull(char *header_line) const {
 
 char* TimeDataD::GetHeader(int record) const {
 
-	if(ifheader && header_arr)
+	if(ifheader && header_arr[record]) {
 		return (char*)header_arr[record];
-	else
+	}
+	else {
 		return 0;
+	}
 }
 
 void TimeDataD::Get(double* dataX) const {
@@ -380,7 +382,7 @@ void TimeDataD::ParsePrecision() {
 					char word_copy[MAXNAMESIZE] = {'\0'};
 					strncpy(word_copy, s1[i], MAXNAMESIZE-1);
 					int str_length  = int(strlen(word_copy));
-					if(chp = strrchr(word_copy, '.'))
+					if((chp = strrchr(word_copy, '.')))
 						*chp='\0';
 					int precision_local = str_length - int(strlen(word_copy)) - 1;
 					if(precision_local > precision)
@@ -435,7 +437,7 @@ void TimeDataD::CreateFileMap() {
 			fclose(ifp_map);
 		FILE *ofp_map = fopen(mapname,"wb");
 		if(!ofp_map)
-			fail("TimeDataD::CreateFileMap: File could not be opened for output, quitting\n");
+			fail("TimeDataD::CreateFileMap: File %s could not be opened for output, quitting.\n", mapname);
 		fwrite(filemap, sizeof(CoordPos), nCells, ofp_map);
 		fclose(ofp_map);
 	}
@@ -1196,10 +1198,8 @@ bool TimeDataD::Load(Coord c) {
 
 				if(fgets(line, sizeof(line), ifp)) {
 
-					if(d) {
-						for(int i=0;i<nColumns;i++)
-							d[i] = 0.0;;
-					}
+					for(int col=0;col<nColumns;col++)
+						d[col] = 0.0;;
 					p=strtok(line," \t");	//lon
 					sscanf(p, "%f", &lonX);
 					p=strtok(NULL, " \t");	//lat
@@ -1330,14 +1330,17 @@ bool TimeDataD::LoadNext(filepos *pos) {
 				error = true;
 			}
 
-			for(int i=0; i<nYears && error==false && count>0;) {
+			for(int i=0; i<nYears && !error && count>0;) {
 
-				if(ifheader && firstyear)
+				if(ifheader && firstyear) {
 					firstyear = false;
-				else
-					fgets(line, sizeof(line), ifp);
+				}
+				else {
+					if(fgets(line, sizeof(line), ifp) == NULL)
+						error = true;
+				}
 
-				if(line) {
+				if(!error) {
 
 					int k = 0;
 					int count1 = 0;
@@ -1384,7 +1387,6 @@ bool TimeDataD::LoadNext(filepos *pos) {
 				}
 				else {
 					dprintf("TimeDataD::LoadNext: An ERROR occurred reading file %s\n", fileName);
-					error=true;
 					break;
 				}
 			}
@@ -1430,17 +1432,20 @@ bool TimeDataD::LoadNext(filepos *pos) {
 				error = true;
 			}
 
-			for(int i=0; i<nYears && error==false && count>0;) {
+			for(int i=0; i<nYears && !error && count>0;) {
 
 				int k = 0;
 				int count1 = 0;
 
-				if(ifheader && firstyear)
+				if(ifheader && firstyear) {
 					firstyear = false;
-				else
-					fgets(line, sizeof(line), ifp);
+				}
+				else {
+					if(fgets(line, sizeof(line), ifp) == NULL)
+						error = true;
+				}
 
-				if(line) {
+				if(!error) {
 
 					for(int q=0;q<nColumns;q++)
 						d[q] = 0.0;;
@@ -1476,10 +1481,8 @@ bool TimeDataD::LoadNext(filepos *pos) {
 						i++;
 					}
 				}
-				else
-				{
+				else {
 					dprintf("TimeDataD::LoadNext: An ERROR occurred reading file %s\n", fileName);
-					error = true;
 					break;
 				}
 			}
@@ -1665,7 +1668,7 @@ void TimeDataD::Output(char *name) {
 	else if(format==LOCAL_STATIC || format==LOCAL_YEARLY)
 		ofp = fopen(name, "a");
 
-	if(ifheader && header_arr && first_call) {
+	if(ifheader && first_call) {
 
 		switch (format) {
 

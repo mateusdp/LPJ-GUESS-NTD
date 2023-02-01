@@ -879,8 +879,6 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
 	double saploss = csapw2atm + csapw2str + csapw2fwd;
 	double hrtloss = chrtw2atm + chrtw2str + chrtw2cwd;
 
-	ppft.cmass_fire += saploss + hrtloss + cleaf2atm + cleaf2met + cleaf2str + croot2met + croot2str;
-
 	if ( cmass_debt > 0. ) { 
 		if ( cmass_debt <= saploss + hrtloss ) {
 			if ( cmass_debt <= hrtloss ) {
@@ -944,6 +942,8 @@ void Individual::blaze_reduce_biomass(Patch& patch, double frac_survive) {
 		anpp2sstr = loss_anpp *                           croot2str   / loss_tot;
 		anpp     -= loss_anpp;
 	}
+
+	ppft.cmass_fire += loss_anpp + loss_tot;
 
 	// Report C live -> atm flux 
 	patch.fluxes.report_flux(Fluxes::FIREC, cleaf2atm + csapw2atm + chrtw2atm + anpp2atm);

@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2022-12-22 12:26:09 +0100 (Thu, 22 Dec 2022) $
+/// $Date: 2023-01-23 13:38:52 +0100 (Mon, 23 Jan 2023) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1764,7 +1764,12 @@ public:
 
 	ManagementType& get_management(int rot = 0) {
 
-		return mtlist[mtlist.getmtid(mtnames[rot])];
+		int mtid = mtlist.getmtid(mtnames[rot]);
+
+		if(mtid < 0) {
+			fail("get_management(): mt name not in mtlist; check instruction file.\n");
+		}
+		return mtlist[mtid];
 	}
 
 	/// Returns position of management in rotation list if present. Returns -1 if not.
@@ -4706,7 +4711,7 @@ public:
 	double *transfer_area_st;
 	/// land cover origin of this stand
 	/** Set to landcover for primary stands, for secondary stands: origin lc if created by transfer_to_new_stand..(),
-	/*  otherwise to NLANDCOVERTYPES
+	 *  otherwise to NLANDCOVERTYPES
 	 */
 	landcovertype lc_origin;
 	/// stand type origin of this stand
@@ -5233,9 +5238,9 @@ public:
 	// SIMFIRE
 	/// the region index to chosose from set of optimisations
 	int simfire_region;
-	/// timeseries of population density from the Hyde 3.1 dataset (inhabitants/ha)
+	/// timeseries of population density from the Hyde 3.1 dataset (inhabitants/km2)
 	double hyde31_pop_density[57];
-	/// current year's population density (inhabitants/ha)
+	/// current year's population density (inhabitants/km2)
 	double pop_density;
 	/// tuning factor for available litter
 	double k_tun_litter;
