@@ -3548,6 +3548,12 @@ bool Soil::soil_temp_multilayer(const double &dailyairtemp) {
 	const double ERROR_TEMP = 80.0; // degrees C
 
 
+	// soil_temp_multilayer is called after cloning, in Stand::set_management(). 
+	// This if statement prevents a double call to this method for the cloned stand on Jan 1
+	// since firstTempCalc is set to false after the first call. 
+	if (!firstTempCalc && date.day == 0 && patch.stand.clone_year == date.year)
+		return true;
+
 	// INITIALISE
 	// ------------------------------------------
 
@@ -4036,6 +4042,9 @@ void Soil::serialize(ArchiveStream& arch) {
 		& Frac_ice_yesterday
 		& Frac_water_belowpwp
 		& Frac_water
+		& Frac_ice // bugfix
+		& dec_snowdepth // bugfix
+		& alwhc_init // bugfix
 		& Frac_air
 		& whc
 		& alwhc

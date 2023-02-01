@@ -3,7 +3,7 @@
 /// \brief LPJ-GUESS Combined Modular Framework
 ///
 /// \author Ben Smith
-/// $Date: 2022-12-22 12:26:09 +0100 (Thu, 22 Dec 2022) $
+/// $Date: 2023-01-31 13:02:50 +0100 (Tue, 31 Jan 2023) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -403,7 +403,7 @@ Patch::Patch(int i,Stand& s,Soiltype& st):
 	dens_start = 0.0;
 	wdemand = 0.0;
 	wdemand_leafon = 0.0;
-
+	fpar_grass = 0.0;
 	growingseasondays = 0;
 
 	burned = false;
@@ -761,6 +761,7 @@ Stand::Stand(int i, Gridcell* gc, Soiltype& st, landcovertype landcoverX, int np
 	lai = 0.0;
 	cmass = 0.0;
 	cmass_wood = 0.0;
+	cmass_mort = 0.0;
 	scale_LC_change = 1.0;
 }
 
@@ -1563,6 +1564,7 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 	deltafpc          = 0.0;
 
 	nmass_leaf        = 0.0;
+	nmass_leaf_luc    = 0.0;
 	nmass_root        = 0.0;
 	nmass_sap         = 0.0;
 	nmass_heart       = 0.0;
@@ -2723,6 +2725,7 @@ Gridcell::Gridcell():climate(*this) {
 
 	}
 	burned_area = 0.0;
+	simfire_region = 0;
 }
 
 double Gridcell::get_lon() const {

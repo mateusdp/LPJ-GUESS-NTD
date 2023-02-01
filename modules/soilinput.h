@@ -28,7 +28,8 @@ class SoilInput {
 public:
 	SoilInput() : 
 		searchradius_soil(0),
-		STEP(0.5) {
+		STEP(0.5),
+		soil_code(false) {
 		declare_parameter("searchradius_soil", &searchradius_soil, 0, 100,
 			"Search radius for soil input.");
 		declare_parameter("searchstep_soil", &STEP, 0, 1,

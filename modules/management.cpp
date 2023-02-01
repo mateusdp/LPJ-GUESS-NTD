@@ -435,7 +435,7 @@ void harvest_wood(Individual& indiv, double frac_cut, double harv_eff, double re
  */
 double diameter_rules(Individual& indiv) {
 
-	// See Lagergren and Jönsson (2017) for the influence of site quality class of Swedish 
+	// See Lagergren and JÃ¶nsson (2017) for the influence of site quality class of Swedish 
 	// forests on diameter limits in target diameter cutting.
 
 	Patch& patch = indiv.vegetation.patch;
@@ -1614,7 +1614,7 @@ void manage_forest(Patch& patch) {
 
 		if(!cut_interval) {
 
-			/* See Lagergren and Jönsson (2017) for the influence of site quality class (sqc) of Swedish 
+			/* See Lagergren and JÃ¶nsson (2017) for the influence of site quality class (sqc) of Swedish 
 			 * forests on rotation period in forest management.
 			 */
 			const double sqc_min = 2.351;	// The minimum average sqc for a county in Sweden
@@ -2953,9 +2953,9 @@ void crop_rotation(Stand& stand) {
 ///////////////////////////////////////////////////////////////////////////////////////
 // REFERENCES
 //
-// Bellassen, V, Le Maire, G, Dhôte, JF & Viovy, N (2010) Modelling forest management within a global vegetation model
+// Bellassen, V, Le Maire, G, DhÃ´te, JF & Viovy, N (2010) Modelling forest management within a global vegetation model
 //	 - Part 1: Model Structure and general behaviour. Ecol. Modelling 221: 2458-2474.
-// Lagergren, F and Jönsson, A M (2017) Ecosystem model analysis of multi-use forestry in a changing climate, Ecosyst.
+// Lagergren, F and JÃ¶nsson, A M (2017) Ecosystem model analysis of multi-use forestry in a changing climate, Ecosyst.
 //	 Serv. 26: 209-224.
 // Lindeskog, M, Smith, B, Lagergren, F, Sycheva, E, Ficko, A, Pretzsch, H, and Rammig, A: Accounting for forest management
 //	 in the estimation of forest carbon balance using the dynamic vegetation model LPJ-GUESS (v4.0, r9710): implementation

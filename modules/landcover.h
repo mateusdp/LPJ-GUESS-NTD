@@ -3,7 +3,7 @@
 /// \brief Functions handling landcover aspects, such as creating or resizing Stands
 ///
 /// \author Mats Lindeskog
-/// $Date: 2022-12-22 12:26:09 +0100 (Thu, 22 Dec 2022) $
+/// $Date: 2023-01-31 13:02:50 +0100 (Tue, 31 Jan 2023) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -401,6 +401,7 @@ struct lc_change_harvest_params {
 
 	lc_change_harvest_params() {
 
+		harv_eff = 0.0;
 		res_outtake_twig = 0.0;
 		res_outtake_coarse_root = 0.0;
 		burn = false;

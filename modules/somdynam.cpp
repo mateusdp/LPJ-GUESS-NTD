@@ -3,7 +3,7 @@
 /// \brief Soil organic matter dynamics
 ///
 /// \author Ben Smith (LPJ SOM dynamics, CENTURY), David Wårlind (CENTURY)
-/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
+/// $Date: 2023-01-31 13:02:50 +0100 (Tue, 31 Jan 2023) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -165,7 +165,7 @@ void equilsom_lpj(Soil& soil) {
 	double nyear;
 		// number of years over which decay constants and litter inputs averaged
 
-	nyear=soil.soiltype.solvesom_end-soil.soiltype.solvesom_begin+1;
+	nyear=(double)(soil.soiltype.solvesom_end-soil.soiltype.solvesom_begin+1);
 
 	soil.decomp_litter_mean/=nyear;
 	soil.k_soilfast_mean/=nyear;
@@ -549,7 +549,7 @@ void transferdecomp(Soil& soil, pooltype donor, pooltype receiver,
  */
 void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 
-	double respsum ;
+	double respsum;
 	double leachsum_cmass, leachsum_nmass;
 	double nmin_actual;	// actual (not net) nitrogen mineralisation
 	double nimmob;		// nitrogen immobilisation
@@ -559,7 +559,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	Soil& soil = patch.soil;
 
 	// mineral nitrogen mass available
-	const double nmin_mass = soil.nmass_avail(NH4);// + soil.NO3_mass;
+	const double nmin_mass = soil.nmass_avail(NH4);
 	if (date.day == 0) {
 		soil.anmin = 0.0;
 		soil.animmob = 0.0;
@@ -572,7 +572,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 
 	// Set N:C ratios for humus, soil microbial, passive and slow pool based on estimated mineral nitrogen pool
 	// (Parton et al 1993, Fig 4)
-
+ 
 	// ForCent (Parton 2010) values
 	setntoc(soil, nmin_mass, SLOWSOM, 30.0, 15.0, 0.0, NMASS_SAT);
 
@@ -595,8 +595,9 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	bool net_mineralization = false;
 	int times = 0;
 	double decay_reduction[NSOMPOOL] = {0.0};
-	double init_negative_nmass, init_ntoc_reduction;
-	double ntoc_reduction = 0.8;
+	const double ntoc_reduction = 0.8;
+	double init_surfmicro_ntoc = soil.sompool[SURFMICRO].ntoc;
+	double init_passivesom_ntoc = soil.sompool[PASSIVESOM].ntoc;
 
 	// If necessary, the decay rates in the pools will be reduced in groups, one group
 	// is reduced after each iteration in the loop below. The groups are defined by
@@ -737,7 +738,7 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 
 		// Estimate daily soil mineral nitrogen pool after decomposition
 		// (negative value = immobilisation)
-		if ((tot_net_min + nmin_mass + EPS >= 0.0) || !ifnlim) {
+		if (tot_net_min + nmin_mass + EPS >= 0.0) {
 
 			net_mineralization = true;
 		}
@@ -746,20 +747,16 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 			// Not minding immobilisation higher than nmass_avail during free nitrogen years
 			if (date.year > freenyears) {
 
-				// Immobilization larger than soil available nitrogen -> reduce targeted N concentration in SOM pool with flexible N:C ratios
-				if (times == 0) {
-					// initial reduction
-					init_negative_nmass = tot_net_min + nmin_mass;
-					init_ntoc_reduction = ntoc_reduction;
-				}
-				else {
-					// trying to match needed N:C reduction
-					ntoc_reduction = min(init_ntoc_reduction, pow(init_ntoc_reduction, 1.0 / (1.0 - (tot_net_min + nmin_mass) / init_negative_nmass) + 1.0));
-				}
-
-				soil.sompool[SLOWSOM].ntoc *= ntoc_reduction;
-				soil.sompool[SOILMICRO].ntoc *= ntoc_reduction;
+				// Immobilization larger than soil available nitrogen
+				// Reduce targeted N concentration in SOM pool with flexible N:C ratios
+				soil.sompool[SURFMICRO].ntoc *= ntoc_reduction;
 				soil.sompool[SURFHUMUS].ntoc *= ntoc_reduction;
+				soil.sompool[SOILMICRO].ntoc *= ntoc_reduction;
+				soil.sompool[SLOWSOM].ntoc *= ntoc_reduction;
+				soil.sompool[PASSIVESOM].ntoc *= ntoc_reduction;
+
+				// Continue until a positive tot_net_min is reached, times doesn't matter
+				times--;
 
 				net_mineralization = false;
 			}
@@ -777,6 +774,10 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 		}
 		times++;
 	}
+
+	// Reset surface microbial and passivesom pools N:C ratio
+	soil.sompool[SURFMICRO].ntoc = init_surfmicro_ntoc;
+	soil.sompool[PASSIVESOM].ntoc = init_passivesom_ntoc;
 
 	// Update pool sizes
 
@@ -810,23 +811,24 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	soil.labile_carbon = respsum * frac_labile_carbon;
 
 	// Adding mineral nitrogen to soil available pool
-	double nmin_inc = nmin_actual - nimmob; 
+	double nmin_inc = nmin_actual - nimmob;
 
 	// Estimate of N flux from soil (simple CLM-CN approach)
 	if(!ifntransform) {
 		double nflux = nmin_inc > 0.0 ? (nmin_inc) * 0.01 : 0.0;
-		//soil.NH4_mass -= nflux;
+
 		nmin_inc -= nflux;
 
-	if (!ifequilsom) {
-		patch.fluxes.report_flux(Fluxes::NH3_SOIL, nflux);
+		if (!ifequilsom) {
+			patch.fluxes.report_flux(Fluxes::NH3_SOIL, nflux);
+		}
 	}
-	}
+
 	soil.nmass_inc(nmin_inc,NH4);
 
 	// If no nitrogen limitation or during free nitrogen years set soil
 	// available nitrogen to its saturation level.
-	if (!ifnlim || date.year <= freenyears) {
+	if (date.year <= freenyears) {
 		if(ifntransform) {
 			soil.NH4_mass = NMASS_SAT / 2.0;
 			soil.NO3_mass = NMASS_SAT / 2.0;

@@ -7,7 +7,7 @@
 /// \author Mats Lindeskog,
 /// \Part of code in this file as well as in cropphenology.cpp, cropallocation.cpp and
 /// \management.cpp based on LPJ-mL C++ code received from Alberte Bondeau in 2008.
-/// $Date: 2022-12-22 12:26:09 +0100 (Thu, 22 Dec 2022) $
+/// $Date: 2023-01-31 13:02:50 +0100 (Tue, 31 Jan 2023) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -3007,12 +3007,11 @@ void landcover_dynamics(Gridcell& gridcell, InputModule* input_module) {
 		return;
 	}
 
-	double* st_frac_transfer = NULL;
 	forest_st_frac_transfer forest_st_subset_transfer(nst);
 	bool LCchangeCtransfer = true;
 	Landcover& lc = gridcell.landcover;
 
-	st_frac_transfer = new double[nst * nst];
+	double* st_frac_transfer = new double[nst * nst];
 
 	for(int i=0;i<NLANDCOVERTYPES;i++) {
 

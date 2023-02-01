@@ -279,7 +279,7 @@ private:
 				printf("Format of %s incompatible with this version of simfire_input.h\n",filename);
 				fclose(pfile);
 				pfile=NULL;
-				delete pheader;
+				delete[] pheader;
 				return false;
 			}
 		}
@@ -297,6 +297,7 @@ public:
 
 	SimfireInputArchive() {
 		pfile=NULL;
+		iseof = false;
 	}
 
 	~SimfireInputArchive() {

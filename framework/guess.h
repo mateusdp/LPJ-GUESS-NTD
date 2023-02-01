@@ -12,7 +12,7 @@
 ///      function.
 ///
 /// \author Ben Smith
-/// $Date: 2023-01-23 13:38:52 +0100 (Mon, 23 Jan 2023) $
+/// $Date: 2023-01-31 13:02:50 +0100 (Tue, 31 Jan 2023) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -386,6 +386,8 @@ public:
 		}
 		subdaily = 1;
 		first_calendar_year = 0;
+		nyear = 0;
+		ismidday = false;
 	}
 
 	/// Initialises date to day 0 of year 0 and sets intended number of simulation years
@@ -620,6 +622,11 @@ struct Wood_harvest_struct {
 	double sec_mature_cmass;
 	double sec_young_frac;
 	double sec_young_cmass;
+
+	/// Constructs an empty Wood_harvest_struct struct
+	Wood_harvest_struct() {
+		zero();
+	}
 
 	void zero() {
 		prim_frac = 0.0;
@@ -1160,9 +1167,12 @@ public:
 		mean_elevation = 0;
 
 		eet=0.0;
+		par = 0.0;
 
 		gdd0 = 0.0;
 		agdd0 = 0.0;
+
+		chilldays = 0;
 	};
 
 	/// Initialises certain member variables
@@ -2209,6 +2219,10 @@ public:
 		pb = -1.0;
 		vern_lag=0;
 		ps = -1.0;
+		pstemp_high = 0.0;
+		pstemp_low = 0.0;	
+		pstemp_max = 0.0;
+		pstemp_min = 0.0;
 		phu = -1.0;
 		phu_red_spring_sow = 1.0;
 		fphusen = -1.0;
@@ -2691,6 +2705,7 @@ struct cropindiv_struct : public Serializable {
 		dcmass_plant=0.0;
 		dcmass_ho=0.0;
 		dcmass_agpool=0.0;
+		dcmass_stem = 0.0;
 		grs_cmass_leaf=0.0;
 		grs_cmass_root=0.0;
 		grs_cmass_plant=0.0;
@@ -3301,6 +3316,7 @@ public:
 		
 		// Assume no mineral content on peatlands
 		sand_frac_peat = clay_frac_peat = silt_frac_peat = 0.0;
+		wtot_peat = 0.0;
 
 		runon = 0.0;
 		for (int ii = 0; ii < 10; ii++)
@@ -3334,6 +3350,7 @@ public:
 		fracremain = 0.0;
 		litterme = 0.0;
 		fireresist = 0.0;
+		ntoc = 0.0;
 
 		for (int m = 0; m < 12; m++) {
 			mfracremain_mean[m] = 0.0;
@@ -4293,6 +4310,7 @@ public:
 		anetps_ff_est_initial = 0.0;
 		wscal_mean_est = 0.0;
 		nsapling = 0;
+		water_deficit_y = 0.0;
 
 		for (int mth = 0; mth < 12; mth++)
 			mphen[mth] = 0.0;
@@ -4643,6 +4661,7 @@ public:
 		irrigated = false;
 		sdate_force = -1;
 		hdate_force = -1;
+		cmass_repr = 0.0;
 	}
 
 	void serialize(ArchiveStream& arch);
@@ -4971,6 +4990,8 @@ public:
 		wintertype=false;
 		swindow[0]=-1;
 		swindow[1]=-1;
+		swindow_irr[0] = -1;
+		swindow_irr[1] = -1;
 		sowing_restriction = false;
 	}
 

@@ -284,7 +284,7 @@ private:
 				printf("Format of %s incompatible with this version of GlobalNitrogenDepositionRCP85.h\n",filename);
 				fclose(pfile);
 				pfile=NULL;
-				delete pheader;
+				delete[] pheader;
 				return false;
 			}
 		}

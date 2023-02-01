@@ -6,7 +6,7 @@
 /// production, respiration and evapotranspiration.
 ///
 /// \author Ben Smith
-/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
+/// $Date: 2023-01-31 13:02:50 +0100 (Tue, 31 Jan 2023) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -2171,7 +2171,7 @@ void assimilation_wstress(const Pft& pft, double co2, double temp, double par,
 
 	const double EPS = 0.1; // minimum precision of solution in bisection method
 
-	double xmid;
+	double xmid = 0.0;
 
 	// Implement numerical solution
 

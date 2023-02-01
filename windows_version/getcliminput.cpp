@@ -34,6 +34,7 @@ void interp_climate(double* mtemp, double* mprec, double* msun, double* mdtr,
 
 GetclimInput::GetclimInput() {
 
+	in_clim = NULL;
 }
 
 

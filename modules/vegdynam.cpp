@@ -3,7 +3,7 @@
 /// \brief Vegetation dynamics and disturbance
 ///
 /// \author Ben Smith
-/// $Date: 2022-11-22 12:55:59 +0100 (Tue, 22 Nov 2022) $
+/// $Date: 2023-01-31 13:02:50 +0100 (Tue, 31 Jan 2023) $
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -426,18 +426,18 @@ void establishment_guess(Stand& stand,Patch& patch) {
 	// grass biomass (see comment above)
 	const double SAPSIZE=0.1;
 
-	bool present; // whether PFT already present in this patch
-	double c; // constant in equation for number of new saplings (Eqn 5)
-	double est; // expected number of new saplings for PFT in this patch
+	bool present = false; // whether PFT already present in this patch
+	double c = 0.0; // constant in equation for number of new saplings (Eqn 5)
+	double est = 0.0; // expected number of new saplings for PFT in this patch
 
 	// Actual number of new saplings for PFT in this patch (may include a
 	// fractional part in cohort mode with stochastic establishment disabled)
-	double nsapling;
-	double bminit; // initial sapling biomass (kgC) or new grass biomass (kgC/m2)
-	double ltor; // leaf to fine root mass ratio for new saplings or grass
-	int newindiv; // number of new Individual objects to add to vegetation for this PFT
-	double kest_bg;
-	int i;
+	double nsapling = 0.0;
+	double bminit = 0.0; // initial sapling biomass (kgC) or new grass biomass (kgC/m2)
+	double ltor = 0.0; // leaf to fine root mass ratio for new saplings or grass
+	int newindiv = 0; // number of new Individual objects to add to vegetation for this PFT
+	double kest_bg = 0.0;
+	int i = 0;
 
 	// Obtain reference to Vegetation object
 

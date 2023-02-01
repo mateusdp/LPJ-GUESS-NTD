@@ -289,7 +289,7 @@ private:
 				printf("Format of %s incompatible with this version of cruncep_1901_2015misc.h\n",filename);
 				fclose(pfile);
 				pfile=NULL;
-				delete pheader;
+				delete[] pheader;
 				return false;
 			}
 		}
@@ -307,6 +307,7 @@ public:
 
 	Cruncep_1901_2015miscArchive() {
 		pfile=NULL;
+		recno=0;
 	}
 
 	~Cruncep_1901_2015miscArchive() {
