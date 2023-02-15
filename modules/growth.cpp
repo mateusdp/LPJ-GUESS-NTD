@@ -1623,8 +1623,18 @@ void growth(Stand& stand, Patch& patch) {
 						indiv.nstore_longterm,indiv.max_n_storage,
 						indiv.alive);*/
 
+					double turnover_leaf;
+					double turnover_root;
+
+					/*turnover_leaf = 1 / min(1.0, max(0.0, exp(2.01736 + log(indiv.sla) * -0.69778)));
+					turnover_root = min(1.0, 2990.3999 * pow(indiv.cton_root_avr, -2.1996));*/
+
+					turnover_leaf = indiv.pft.turnover_leaf;
+					turnover_root = indiv.pft.turnover_root;
+
 					// Tissue turnover with both nitrogen and phosphorus and associated litter production
-					turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
+					//turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
+					turnover_np(turnover_leaf, turnover_root,
 						indiv.pft.turnover_sap, indiv.nrelocfrac, indiv.prelocfrac, indiv.pft.lifeform, indiv.pft.landcover,
 						indiv.cmass_leaf, indiv.cmass_root, indiv.cmass_myco, indiv.cmass_sap, indiv.cmass_heart,
 						indiv.nmass_leaf, indiv.nmass_root, indiv.nmass_sap, indiv.nmass_heart,
