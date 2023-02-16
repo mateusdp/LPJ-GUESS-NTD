@@ -3712,6 +3712,8 @@ bool MassBalance::check_patch_water(Patch& patch) {
 		dprintf("Water pool change: %.10f\n", water_content - water_cont_zero);
 		dprintf("Water flux: %.10f\n\n", water_flux - water_flux_zero);
 	}
+
+	return balance;
 }
 
 bool MassBalance::check_patch_P(Patch& patch, bool check_harvest) {
