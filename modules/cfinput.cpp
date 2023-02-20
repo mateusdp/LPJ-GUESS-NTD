@@ -1110,13 +1110,16 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 	bool cloud_fraction_to_sunshine = (cf_standard_name_to_insoltype(cf_insol->get_standard_name()) == SUNSHINE);
 	for (int i = 0; i < date.year_length(); ++i) {
 		
-		dtemp[i] -= K2degC;
-		if (cf_min_temp) {
-			dmin_temp[i] -= K2degC;
-		}
-		
-		if (cf_max_temp) {
-			dmax_temp[i] -= K2degC;
+		//is daily check for monthly outputs, avoid twice conversion
+		if (is_daily(cf_temp)) {
+			dtemp[i] -= K2degC;
+			if (cf_min_temp) {
+				dmin_temp[i] -= K2degC;
+			}
+
+			if (cf_max_temp) {
+				dmax_temp[i] -= K2degC;
+			}
 		}
 		
 		if (cloud_fraction_to_sunshine) {
@@ -1125,9 +1128,12 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 			dinsol[i] = (1-dinsol[i]) * 100.0;
 		}
 		
-		if ( (cf_pres && cf_specifichum) && !cf_relhum ) {
-			// compute relative humidity for BLAZE
-			drelhum[i] = calc_relative_humidity(dtemp[i], dspecifichum[i], dpres[i]);
+		//is daily check for monthly outputs, avoid twice conversion
+		if (is_daily(cf_temp)) {
+			if ((cf_pres && cf_specifichum) && !cf_relhum) {
+				// compute relative humidity for BLAZE
+				drelhum[i] = calc_relative_humidity(dtemp[i], dspecifichum[i], dpres[i]);
+			}
 		}
 		else if ( firemodel == BLAZE && !cf_relhum ) {
 			fail("BLAZE is switched on WITHOUT info on either specific humidity and pressure or relative humidity! \n" );
