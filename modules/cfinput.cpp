@@ -621,13 +621,16 @@ bool CFInput::getgridcell(Gridcell& gridcell) {
 		++current_gridcell;
 	}
 
-	cru_lon = floor(lon * 2.0) / 2.0 + 0.25;
-	cru_lat = floor(lat * 2.0) / 2.0 + 0.25;
+	//cru_lon = floor(lon * 2.0) / 2.0 + 0.25;
+	//cru_lat = floor(lat * 2.0) / 2.0 + 0.25;
 
 	if (current_gridcell == gridlist.end()) {
 		// simulation finished
 		return false;
 	}
+
+	cru_lon = floor(lon * 2.0) / 2.0 + 0.25;
+	cru_lat = floor(lat * 2.0) / 2.0 + 0.25;
 
 	if (run_landcover) {
 		bool LUerror = false;
