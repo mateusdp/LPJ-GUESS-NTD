@@ -1209,11 +1209,17 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 
 	// Phosphorus deposition
 	if (!(cf_mPOxdrydep && cf_mPOxwetdep)) {
-		double gridcell_mpdep[12];
+		/*double gridcell_mpdep[12];
 		get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), gridcell_mpdep);
 		for (int m = 0; m < 12; m++) {
 			mpdrydep[m] = gridcell_mpdep[m] / 2.0;
 			mpwetdep[m] = gridcell_mpdep[m] / 2.0;
+		}*/
+		if (date.day == 0 && date.year == 0)
+			get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), gridcell.climate.mpdep);
+		for (int m = 0; m < 12; m++) {
+			mpdrydep[m] = gridcell.climate.mpdep[m] / 2.0;
+			mpwetdep[m] = gridcell.climate.mpdep[m] / 2.0;
 		}
 	}
 	else {
