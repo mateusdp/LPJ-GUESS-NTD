@@ -1443,6 +1443,9 @@ void fire(Patch& patch,double& fireprob) {
 		report_fire_nfluxes(patch, mort_fire * (patch.pft[p].nmass_litter_leaf +
 			                patch.pft[p].nmass_litter_sap + patch.pft[p].nmass_litter_heart));
 
+		patch.fluxes.report_flux(Fluxes::P_FIRE, mort_fire * (patch.pft[p].pmass_litter_leaf +
+			patch.pft[p].pmass_litter_sap + patch.pft[p].pmass_litter_heart));
+
 		// Account for burnt above ground litter
 
 		patch.pft[p].cmass_litter_leaf  *= (1.0 - mort_fire);
@@ -1482,6 +1485,14 @@ void fire(Patch& patch,double& fireprob) {
 						patch.soil.sompool[SURFCWD].nmass    * mort_fire_cwd;
 
 	report_fire_nfluxes(patch, nflux_fire);
+
+	// Calculate phosphorus flux from burnt soil litter
+	double pflux_fire = patch.soil.sompool[SURFSTRUCT].pmass * mort_fire_struct +
+		patch.soil.sompool[SURFMETA].pmass   * mort_fire_meta +
+		patch.soil.sompool[SURFFWD].pmass    * mort_fire_fwd +
+		patch.soil.sompool[SURFCWD].pmass    * mort_fire_cwd;
+
+	patch.fluxes.report_flux(Fluxes::P_FIRE, pflux_fire);
 
 	// CHECK FOR PHOSPHORUS FIRE ATMOSPHERIC FLUX RATIO? ASK MATT FORREST
 
