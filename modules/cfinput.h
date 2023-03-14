@@ -148,6 +148,9 @@ private:
 	// monthly mean wet phosphorus deposition (PO4, kg m-2 d-1) in netCDF
 	GuessNC::CF::GridcellOrderedVariable* cf_mPOxwetdep;
 
+	// monthly mean global phosphorus deposition (PO4, kg m-2 d-1) in netCDF
+	GuessNC::CF::GridcellOrderedVariable* cf_mPOxGlobaldep;
+
 
 	// Spinup data for each variable
 

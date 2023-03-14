@@ -357,6 +357,7 @@ CFInput::CFInput()
 	  cf_mNOywetdep(0),
 	  cf_mPOxdrydep(0),
 	  cf_mPOxwetdep(0),
+	  cf_mPOxGlobaldep(0),
 	  ndep_timeseries("historic") {
 
 	// Declare instruction file parameters
@@ -381,6 +382,7 @@ CFInput::~CFInput() {
 	delete cf_mNOywetdep;
 	delete cf_mPOxdrydep;
 	delete cf_mPOxwetdep;
+	delete cf_mPOxGlobaldep;
 
 
 	cf_temp = 0;
@@ -399,6 +401,7 @@ CFInput::~CFInput() {
 	cf_mNOywetdep = 0;
 	cf_mPOxdrydep = 0;
 	cf_mPOxwetdep = 0;
+	cf_mPOxGlobaldep = 0;
 }
 
 void CFInput::init() {
@@ -463,6 +466,10 @@ void CFInput::init() {
 
 		if (param.isparam("file_mPOxwetdep") && param["file_mPOxwetdep"].str != "") {
 			cf_mPOxwetdep = new GridcellOrderedVariable(param["file_mPOxwetdep"].str, param["variable_mPOxwetdep"].str);
+		}
+
+		if (param.isparam("file_mPOxGlobaldep") && param["file_mPOxGlobaldep"].str != "") {
+			cf_mPOxGlobaldep = new GridcellOrderedVariable(param["file_mPOxGlobaldep"].str, param["variable_mPOxGlobaldep"].str);
 		}
 
 	}
@@ -540,6 +547,11 @@ void CFInput::init() {
 	if (cf_mPOxwetdep) {
 		if (!cf_mPOxwetdep->same_spatial_domain(*cf_temp)) {
 			fail("wet pdep %s has not the same spatial domain as climate data", (char*)param["file_mPOxwetdep"].str);
+		};
+	}
+	if (cf_mPOxGlobaldep) {
+		if (!cf_mPOxGlobaldep->same_spatial_domain(*cf_temp)) {
+			fail("Global pdep %s has not the same spatial domain as climate data", (char*)param["file_mPOxGlobaldep"].str);
 		};
 	}
 
@@ -751,7 +763,8 @@ bool CFInput::load_data_from_files(double& lon, double& lat){
 			(cf_mNHxwetdep && true) ||
 			(cf_mNOywetdep && true) ||
 			(cf_mPOxdrydep && true) ||
-			(cf_mPOxwetdep && true)){
+			(cf_mPOxwetdep && true) ||
+			(cf_mPOxGlobaldep && true)){
 			dprintf("Failed to load data for (%d) from NetCDF files, skipping.\n", landid);
 			return false;
 		}
@@ -772,7 +785,8 @@ bool CFInput::load_data_from_files(double& lon, double& lat){
 			(cf_mNHxwetdep && !cf_mNHxwetdep->load_data_for(rlon, rlat)) ||
 			(cf_mNOywetdep && !cf_mNOywetdep->load_data_for(rlon, rlat)) ||
 			(cf_mPOxdrydep && !cf_mPOxdrydep->load_data_for(rlon, rlat)) || 
-			(cf_mPOxwetdep && !cf_mPOxwetdep->load_data_for(rlon, rlat))) {
+			(cf_mPOxwetdep && !cf_mPOxwetdep->load_data_for(rlon, rlat)) ||
+			(cf_mPOxGlobaldep && !cf_mPOxGlobaldep->load_data_for(rlon, rlat))) {
 			dprintf("Failed to load data for (%d, %d) from NetCDF files, skipping.\n", rlon, rlat);
 			return false;
 		}
@@ -1215,11 +1229,22 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 			mpdrydep[m] = gridcell_mpdep[m] / 2.0;
 			mpwetdep[m] = gridcell_mpdep[m] / 2.0;
 		}*/
-		if (date.day == 0 && date.year == 0)
-			get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), gridcell.climate.mpdep);
-		for (int m = 0; m < 12; m++) {
-			mpdrydep[m] = gridcell.climate.mpdep[m] / 2.0;
-			mpwetdep[m] = gridcell.climate.mpdep[m] / 2.0;
+		if (!cf_mPOxGlobaldep) {
+			if (date.day == 0 && date.year == 0)
+				get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), gridcell.climate.mpdep);
+			for (int m = 0; m < 12; m++) {
+				mpdrydep[m] = gridcell.climate.mpdep[m] / 2.0;
+				mpwetdep[m] = gridcell.climate.mpdep[m] / 2.0;
+			}
+		}
+		else {
+			// read 12 monthly values
+			for (int m = 0; m < 12; m++) {
+				//dprintf("Ndep_year = %d\n", ndep_year); //TA print year
+				mpdrydep[m] = cf_mPOxGlobaldep->get_value(m) / 2.0; // NO convert kg m-2 s-1 -> kg m-2 d-1
+				mpwetdep[m] = cf_mPOxGlobaldep->get_value(m) / 2.0; //
+				//dprintf("mNHxdrydep = %f\n", mNHxdrydep[1]); //TA print mNHxdrydep of first month
+			}
 		}
 	}
 	else {
