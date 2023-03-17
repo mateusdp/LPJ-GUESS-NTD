@@ -159,6 +159,9 @@ extern bool ifnlim;
 /// whether plant growth limited by available P
 extern bool ifplim;
 
+/// whether plant growth, allocation and dynamics occur on a daily timestep
+extern bool ifdaily;
+
 /// Trait variation variables
 extern bool ifslavary;
 extern bool ifwsgvary;

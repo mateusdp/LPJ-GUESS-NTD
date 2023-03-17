@@ -591,6 +591,9 @@ void establishment_guess(Stand& stand,Patch& patch) {
 							indiv.srl_tradeoffs();
 						}
 
+						if (ifdaily)
+							indiv.ltor = indiv.pft.ltor_max;
+
 						/////////////////////////////////////////////////////////////////////////////
 
 						// Initial grass biomass proportional to potential forest floor
@@ -763,6 +766,9 @@ void establishment_guess(Stand& stand,Patch& patch) {
 							indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, wsg_width, stand.seed);
 							indiv.srl_tradeoffs();
 						}
+
+						if (ifdaily)
+							indiv.ltor = indiv.pft.ltor_max;
 
 						/////////////////////////////////////////////////////////////////////////////
 
