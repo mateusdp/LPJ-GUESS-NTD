@@ -365,6 +365,9 @@ void turnover_np(double turnover_leaf, double turnover_root, double turnover_sap
 
 	double turnover_myco = 1.0;
 
+	if (ifdaily)
+		turnover_myco = 0.11;
+
 	// Calculate actual nitrogen retranslocation so maximum nitrogen storage capacity is not exceeded
 	double actual_nrelocfrac = calc_nrelocfrac(lifeform, turnover_leaf, nmass_leaf, turnover_root, nmass_root,
 		turnover_sap, nmass_sap, max_n_storage, longterm_nstore, nreloc_ind);
@@ -1262,8 +1265,10 @@ bool allometry(Individual& indiv) {
 
 				// Root projective cover calculation, if SRL variation is activated.
 				if (ifsrlvary) {
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
+					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;*/
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
 					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / (2.25e3 * 50.0);
@@ -2192,7 +2197,6 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 				else
 					indiv.ltor = npscal * indiv.ltor;
 
-
 			// Move leftover compartment nitrogen storage to longterm storage
 			indiv.nstore_longterm += indiv.nstore_labile;
 			indiv.nstore_labile = 0.0;
@@ -2200,6 +2204,7 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			// Move leftover compartment phosphorus storage to longterm storage
 			indiv.pstore_longterm += indiv.pstore_labile;
 			indiv.pstore_labile = 0.0;
+
 		}
 
 		indiv.deltafpc = 0.0;
@@ -2280,24 +2285,10 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 
 				if ((indiv.pft.phenology != RAINGREEN && indiv.pft.phenology != SUMMERGREEN) || 
 					(indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN) && (date.islastday && date.islastmonth)) {
-					//// Tissue turnover and associated litter production
-					/*turnover(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
-					indiv.pft.turnover_sap, indiv.pft.lifeform, indiv.pft.landcover,
-					indiv.cmass_leaf, indiv.cmass_root, indiv.cmass_sap, indiv.cmass_heart,
-					indiv.nmass_leaf, indiv.nmass_root, indiv.nmass_sap, indiv.nmass_heart,
-					patch.pft[indiv.pft.id].cmass_litter_leaf,
-					patch.pft[indiv.pft.id].cmass_litter_root,
-					patch.pft[indiv.pft.id].nmass_litter_leaf,
-					patch.pft[indiv.pft.id].nmass_litter_root,
-					indiv.nstore_longterm,indiv.max_n_storage,
-					indiv.alive);*/
 
 					double turnover_leaf;
 					double turnover_root;
 					double turnover_sap;
-
-					/*turnover_leaf = 1 / min(1.0, max(0.0, exp(2.01736 + log(indiv.sla) * -0.69778)));
-					turnover_root = min(1.0, 2990.3999 * pow(indiv.cton_root_avr, -2.1996));*/
 
 					if (indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN) {
 						turnover_leaf = indiv.pft.turnover_leaf;
@@ -2305,8 +2296,10 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						turnover_sap = indiv.pft.turnover_sap;
 					}
 					else {
-						turnover_leaf = indiv.pft.turnover_leaf / 365.0;
-						turnover_root = indiv.pft.turnover_root / 365.0;
+						turnover_leaf = 1 / max(0.0, exp(2.01736 + log(indiv.sla) * -0.69778));
+						turnover_root = min(1.0, 2990.3999 * pow(indiv.cton_root_avr, -2.1996));
+						turnover_leaf = turnover_leaf / 365.0;
+						turnover_root = turnover_root / 365.0;
 						turnover_sap = indiv.pft.turnover_sap / 365.0;
 					}
 

@@ -127,7 +127,7 @@ void simulate_day(Gridcell& gridcell, InputModule* input_module) {
 			// updated allometry
 			if (ifdaily) {
 				growth_natural_daily(stand, patch);
-				lai_update(patch);
+				//lai_update(patch);
 			}
 
 			// Soil organic matter and litter dynamics
