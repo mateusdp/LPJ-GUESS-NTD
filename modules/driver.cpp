@@ -1049,52 +1049,58 @@ void dailyaccounting_patch(Patch& patch) {
 
 	// INPUT AND OUTPUT PARAMETER
 	// soil   = patch soil
-
+	
 	Soil& soil = patch.soil;
 
-	// Calculate total FPC
-	// Added RPC
-	patch.fpc_total = 0;
-	patch.rpc_total = 0;
-	patch.rpc_myco_total = 0;
-	Vegetation& vegetation = patch.vegetation;
-	vegetation.firstobj();
-	while (vegetation.isobj) {
-		patch.fpc_total += vegetation.getobj().fpc;		// indiv.fpc
-		if (ifsrlvary) {
-			patch.rpc_total += vegetation.getobj().rpc;		// indiv.rpc
-			patch.rpc_myco_total += vegetation.getobj().rpc_myco;		// indiv.rpc_myco
+	if (ifdaily) {
+		// Calculate total FPC
+		// Added RPC
+		
+		patch.fpc_total = 0;
+		patch.rpc_total = 0;
+		patch.rpc_myco_total = 0;
+		Vegetation& vegetation = patch.vegetation;
+		vegetation.firstobj();
+		while (vegetation.isobj) {
+			patch.fpc_total += vegetation.getobj().fpc;		// indiv.fpc
+			if (ifsrlvary) {
+				patch.rpc_total += vegetation.getobj().rpc;		// indiv.rpc
+				patch.rpc_myco_total += vegetation.getobj().rpc_myco;		// indiv.rpc_myco
+			}
+			vegetation.nextobj();
 		}
-		vegetation.nextobj();
-	}
-	// Calculate rescaling factor to account for overlap between populations/
-	// cohorts/individuals (i.e. total FPC > 1)
-	patch.fpc_rescale = 1.0 / max(patch.fpc_total, 1.0);
-
+		// Calculate rescaling factor to account for overlap between populations/
+		// cohorts/individuals (i.e. total FPC > 1)
+		patch.fpc_rescale = 1.0 / max(patch.fpc_total, 1.0);
+	} 
+	
 	if (date.day == 0) {
 
 		patch.aaet = 0.0;
 		patch.aintercep = 0.0;
 		patch.apet = 0.0;
 
-		//// Calculate total FPC
-		//// Added RPC
-		//patch.fpc_total = 0;
-		//patch.rpc_total = 0;
-		//patch.rpc_myco_total = 0;
-		//Vegetation& vegetation = patch.vegetation;
-		//vegetation.firstobj();
-		//while (vegetation.isobj) {
-		//	patch.fpc_total += vegetation.getobj().fpc;		// indiv.fpc
-		//	if (ifsrlvary) {
-		//		patch.rpc_total += vegetation.getobj().rpc;		// indiv.rpc
-		//		patch.rpc_myco_total += vegetation.getobj().rpc_myco;		// indiv.rpc_myco
-		//	}
-		//	vegetation.nextobj();
-		//}
-		//// Calculate rescaling factor to account for overlap between populations/
-		//// cohorts/individuals (i.e. total FPC > 1)
-		//patch.fpc_rescale = 1.0 / max(patch.fpc_total, 1.0);
+		if (!ifdaily) {
+
+			// Calculate total FPC
+			// Added RPC
+			patch.fpc_total = 0;
+			patch.rpc_total = 0;
+			patch.rpc_myco_total = 0;
+			Vegetation& vegetation = patch.vegetation;
+			vegetation.firstobj();
+			while (vegetation.isobj) {
+				patch.fpc_total += vegetation.getobj().fpc;		// indiv.fpc
+				if (ifsrlvary) {
+					patch.rpc_total += vegetation.getobj().rpc;		// indiv.rpc
+					patch.rpc_myco_total += vegetation.getobj().rpc_myco;		// indiv.rpc_myco
+				}
+				vegetation.nextobj();
+			}
+			// Calculate rescaling factor to account for overlap between populations/
+			// cohorts/individuals (i.e. total FPC > 1)
+			patch.fpc_rescale = 1.0 / max(patch.fpc_total, 1.0);
+		}
 
 		for(unsigned int i=0;i<pftlist.nobj;i++) {
 			Patchpft& patchpft = patch.pft[i];

@@ -1321,7 +1321,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// This is considered to be related to FPC which is proportional to crown area which is approx
 		// 4 times smaller than the root area
 		// Added root projective cover	
-		double max_indiv_avail, max_indiv_avail_myco;
+		double max_indiv_avail = 0.0;
+		double max_indiv_avail_myco = 0.0;
 
 		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
@@ -1503,7 +1504,8 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		// This is considered to be related to FPC which is proportional to crown area which is approx
 		// 4 times smaller than the root area
 		// Added root projective cover
-		double max_indiv_avail, max_indiv_avail_myco;
+		double max_indiv_avail = 0.0;
+		double max_indiv_avail_myco = 0.0;
 
 		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
@@ -1584,6 +1586,7 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	// Phosphorus within projective cover of all individuals
 	// Added patch rpc
 	double tot_pmass_avail;
+
 	if(ifsrlvary)
 		tot_pmass_avail = patch.soil.pmass_labile * min(1.0, patch.rpc_total + patch.rpc_myco_total);
 	else

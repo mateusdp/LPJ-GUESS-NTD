@@ -2296,10 +2296,16 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						turnover_sap = indiv.pft.turnover_sap;
 					}
 					else {
-						turnover_leaf = 1 / max(0.0, exp(2.01736 + log(indiv.sla) * -0.69778));
-						turnover_root = min(1.0, 2990.3999 * pow(indiv.cton_root_avr, -2.1996));
-						turnover_leaf = turnover_leaf / 365.0;
-						turnover_root = turnover_root / 365.0;
+						if (ifslavary) {
+							turnover_leaf = 1 / max(0.0, exp(2.01736 + log(indiv.sla) * -0.69778));
+							turnover_root = min(1.0, 2990.3999 * pow(indiv.cton_root_avr, -2.1996));
+							turnover_leaf = turnover_leaf / 365.0;
+							turnover_root = turnover_root / 365.0;
+						}
+						else {
+							turnover_leaf = indiv.pft.turnover_leaf / 365.0;
+							turnover_root = indiv.pft.turnover_root / 365.0;
+						}
 						turnover_sap = indiv.pft.turnover_sap / 365.0;
 					}
 
