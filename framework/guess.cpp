@@ -1672,7 +1672,10 @@ void Individual::reduce_biomass(double mortality, double mortality_fire) {
 		report_flux(Fluxes::N2O_FIRE, Fluxes::N2O_FIRERATIO * nflux_fire);
 		report_flux(Fluxes::N2_FIRE,  Fluxes::N2_FIRERATIO  * nflux_fire);
 
-		report_flux(Fluxes::P_FIRE, pflux_fire);
+		//report_flux(Fluxes::P_FIRE, pflux_fire);
+		
+		// burned P stays in the soil (but maybe choose exactly which pool, not litter leaf)
+		ppft.pmass_litter_leaf += pflux_fire;
 
 		// Reduce this Individual's biomass values
 
