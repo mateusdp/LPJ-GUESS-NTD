@@ -578,7 +578,7 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						indiv.prelocfrac = prelocfrac;
 
 						if (ifslavary) {
-							indiv.sla = randomize_trait(pft.sla_min, pft.sla_max, sla_width, stand.seed);
+							//indiv.sla = randomize_trait(pft.sla_min, pft.sla_max, sla_width, stand.seed);
 							indiv.ctonp_tradeoffs();
 						}
 
@@ -587,7 +587,8 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						}*/
 
 						if (ifsrlvary) {
-							indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, wsg_width, stand.seed);
+							//indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, wsg_width, stand.seed);
+							indiv.srl = 100000.0;
 							indiv.srl_tradeoffs();
 						}
 

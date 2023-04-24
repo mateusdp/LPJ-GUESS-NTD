@@ -1210,9 +1210,9 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 	patch.ndemand = 0.0;
 
 	// soil available mineral nitrogen (kgN/m2)
-	//const double nmin_avail = soil.nmass_avail(NO3);
-	//const double nmin_avail_myco = soil.nmass_avail(NH4);
-	const double nmin_avail = soil.nmass_avail(NO);
+	const double nmin_avail = soil.nmass_avail(NO3);
+	const double nmin_avail_myco = soil.nmass_avail(NH4);
+	//const double nmin_avail = soil.nmass_avail(NO);
 	// Scalar to soil temperature (Eqn A9, Comins & McMurtrie 1993) for nitrogen uptake
 	double soilT = patch.soil.get_soil_temp_25();
 	double temp_scale = temperature_modifier(soilT); 
@@ -1326,8 +1326,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
-			//max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail_myco;
-			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail;
+			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail_myco;
+			//max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail;
 		}
 		else {
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * nmin_avail;
@@ -1578,8 +1578,8 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	double tot_nmass_avail;
 
 	if(ifsrlvary)
-		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.rpc_total + patch.rpc_myco_total);
-		//tot_nmass_avail = patch.soil.nmass_avail(NO3) * min(1.0, patch.rpc_total) + patch.soil.nmass_avail(NH4) * min(1.0, patch.rpc_myco_total);
+		//tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.rpc_total + patch.rpc_myco_total);
+		tot_nmass_avail = patch.soil.nmass_avail(NO3) * min(1.0, patch.rpc_total) + patch.soil.nmass_avail(NH4) * min(1.0, patch.rpc_myco_total);
 	else
 		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.fpc_total);
 
