@@ -281,7 +281,7 @@ void harvest_wood(Harvest_CN& i, double diam, Pft& pft, bool alive, double frac_
 		else {
 			double debt_excess = i.cmass_debt - (i.cmass_sap + i.cmass_heart);
 			// In daily modus this gives error somehow!!!
-			//dprintf("ATTENTION: cmass_debt > i.cmass_sap + i.cmass_heart; debt_excess=%f\n", debt_excess);
+			dprintf("ATTENTION: cmass_debt > i.cmass_sap + i.cmass_heart; debt_excess=%f\n", debt_excess);
 		//	i.debt_excess += debt_excess * frac_cut;	// debt_excess currently not dealt with during wood harvest
 		}
 

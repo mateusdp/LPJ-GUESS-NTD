@@ -2283,17 +2283,17 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 
 			if (!killed) {
 
-				if ((indiv.pft.phenology != RAINGREEN && indiv.pft.phenology != SUMMERGREEN) || 
-					(indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN) && (date.islastday && date.islastmonth)) {
+				/*if ((indiv.pft.phenology != RAINGREEN && indiv.pft.phenology != SUMMERGREEN) || 
+					((indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN) && (date.islastday && date.islastmonth))) {*/
 
 					double turnover_leaf;
 					double turnover_root;
 					double turnover_sap;
 
 					if (indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN) {
-						turnover_leaf = indiv.pft.turnover_leaf;
-						turnover_root = indiv.pft.turnover_root;
-						turnover_sap = indiv.pft.turnover_sap;
+						turnover_leaf = indiv.pft.turnover_leaf / 365.0;
+						turnover_root = indiv.pft.turnover_root / 365.0;
+						turnover_sap = indiv.pft.turnover_sap / 365.0;
 					}
 					else {
 						if (ifslavary) {
@@ -2328,7 +2328,7 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						indiv.pstore_longterm, indiv.max_p_storage,
 						indiv.alive);
 
-				}
+				//}
 
 				//if (date.islastday && date.islastmonth) {
 					// Update stand record of reproduction by this PFT
