@@ -1230,7 +1230,7 @@ void dailyaccounting_patch(Patch& patch) {
 	// needed for fire
 	soil.dthaw[date.day] = soil.thaw;
 
-	patch.is_litter_day = false;
+	if(!ifdaily) patch.is_litter_day = false;
 	patch.isharvestday = false;
 }
 
