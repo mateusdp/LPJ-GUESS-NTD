@@ -3685,6 +3685,8 @@ public:
 		ctop_stem_max = pft.ctop_stem_max;
 
 		wooddens = pft.wooddens;
+		srl = 0.0;
+		myco_col = 0.0;
 
 		if (ifdynltor)
 			ltor = pft.ltor_max;
