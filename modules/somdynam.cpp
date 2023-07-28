@@ -750,9 +750,9 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	double decay_reduction_np[NSOMPOOL] = { 0.0 };
 	double decay_reduction_n[NSOMPOOL] = { 0.0 };
 	double decay_reduction_p[NSOMPOOL] = { 0.0 };
-	double init_negative_nmass, init_ntoc_reduction;
+	//double init_negative_nmass, init_ntoc_reduction;
 	double ntoc_reduction = 0.8;
-	double init_negative_pmass, init_ptoc_reduction;
+	//double init_negative_pmass, init_ptoc_reduction;
 	double ptoc_reduction = 0.8;
 	double init_surfmicro_ntoc = soil.sompool[SURFMICRO].ntoc;
 	double init_passivesom_ntoc = soil.sompool[PASSIVESOM].ntoc;
@@ -971,20 +971,16 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 			// Not minding immobilisation higher than nmass_avail during free nitrogen years
 			if (date.year > freenyears) {
 
-				// Immobilization larger than soil available nitrogen -> reduce targeted N concentration in SOM pool with flexible N:C ratios
-				if (ptimes == 0) {
-					// initial reduction
-					init_negative_pmass = tot_net_pmin + pmin_mass;
-					init_ptoc_reduction = ptoc_reduction;
-				}
-				else {
-					// trying to match needed P:C reduction
-					ptoc_reduction = min(init_ptoc_reduction, pow(init_ptoc_reduction, 1.0 / (1.0 - (tot_net_pmin + pmin_mass) / init_negative_pmass) + 1.0));
-				}
-
-				soil.sompool[SLOWSOM].ptoc *= ptoc_reduction;
-				soil.sompool[SOILMICRO].ptoc *= ptoc_reduction;
+				// Immobilization larger than soil available nitrogen
+				// Reduce targeted N concentration in SOM pool with flexible N:C ratios
+				soil.sompool[SURFMICRO].ptoc *= ptoc_reduction;
 				soil.sompool[SURFHUMUS].ptoc *= ptoc_reduction;
+				soil.sompool[SOILMICRO].ptoc *= ptoc_reduction;
+				soil.sompool[SLOWSOM].ptoc *= ptoc_reduction;
+				soil.sompool[PASSIVESOM].ptoc *= ptoc_reduction;
+
+				// Continue until a positive tot_net_min is reached, times doesn't matter
+				ptimes--;
 
 				net_pmineralization = false;
 			}
@@ -1264,8 +1260,8 @@ void transfer_litter(Patch& patch) {
 
 		// LEAF
 
-		//if (!negligible(cmass_litter_leaf) || !negligible(nmass_litter_leaf) || !negligible(pmass_litter_leaf)) {
-		if (!negligible(cmass_litter_leaf) || !negligible(nmass_litter_leaf)) {
+		if (!negligible(cmass_litter_leaf) || !negligible(nmass_litter_leaf) || !negligible(pmass_litter_leaf)) {
+		//if (!negligible(cmass_litter_leaf) || !negligible(nmass_litter_leaf)) {
 
 			// Calculate inputs to surface structural and metabolic litter
 
@@ -1321,7 +1317,8 @@ void transfer_litter(Patch& patch) {
 
 		// ROOT
 
-		if (!negligible(cmass_litter_root) || !negligible(nmass_litter_root)) {
+		if (!negligible(cmass_litter_root) || !negligible(nmass_litter_root) || !negligible(pmass_litter_root)) {
+		//if (!negligible(cmass_litter_root) || !negligible(nmass_litter_root)) {
 
 			// Calculate inputs to soil structural and metabolic litter
 
@@ -1386,7 +1383,8 @@ void transfer_litter(Patch& patch) {
 
 		// SAP WOOD
 
-		if (!negligible(cmass_litter_sap) || !negligible(nmass_litter_sap)) {
+		if (!negligible(cmass_litter_sap) || !negligible(nmass_litter_sap) || !negligible(pmass_litter_sap)) {
+		//if (!negligible(cmass_litter_sap) || !negligible(nmass_litter_sap)) {
 
 			// Fine woody debris
 
@@ -1422,7 +1420,8 @@ void transfer_litter(Patch& patch) {
 
 		// HEART WOOD
 
-		if (!negligible(cmass_litter_heart) || !negligible(nmass_litter_heart)) {
+		if (!negligible(cmass_litter_heart) || !negligible(nmass_litter_heart) || !negligible(pmass_litter_heart)) {
+		//if (!negligible(cmass_litter_heart) || !negligible(nmass_litter_heart)) {
 
 			// Coarse woody debris
 
