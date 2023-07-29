@@ -1074,10 +1074,14 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 	else
 		delta_sorbed = 0.0;*/
 	//soil.pmass_labile = max(0.0, soil.pmass_labile);
+
+	// The OK
 	if(delta_plabile > 0.0)
 		balance_p_labile_sorbed(soil, true);
 	else
 		balance_p_labile_sorbed(soil, false);
+	////////
+
 
 	//soil.pmass_labile -= delta_sorbed;
 
@@ -1095,8 +1099,11 @@ void somfluxes(Patch& patch, bool ifequilsom, double tillage_fact) {
 		soil.pmass_sorbed = 0.0;
 	}
 
+	// The OK
 	if (soil.pmass_labile > 0.0)
 		balance_p_labile_sorbed(soil, true);
+	/////
+
 
 	//soil.pmass_strongly_sorbed += delta_strongly_sorbed;
 	//////soil.pmass_strongly_sorbed = max(0.0, soil.pmass_strongly_sorbed);
