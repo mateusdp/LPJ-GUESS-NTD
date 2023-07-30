@@ -1078,15 +1078,20 @@ void allocation_init(double bminit, double ltor, Individual& indiv) {
 	indiv.cmass_root = cmass_root_ind * indiv.densindiv;
 	indiv.cmass_myco = cmass_myco_ind * indiv.densindiv;
 
-	indiv.nmass_leaf = 0.0;
-	indiv.nmass_root = 0.0;
 
-	indiv.pmass_leaf = 0.0;
-	indiv.pmass_root = 0.0;
+	// Cmass, Nmass and Pmass should come from seed, not from soil ffpar or be zero.
+
+		indiv.nmass_leaf = 0.0;
+		indiv.nmass_root = 0.0;
+
+		indiv.pmass_leaf = 0.0;
+		indiv.pmass_root = 0.0;
+
 
 	if (indiv.pft.lifeform == TREE) {
 		indiv.cmass_sap = cmass_sap_ind * indiv.densindiv;
 		indiv.nmass_sap = 0.0;
+		indiv.pmass_sap = 0.0;
 	}
 }
 
@@ -2121,27 +2126,39 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 		indiv.nmass_veg = indiv.nmass_leaf + indiv.nmass_root + indiv.nmass_wood();
 		indiv.pmass_veg = indiv.pmass_leaf + indiv.pmass_root + indiv.pmass_wood();
 
-		// Save real compartment C:N ratios before growth
-		// phen is switched off for leaf and root
-		// Leaf
-		cton_leaf_bg = indiv.cton_leaf(false);
+		// Assuming no seed nutrients. Plant in first year gets standard stoichiometry.
+		if (indiv.age == 0.0) {
+			cton_leaf_bg = indiv.cton_leaf_avr;
+			cton_root_bg = indiv.cton_root_avr;
+			cton_sap_bg = indiv.cton_sap_avr;
 
-		// Root
-		cton_root_bg = indiv.cton_root(false);
+			ctop_leaf_bg = indiv.ctop_leaf_avr;
+			ctop_root_bg = indiv.ctop_root_avr;
+			ctop_sap_bg = indiv.ctop_sap_avr;
+		}
+		else {
+			// Save real compartment C:N ratios before growth
+			// phen is switched off for leaf and root
+			// Leaf
+			cton_leaf_bg = indiv.cton_leaf(false);
 
-		// Sap
-		cton_sap_bg = indiv.cton_sap();
+			// Root
+			cton_root_bg = indiv.cton_root(false);
 
-		// Save real compartment C:P ratios before growth
-		// phen is switched off for leaf and root
-		// Leaf
-		ctop_leaf_bg = indiv.ctop_leaf(false);
+			// Sap
+			cton_sap_bg = indiv.cton_sap();
 
-		// Root
-		ctop_root_bg = indiv.ctop_root(false);
+			// Save real compartment C:P ratios before growth
+			// phen is switched off for leaf and root
+			// Leaf
+			ctop_leaf_bg = indiv.ctop_leaf(false);
 
-		// Sap
-		ctop_sap_bg = indiv.ctop_sap();
+			// Root
+			ctop_root_bg = indiv.ctop_root(false);
+
+			// Sap
+			ctop_sap_bg = indiv.ctop_sap();
+		}
 
 
 		// Annual stress changing of ltor
@@ -2188,14 +2205,14 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			// Set leaf:root mass ratio based on water stress parameter,
 			// nitrogen or phosphorus stress scalar
 			// Added dynamic ltor switch
-			//if (!ifdynltor)
-			//	indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
-			//else
-			//	// In the future, add influence of water stress on ltor, when root mass has an impact on water uptake.
-			//	if (indiv.wstress)
-			//		indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.ltor;
-			//	else
-			//		indiv.ltor = npscal * indiv.ltor;
+			if (!ifdynltor)
+				indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
+			else
+				// In the future, add influence of water stress on ltor, when root mass has an impact on water uptake.
+				if (indiv.wstress)
+					indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.ltor;
+				else
+					indiv.ltor = npscal * indiv.ltor;
 
 			// Move leftover compartment nitrogen storage to longterm storage
 			indiv.nstore_longterm += indiv.nstore_labile;
