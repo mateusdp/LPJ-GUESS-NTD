@@ -2220,16 +2220,16 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 					indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.ltor;
 				else
 					indiv.ltor = npscal * indiv.ltor;
-
-			// Move leftover compartment nitrogen storage to longterm storage
-			indiv.nstore_longterm += indiv.nstore_labile;
-			indiv.nstore_labile = 0.0;
-
-			// Move leftover compartment phosphorus storage to longterm storage
-			indiv.pstore_longterm += indiv.pstore_labile;
-			indiv.pstore_labile = 0.0;
-
 		}
+
+		// Move leftover compartment nitrogen storage to longterm storage
+		indiv.nstore_longterm += indiv.nstore_labile;
+		indiv.nstore_labile = 0.0;
+
+		// Move leftover compartment phosphorus storage to longterm storage
+		indiv.pstore_longterm += indiv.pstore_labile;
+		indiv.pstore_labile = 0.0;
+		
 
 		indiv.deltafpc = 0.0;
 
@@ -2683,13 +2683,13 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			}
 
 			if (!killed) {
-				if (!indiv.alive) {
+				if (!indiv.alive && (date.islastday && date.islastmonth)) {
 					// The individual has survived its first year...
 					indiv.alive = true;
 
 					// ...now we can start counting its fluxes,
 					// debit current biomass as establishment flux
-					if (!indiv.istruecrop_or_intercropgrass() && (date.islastday && date.islastmonth)) {
+					if (!indiv.istruecrop_or_intercropgrass()) {
 						indiv.report_flux(Fluxes::ESTC,
 							-(indiv.cmass_leaf + indiv.cmass_root + indiv.cmass_myco + indiv.cmass_sap +
 								indiv.cmass_heart - indiv.cmass_debt));
