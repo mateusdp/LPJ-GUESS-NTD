@@ -2130,11 +2130,18 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 		if (indiv.age == 0.0) {
 			cton_leaf_bg = indiv.cton_leaf_avr;
 			cton_root_bg = indiv.cton_root_avr;
-			cton_sap_bg = indiv.cton_sap_avr;
 
 			ctop_leaf_bg = indiv.ctop_leaf_avr;
 			ctop_root_bg = indiv.ctop_root_avr;
-			ctop_sap_bg = indiv.ctop_sap_avr;
+
+			if (indiv.pft.lifeform == TREE) {
+				cton_sap_bg = indiv.cton_sap_avr;
+				ctop_sap_bg = indiv.ctop_sap_avr;
+			}
+			else {
+				cton_sap_bg = 1.0;
+				ctop_sap_bg = 1.0;
+			}
 		}
 		else {
 			// Save real compartment C:N ratios before growth
@@ -2611,15 +2618,15 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 
 				} // grass or moss
 
-				if (!killed && indiv.pft.phenology != CROPGREEN && !(indiv.has_daily_turnover() && indiv.continous_grass()) && (date.islastday && date.islastmonth)) {
+				if (!killed && indiv.pft.phenology != CROPGREEN && !(indiv.has_daily_turnover() && indiv.continous_grass())) {
 					// Update nitrogen longtime storage
 
 					// Nitrogen approx retranslocated next year
-					double retransn_nextyear = indiv.cmass_leaf * indiv.pft.turnover_leaf / cton_leaf_bg * indiv.nrelocfrac +
-						indiv.cmass_root * indiv.pft.turnover_root / cton_root_bg * indiv.nrelocfrac;
+					double retransn_nextyear = indiv.cmass_leaf * turnover_leaf / cton_leaf_bg * indiv.nrelocfrac +
+						indiv.cmass_root * turnover_root / cton_root_bg * indiv.nrelocfrac;
 
 					if (indiv.pft.lifeform == TREE)
-						retransn_nextyear += indiv.cmass_sap * indiv.pft.turnover_sap / cton_sap_bg * indiv.nrelocfrac;
+						retransn_nextyear += indiv.cmass_sap * turnover_sap / cton_sap_bg * indiv.nrelocfrac;
 
 					// Assume that raingreen will lose same amount of N through extra leaves next year
 					if (indiv.alive && bminc >= 0 && (indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == ANY))
@@ -2632,19 +2639,19 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						indiv.max_n_storage = max(0.0, max(indiv.cmass_root * indiv.pft.fnstorage / cton_leaf_bg, retransn_nextyear));
 
 					// Scale this year productivity to max storage
-					if (indiv.anpp > 0.0) {
-						indiv.scale_n_storage = max(indiv.max_n_storage * 0.1, indiv.max_n_storage - retransn_nextyear) * cton_leaf_bg / indiv.anpp;
+					if (indiv.dnpp > 0.0) {
+						indiv.scale_n_storage = max(indiv.max_n_storage * 0.1, indiv.max_n_storage - retransn_nextyear) * cton_leaf_bg / indiv.dnpp;
 					} // else use last years scaling factor
 
 
 					  // Update phosphorus longtime storage
 
 					  // Phosphorus approx retranslocated next year
-					double retransp_nextyear = indiv.cmass_leaf * indiv.pft.turnover_leaf / ctop_leaf_bg * indiv.prelocfrac +
-						indiv.cmass_root * indiv.pft.turnover_root / ctop_root_bg * indiv.prelocfrac;
+					double retransp_nextyear = indiv.cmass_leaf * turnover_leaf / ctop_leaf_bg * indiv.prelocfrac +
+						indiv.cmass_root * turnover_root / ctop_root_bg * indiv.prelocfrac;
 
 					if (indiv.pft.lifeform == TREE)
-						retransp_nextyear += indiv.cmass_sap * indiv.pft.turnover_sap / ctop_sap_bg * indiv.prelocfrac;
+						retransp_nextyear += indiv.cmass_sap * turnover_sap / ctop_sap_bg * indiv.prelocfrac;
 
 					// Assume that raingreen will lose same amount of P through extra leaves next year
 					if (indiv.alive && bminc >= 0 && (indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == ANY))
@@ -2657,8 +2664,8 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						indiv.max_p_storage = max(0.0, max(indiv.cmass_root * indiv.pft.fpstorage / ctop_leaf_bg, retransp_nextyear));
 
 					// Scale this year productivity to max storage
-					if (indiv.anpp > 0.0) {
-						indiv.scale_p_storage = max(indiv.max_p_storage * 0.1, indiv.max_p_storage - retransp_nextyear) * ctop_leaf_bg / indiv.anpp;
+					if (indiv.dnpp > 0.0) {
+						indiv.scale_p_storage = max(indiv.max_p_storage * 0.1, indiv.max_p_storage - retransp_nextyear) * ctop_leaf_bg / indiv.dnpp;
 					} // else use last years scaling factor
 				}
 			}
@@ -2682,7 +2689,7 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 
 					// ...now we can start counting its fluxes,
 					// debit current biomass as establishment flux
-					if (!indiv.istruecrop_or_intercropgrass()) {
+					if (!indiv.istruecrop_or_intercropgrass() && (date.islastday && date.islastmonth)) {
 						indiv.report_flux(Fluxes::ESTC,
 							-(indiv.cmass_leaf + indiv.cmass_root + indiv.cmass_myco + indiv.cmass_sap +
 								indiv.cmass_heart - indiv.cmass_debt));
@@ -2690,13 +2697,13 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 				}
 
 				// Move long-term nitrogen and phosphorus storage pools to labile storage pool for usage next year
-				if (!indiv.has_daily_turnover() && (date.islastday && date.islastmonth)) {
-					indiv.nstore_labile = indiv.nstore_longterm;
+				//if (!indiv.has_daily_turnover()) {
+					indiv.nstore_labile += indiv.nstore_longterm;
 					indiv.nstore_longterm = 0.0;
 
-					indiv.pstore_labile = indiv.pstore_longterm;
+					indiv.pstore_labile += indiv.pstore_longterm;
 					indiv.pstore_longterm = 0.0;
-				}
+				//}
 
 				// ... on to next individual
 				vegetation.nextobj();
@@ -2705,8 +2712,9 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 
 	}
 
-	// Flush nitrogen free litter from reproduction straight to atmosphere
-	flush_litter_repr(patch);
+	// Flush nitrogen free litter from reproduction straight to atmosphere on last day of the year
+	if (date.islastday && date.islastmonth)
+		flush_litter_repr(patch);
 }
 
 /// Updates lai_daily and fpc_daily from daily cmass_leaf-value
