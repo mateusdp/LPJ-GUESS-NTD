@@ -159,6 +159,9 @@ extern bool ifnlim;
 /// whether plant growth limited by available P
 extern bool ifplim;
 
+/// Walker et al. 2014 Vcmax limitation. [1] N limited, [2] P limited
+extern bool ifwalkernplim;
+
 /// number of years to allow spinup without nitrogen limitation
 extern int freenyears;
 

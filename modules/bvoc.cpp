@@ -66,7 +66,7 @@ void initbvoc(){
 				// par for the standard condition, J m-2 d-1
 
 		ps_env.set(CO2, Tstand, par, 1.0, daylength);
-		photosynthesis(ps_env, ps_stress, pft, pft.lambda_max, 1.0, 1.0, -1, phot);
+		photosynthesis(ps_env, ps_stress, pft, pft.lambda_max, 1.0, 1.0, 1.0, 1.0, -1, phot);
 
 		double coeff = 1e-3 / (phot.je + phot.rd_g/24) / pft.sla / Cfrac;
 
