@@ -72,6 +72,9 @@ CommonOutput::CommonOutput() {
 	declare_parameter("file_wsg", &file_wsg, 300, "Wood Specific Gravity output file");
 	declare_parameter("file_srl", &file_srl, 300, "Specific Root Length output file");
 
+	// Inventory output
+	declare_parameter("file_inventory", &file_inventory, 300, "Individual tree data output file");
+
 	// Monthly output variables
 	declare_parameter("file_mnpp", &file_mnpp, 300, "Monthly NPP output file");
 	declare_parameter("file_mlai", &file_mlai, 300, "Monthly LAI output file");
@@ -433,6 +436,33 @@ void CommonOutput::define_output_tables() {
 	srl_columns += ColumnDescriptor("Total", 13, 1);
 	srl_columns += ColumnDescriptors(landcovers, 13, 1);
 
+	// Inventory
+	ColumnDescriptors inventory_columns;
+	inventory_columns += ColumnDescriptor("PFT", 8, 0);
+	inventory_columns += ColumnDescriptor("Patch", 8, 0);
+	inventory_columns += ColumnDescriptor("SLA", 8, 1);
+	//inventory_columns += ColumnDescriptor("Lturn", 8, 1);
+	inventory_columns += ColumnDescriptor("CtoN", 8, 1);
+	inventory_columns += ColumnDescriptor("CtoP", 13, 2);
+	inventory_columns += ColumnDescriptor("ltor", 13, 1);
+	//inventory_columns += ColumnDescriptor("Rturn", 13, 1);
+	inventory_columns += ColumnDescriptor("SRL", 15, 2);
+	inventory_columns += ColumnDescriptor("My_Col", 13, 2);
+	inventory_columns += ColumnDescriptor("cmyco", 13, 4);
+	inventory_columns += ColumnDescriptor("WSG", 13, 2);
+	inventory_columns += ColumnDescriptor("N", 8, 3);
+	inventory_columns += ColumnDescriptor("AET", 8, 1);
+	inventory_columns += ColumnDescriptor("RPC", 13, 2);
+	inventory_columns += ColumnDescriptor("RPC_myco", 13, 2);
+	inventory_columns += ColumnDescriptor("AGC", 8, 4);
+	inventory_columns += ColumnDescriptor("AGSC", 8, 4);
+	inventory_columns += ColumnDescriptor("DBH", 8, 4);
+	inventory_columns += ColumnDescriptor("BA", 8, 2);
+	inventory_columns += ColumnDescriptor("Age", 8, 0);
+	inventory_columns += ColumnDescriptor("aNPP", 8, 4);
+	inventory_columns += ColumnDescriptor("H", 8, 1);
+	inventory_columns += ColumnDescriptor("LAI", 8, 4);
+
 	ColumnDescriptors cmass_myco_columns = cmass_columns;
 
 	// *** ANNUAL OUTPUT VARIABLES ***
@@ -487,6 +517,8 @@ void CommonOutput::define_output_tables() {
 	create_output_table(out_sla, file_sla, sla_columns);
 	create_output_table(out_wsg, file_wsg, wsg_columns);
 	create_output_table(out_srl, file_srl, srl_columns);
+
+	create_output_table_inventory(out_inventory, file_inventory, inventory_columns);
 
 	// *** MONTHLY OUTPUT VARIABLES ***
 
@@ -1116,6 +1148,58 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 									standpft_sla += indiv.sla * indiv.densindiv;
 									standpft_wsg += indiv.wooddens * indiv.densindiv;
 									standpft_srl += indiv.srl * indiv.densindiv;
+
+									//heightindiv_total += indiv.height * indiv.densindiv;
+									//indval.getobj() = vegetation.getobj();
+									//standpft_inventory = indiv.lai;
+									double diameter = pow(indiv.height / indiv.pft.k_allom2, 1.0 / indiv.pft.k_allom3);
+									double basal_area = PI * pow(diameter / 2, 2)  * indiv.densindiv * 1000;
+									//Print Individual values to files
+									//if (diameter > 0.01) {
+									if (diameter > 0.05) {
+										//standpft_densindiv_dbhth += indiv.densindiv; //ARRUMAR OUTPUT DE INDIV?DUOS_TH, E CARBONO NO MODO COHORT (OU INSERIR CONDICIONAL PARA MODOS IND/COHORT NO OUTPUT DE INVENTARIO)
+										int i = 1; //Cohort - ind output
+										int cohort_size = (indiv.densindiv + 0.0001) * (int)patcharea; //Cohort - ind output
+										while (i <= cohort_size) { //Cohort - ind output
+											OutputRows out(output_channel_inv, lon, lat, date.get_calendar_year());
+											outlimit(out, out_inventory, indiv.pft.id);
+											outlimit(out, out_inventory, patch.id);
+											outlimit(out, out_inventory, indiv.sla);
+											/*if (ifdaily)
+												outlimit(out, out_inventory, indiv.turnover_leaf * 365.0);
+											else
+												outlimit(out, out_inventory, indiv.turnover_leaf);*/
+											outlimit(out, out_inventory, indiv.cton_leaf_avr);
+											outlimit(out, out_inventory, indiv.ctop_leaf_avr);
+											outlimit(out, out_inventory, indiv.ltor);
+											/*if (ifdaily)
+												outlimit(out, out_inventory, indiv.turnover_root * 365.0);
+											else
+												outlimit(out, out_inventory, indiv.turnover_root);*/
+											outlimit(out, out_inventory, indiv.srl);
+											outlimit(out, out_inventory, indiv.myco_col);
+											outlimit(out, out_inventory, 1000.0 * indiv.cmass_myco / (indiv.densindiv*patcharea));
+											//outlimit(out, out_inventory, 1000.0 * indiv.cmass_myco);
+											outlimit(out, out_inventory, indiv.wooddens);
+											outlimit(out, out_inventory, indiv.densindiv);
+											outlimit(out, out_inventory, indiv.aaet);
+											outlimit(out, out_inventory, indiv.rpc);
+											outlimit(out, out_inventory, indiv.rpc_myco);
+											outlimit(out, out_inventory, indiv.ccont()/(indiv.densindiv*patcharea));
+											//outlimit(out, out_inventory, indiv.ccont());
+											outlimit(out, out_inventory, (indiv.cmass_heart + indiv.cmass_sap) / (indiv.densindiv*patcharea));
+											//outlimit(out, out_inventory, (indiv.cmass_heart + indiv.cmass_sap));
+											outlimit(out, out_inventory, diameter); // DBH
+											//outlimit(out, out_inventory, basal_area / (indiv.densindiv*patcharea));
+											outlimit(out, out_inventory, basal_area);
+											outlimit(out, out_inventory, indiv.age);
+											//outlimit(out, out_inventory, indiv.anpp / (indiv.densindiv*patcharea));
+											outlimit(out, out_inventory, indiv.anpp);
+											outlimit(out, out_inventory, indiv.height);
+											outlimit(out, out_inventory, indiv.lai_indiv);
+											i++; //Cohort - ind output
+										} //Cohort - ind output
+									}
 								} else {
 									standpft_sla += indiv.sla / patcharea;
 									//standpft_wsg += indiv.wooddens / patcharea;

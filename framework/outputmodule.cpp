@@ -16,6 +16,8 @@ namespace GuessOutput {
 
 OutputChannel* output_channel;
 
+OutputChannel* output_channel_inv;
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /// OutputModule
 ///
@@ -27,6 +29,15 @@ void OutputModule::create_output_table(Table& table, const char* file, const Col
 void OutputModule::close_output_table(Table& table) {
 	 output_channel->close_table(table);
 	 table = Table();
+}
+
+void OutputModule::create_output_table_inventory(Table& table, const char* file, const ColumnDescriptors& columns) {
+	table = output_channel_inv->create_table(TableDescriptor(file, columns));
+}
+
+void OutputModule::close_output_table_inventory(Table& table) {
+	output_channel_inv->close_table(table);
+	table = Table();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -45,6 +56,8 @@ OutputModuleContainer::~OutputModuleContainer() {
 	}
 
 	delete output_channel;
+
+	delete output_channel_inv;
 }
 
 void OutputModuleContainer::add(OutputModule* output_module) {
@@ -60,6 +73,10 @@ void OutputModuleContainer::init() {
 	// Create the output channel
 	output_channel = new FileOutputChannel(outputdirectory.c_str(),
 	                                       coordinates_precision);
+
+	// Create the inventory output channel
+	output_channel_inv = new FileOutputChannel(outputdirectory.c_str(),
+		coordinates_precision);
 
 	for (size_t i = 0; i < modules.size(); ++i) {
 		modules[i]->init();

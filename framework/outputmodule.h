@@ -70,6 +70,13 @@ protected:
 	                         const ColumnDescriptors& columns);
 
 	void close_output_table(Table& table);
+
+	/// creates one inventory output table
+	void create_output_table_inventory(Table& table,
+		const char* file,
+		const ColumnDescriptors& columns);
+
+	void close_output_table_inventory(Table& table);
 };
 
 
@@ -196,6 +203,8 @@ int x = dummy();\
  *  creating and destroying the output_channel.
  */
 extern OutputChannel* output_channel;
+
+extern OutputChannel* output_channel_inv;
 
 }
 
