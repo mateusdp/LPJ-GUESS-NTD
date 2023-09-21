@@ -1,0 +1,87 @@
+!
+! Instruction file with global PFTs to be used with the
+! CF I/O module.
+!
+! Make sure to start LPJ-GUESS with -input cf when using this
+! instruction file.
+!
+
+import "global_p-traits-srlmyco_daily.ins"
+
+!///////////////////////////////////////////////////////////////////////////////////////
+! Forcing Data & gridlists
+!
+param "file_gridlist" (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\guess-bikf\acclimated_respiration\gridlist\gridlist_Ecuador_ECSF_cf_local.txt")
+param "file_gridlist_cf" (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\guess-bikf\acclimated_respiration\gridlist\gridlist_Ecuador_ECSF_cf_local.txt")
+
+param "file_co2"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\co2_1901-2200_400ppm.txt")
+
+! N deposition (blank string to use constant pre-industrial level of 2 kgN/ha/year)
+!param "file_ndep"     (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\GlobalNitrogenDeposition.bin")
+param "file_ndep"     (str "")
+
+! P deposition
+!param "file_pdep"     (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\GlobalPO4depLandMonthly.csv")
+param "file_pdep"     (str "")
+
+param "file_temp"     (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\BOM_monthly_mean_temperature_50yb.nc")
+param "variable_temp" (str "temp")
+
+param "file_prec"     (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\BOM_monthly_total_precipitation_50yb.nc")
+param "variable_prec" (str "prec")
+
+param "file_insol"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\BOM_monthly_mean_radiation_50yb.nc")
+param "variable_insol"  (str "insol")
+
+param "file_mNHxdrydep"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\ECSF_daily_mean_mNHxdrydep_hist.nc")
+param "variable_mNHxdrydep"  (str "mNHxdrydep")
+
+param "file_mNHxwetdep"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\ECSF_daily_mean_mNHxwetdep_hist.nc")
+param "variable_mNHxwetdep"  (str "mNHxwetdep")
+
+param "file_mNOydrydep"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\ECSF_daily_mean_mNOydrydep_hist.nc")
+param "variable_mNOydrydep"  (str "mNOydrydep")
+
+param "file_mNOywetdep"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\ECSF_daily_mean_mNOywetdep_hist.nc")
+param "variable_mNOywetdep"  (str "mNOywetdep")
+
+param "file_mPOxdrydep"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\ECSF_daily_mean_mPOxdrydep.nc")
+param "variable_mPOxdrydep"  (str "mPOxdrydep")
+
+param "file_mPOxwetdep"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\ECSF_daily_mean_mPOxwetdep.nc")
+param "variable_mPOxwetdep"  (str "mPOxwetdep")
+
+param "file_wind" (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\BOM_monthly_windspeed_50yb.nc")
+param "variable_wind"  (str "Wind_Speed")
+
+param "file_relhum" (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\BOM_monthly_relhum_50yb.nc")
+param "variable_relhum"	(str "relhum")
+
+! Needed if relative humidity is not supplied
+param "file_pres"     (str "")
+param "variable_pres" (str "")
+
+! Needed if relative humidity is not supplied
+param "file_specifichum" (str "")
+param "variable_specifichum" (str "")
+
+! Wet days can only be used with monthly precipitation
+param "file_wetdays"     (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\BOM_monthly_wetdays_50yb.nc")
+param "variable_wetdays" (str "wetdays")
+
+! Min/max temp is required for BVOC,
+! if BVOC is switched off these can be set to ""
+param "file_min_temp"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\BOM_monthly_tmin_50yb.nc")
+param "variable_min_temp"  (str "min_temp")
+
+param "file_max_temp"      (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\BOM_monthly_tmax_50yb.nc")
+param "variable_max_temp"  (str "max_temp")
+
+! SIMFIRE-BLAZE related files
+param "file_simfire"  (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\driving_data\SimfireInput.bin")
+
+! Soil map
+!param "file_soildata" (str "c:/soil/WISE/soilmap_wise.dat")
+param "file_soildata" (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\guess-bikf\lpj-guess\data\env\soils_lpj.dat")
+!param "file_soildata" (str "C:\Users\Mateus\Documents\Programs\LPJ-GUESS\guess-bikf\acclimated_respiration\env\test_soil.txt")
+
