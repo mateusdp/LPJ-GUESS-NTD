@@ -4,3 +4,5 @@ doxygen/output/
 
 # Subversion folder
 .svn
+
+data/ins/ins-out/
