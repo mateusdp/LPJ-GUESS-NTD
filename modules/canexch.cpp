@@ -1314,8 +1314,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double nmin_scale = kNmin + nmin_avail / (nmin_avail + gridcell.pft[indiv.pft.id].Km);
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics for mycorrhiza
-		//double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 2.03e-6 * gridcell.soiltype.wtot);
-		double nmin_scale_myco = kNmin + nmin_avail / (nmin_avail + 2.03e-6 * gridcell.soiltype.wtot);
+		double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 2.03e-6 * gridcell.soiltype.wtot);
+		//double nmin_scale_myco = kNmin + nmin_avail / (nmin_avail + 2.03e-6 * gridcell.soiltype.wtot);
 
 		// Maximum available soil mineral nitrogen for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
@@ -1335,9 +1335,11 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Maximum nitrogen uptake due to all scalars (times 2 because considering both NO3- and NH4+ uptake)
 		// and soil available nitrogen within individual projectived coverage
-		double maxnup = min(2.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
+		//double maxnup = min(2.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
+		double maxnup = min(1.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
 
-		double maxnup_myco = min(2.0 * 0.013 * nmin_scale_myco * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_myco);
+		//double maxnup_myco = min(2.0 * 0.013 * nmin_scale_myco * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_myco);
+		double maxnup_myco = min(1.0 * 0.013 * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
 
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
 		//double fractomax = ndemand_tot > 0.0 ? min(maxnup/ndemand_tot,1.0) : 0.0;
@@ -1511,7 +1513,7 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
 			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * pmin_avail;
 		}
-		else {
+		else {	
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
 		}
 
@@ -1519,7 +1521,8 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		// and soil available phosphorus within individual projectived coverage
 		double maxpup = min(indiv.pft.puptoroot * pmin_scale * temp_scale * indiv.ctop_status * indiv.cmass_root_today(), max_indiv_avail);
 
-		double maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * indiv.ctop_status * indiv.cmass_root_today(), max_indiv_avail_myco);
+		//double maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * indiv.ctop_status * indiv.cmass_root_today(), max_indiv_avail_myco);
+		double maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
 
 		// Phosphorus demand limitation due to maximum phosphorus uptake capacity
 		//double fractomax = pdemand_tot > 0.0 ? min(maxpup / pdemand_tot, 1.0) : 0.0;
