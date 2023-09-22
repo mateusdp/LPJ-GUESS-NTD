@@ -584,7 +584,7 @@ void vmax_p(double b, double c1, double c2, double apar, double tscal,
 /// Non-water stressed with or without nitrogen and phosphorus limitation, Walker et al. 2014 approach.
 /// Here, nactive and pactive are total leaf N and P mass.
 void vmax_walker(double b, double c1, double c2, double apar, double tscal,
-	double daylength, double temp, double nactive, double pactive, double nmax, double pmax, bool ifnlimvmax, bool ifplimvmax, double& vm_n, double& vm_p,
+	double daylength, double temp, double nactive, double pactive, double nmax, double pmax, bool ifnlimvmax, bool ifplimvmax, double& vm_n, double& vm_p, double& vm_np,
 	double& vmaxnlim, double& vmaxplim, double& nactive_opt, double& pactive_opt) {
 
 	// Calculation of non-water-stressed rubisco capacity assuming leaf phosphorus not
@@ -608,27 +608,29 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 	if (ifnlimvmax)
 		nmass_g = nactive * 1000.0;
 	else
-		nmass_g = 1.0;
+		nmass_g = nmax * 1000;
 
 	if (ifplimvmax)
 		pmass_g = pactive * 1000.0;
 	else
-		pmass_g = 1.0;
+		pmass_g = pmax * 1000;
 	
 
 	double nmass_g_opt, pmass_g_opt;
 
 	// Model 1, Table 3 Walker et al. 2014
 	// Calculate optimal leaf nitrogen based on [potential] Vmax
-	nmass_g_opt = exp((log(vm_nolim / CN) - 3.946 - 0.121 * log(pmax * 1000.0)) / (0.921 + 0.282 * log(pmax * 1000.0)));
+	nmass_g_opt = exp((log(vm_nolim * tfac / CN) - 3.946 - 0.121 * log(pmax * 1000.0)) / (0.921 + 0.282 * log(pmax * 1000.0)));
 	// Calculate optimal leaf phosphorus based on [potential] Vmax
-	pmass_g_opt = exp((log(vm_nolim / CN) - 3.946 - 0.921 * log(nmax * 1000.0)) / (0.121 + 0.282 * log(nmax * 1000.0)));
+	pmass_g_opt = exp((log(vm_nolim * tfac / CN) - 3.946 - 0.921 * log(nmax * 1000.0)) / (0.121 + 0.282 * log(nmax * 1000.0)));
 
 	const double N = 3.946 + 0.921 * log(nmass_g) + 0.121 * log(pmass_g_opt) + 0.282 * log(nmass_g) * log(pmass_g_opt);
 	const double P = 3.946 + 0.921 * log(nmass_g_opt) + 0.121 * log(pmass_g) + 0.282 * log(nmass_g_opt) * log(pmass_g);
+	const double NP = 3.946 + 0.921 * log(nmass_g) + 0.121 * log(pmass_g) + 0.282 * log(nmass_g) * log(pmass_g);
 
 	vm_n = CN * exp(N) / tfac;
 	vm_p = CN * exp(P) / tfac;
+	vm_np = CN * exp(NP) / tfac;
 
 	nactive_opt = nmass_g_opt / 1000.0;
 	pactive_opt = pmass_g_opt / 1000.0;
@@ -648,6 +650,11 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 		vmaxplim = 1.0;
 		vm_p = vm_nolim;
 	}
+
+	if (vm_np > 0.0)
+		vm_np = min(vm_np, vm_nolim);
+	else
+		vm_np = vm_nolim;
 
 }
 
@@ -748,6 +755,7 @@ void photosynthesis(const PhotosynthesisEnvironment& ps_env,
 
 	double vm_n = 0.0;
 	double vm_p = 0.0;
+	double vm_np = 0.0;
 
 	// Get the environmental variables
 	double temp = ps_env.get_temp();
@@ -837,14 +845,16 @@ void photosynthesis(const PhotosynthesisEnvironment& ps_env,
 			// Calculation of non-water-stressed p limited vmax
 			vmax_p(b, c1, c2, apar, tscal, daylength, temp, pactive, ifplimvmax, vm_p, ps_result.vmaxplim, ps_result.pactive_opt);
 			// Calculation of non-water-stressed n and p limited vmax according to Walker et al. 2014
+			
+			// vm is the minimum of N limited and P limited vmax
+			ps_result.vm = min(vm_n, vm_p);
 		}
 		else {
-			vmax_walker(b, c1, c2, apar, tscal, daylength, temp, nactive, pactive, nmax, pmax, ifnlimvmax, ifplimvmax, vm_n, vm_p, ps_result.vmaxnlim,
+			vmax_walker(b, c1, c2, apar, tscal, daylength, temp, nactive, pactive, nmax, pmax, ifnlimvmax, ifplimvmax, vm_n, vm_p, vm_np, ps_result.vmaxnlim,
 				ps_result.vmaxplim, ps_result.nactive_opt, ps_result.pactive_opt);
+			// vm is the vm_np
+			ps_result.vm = vm_np;
 		}
-		
-		// vm is the minimum of N limited and P limited vmax
-		ps_result.vm = min(vm_n, vm_p);
 	}
 	else {
 		ps_result.vm = vm;			// reuse existing Vmax
