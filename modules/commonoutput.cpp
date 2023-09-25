@@ -1391,6 +1391,14 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 								plot("Specific Root Length", pft.name, date.year, mean_standpft_srl / mean_standpft_densindiv_total);
 							plot("C mass Mycorrhiza [kgC/ha]", pft.name, date.year, mean_standpft_cmass_myco * M2_PER_HA);
 						}
+						if (ifslavary) {
+							if (mean_standpft_densindiv_total > 0.0)
+								plot("Specific Leaf Area", pft.name, date.year, mean_standpft_sla / mean_standpft_densindiv_total);
+						}
+						if (ifwsgvary) {
+							if (mean_standpft_densindiv_total > 0.0)
+								plot("Wood Specific Density", pft.name, date.year, mean_standpft_wsg / mean_standpft_densindiv_total);
+						}
 					}
 					if (mean_standpft_cmass_leaf > 0.0 && ifplim) {
 						plot("Vmax P lim", pft.name, date.year, mean_standpft_vmaxplim);

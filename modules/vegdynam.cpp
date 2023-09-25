@@ -55,7 +55,7 @@ void report_fire_nfluxes(Patch& patch, double nflux_fire) {
 // TRAIT RANDOMIZATION
 // Randomization function for a uniform random trait distribution
 
-double randomize_trait(double min, double max, int width, long seed) {
+double randomize_trait(double min, double max, int width, long& seed) {
 
 	double step = (max - min) / width;
 	int rand = (int) width * randfrac(seed);
