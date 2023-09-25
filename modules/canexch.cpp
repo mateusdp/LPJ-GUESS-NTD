@@ -1511,6 +1511,9 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 			else
 				leafoptp = indiv.photosynthesis.pactive_opt * indiv.pextin;
 
+			if(isnan(leafoptp))
+				dprintf("pactive_opt is NaN!\n");
+
 			// Can not have higher phosphorus concentration than minimum leaf C:P ratio
 			if (indiv.cmass_leaf_today() / leafoptp < indiv.pft.ctop_leaf_min) {
 				leafoptp = indiv.cmass_leaf_today() / indiv.pft.ctop_leaf_min;
