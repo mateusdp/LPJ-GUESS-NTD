@@ -66,6 +66,7 @@ void Climate::serialize(ArchiveStream& arch) {
 		& co2
 		& lat
 		& insol
+		& pwtr
 		& instype
 		& eet
 		& mtemp

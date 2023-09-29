@@ -878,6 +878,9 @@ public:
 	/// daily phosphorus deposition per month (kgP/m2/d)
 	double mpdep[12];
 
+	/// yearly phosphorus weathering rate (kgP/m2/y)
+	double pwtr;
+
 	/// Type of insolation
 	/** This decides how to interpret the variable insol,
 	 *  see also documentation for the insoltype enum.

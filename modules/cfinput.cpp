@@ -1279,6 +1279,12 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 	// Distribute P deposition
 	distribute_pdep(mpdrydep, mpwetdep,
 		dprec, dpdep);
+
+	// Phosphorus weathering
+	if (param["file_pwtr"].str) {
+		if (date.day == 0 && date.year == 0)
+			get_yearly_pwtr(gridcell.get_lat(), gridcell.get_lon(), gridcell.climate.pwtr);
+	}
 }
 
 void CFInput::getlandcover(Gridcell& gridcell) {

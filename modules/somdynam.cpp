@@ -1607,7 +1607,12 @@ void soilpadd(Patch& patch) {
 	double wfps = soil.wfps(0)*100.0;
 
 	//double daily_pwtr = soil.soiltype.pwtr / date.year_length();
-	double daily_pwtr = soil.soiltype.pwtr * temperature_modifier(soil.get_soil_temp_25()) * moisture_modifier(wfps) / date.year_length();
+	double daily_pwtr;
+
+	if (param["file_pwtr"].str)
+		daily_pwtr = patch.get_climate().pwtr / date.year_length();
+	else
+		daily_pwtr = soil.soiltype.pwtr * temperature_modifier(soil.get_soil_temp_25()) * moisture_modifier(wfps) / date.year_length();
 
 	// Phosphorus weathering input
 	//soil.pmass_labile += daily_pwtr;
