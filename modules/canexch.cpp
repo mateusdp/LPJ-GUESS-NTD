@@ -620,9 +620,9 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 
 	// Model 1, Table 3 Walker et al. 2014
 	// Calculate optimal leaf nitrogen based on [potential] Vmax
-	nmass_g_opt = exp((log(vm_nolim * tfac / CN) - 3.946 - 0.121 * log(pmax * 1000.0)) / (0.921 + 0.282 * log(pmax * 1000.0)));
+	nmass_g_opt = min(nmax * 1000.0, exp((log(vm_nolim * tfac / CN) - 3.946 - 0.121 * log(pmax * 1000.0)) / (0.921 + 0.282 * log(pmax * 1000.0))));
 	// Calculate optimal leaf phosphorus based on [potential] Vmax
-	pmass_g_opt = exp((log(vm_nolim * tfac / CN) - 3.946 - 0.921 * log(nmax * 1000.0)) / (0.121 + 0.282 * log(nmax * 1000.0)));
+	pmass_g_opt = min(pmax * 1000.0, exp((log(vm_nolim * tfac / CN) - 3.946 - 0.921 * log(nmax * 1000.0)) / (0.121 + 0.282 * log(nmax * 1000.0))));
 
 	const double N = 3.946 + 0.921 * log(nmass_g) + 0.121 * log(pmass_g_opt) + 0.282 * log(nmass_g) * log(pmass_g_opt);
 	const double P = 3.946 + 0.921 * log(nmass_g_opt) + 0.121 * log(pmass_g) + 0.282 * log(nmass_g_opt) * log(pmass_g);
@@ -632,7 +632,7 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 	vm_p = CN * exp(P) / tfac;
 	vm_np = CN * exp(NP) / tfac;
 
-	nactive_opt = nmass_g_opt / 1000.0; // try using min(nmax, nmass_g_opt / 1000.0) to correct for these NaN P balance results.
+	nactive_opt = nmass_g_opt / 1000.0; 
 	pactive_opt = pmass_g_opt / 1000.0;
 
 	if (vm_nolim > vm_n && ifnlimvmax) {
