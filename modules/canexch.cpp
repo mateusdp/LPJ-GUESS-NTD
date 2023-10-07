@@ -602,7 +602,7 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 	// Temperature factor (Haxeltine & Prentice 1996a)
 	double tfac = exp(-0.0693 * (temp - 25.0));
 
-		
+
 	double nmass_g, pmass_g;
 
 	if (ifnlimvmax)
@@ -614,7 +614,7 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 		pmass_g = pactive * 1000.0;
 	else
 		pmass_g = pmax * 1000;
-	
+
 
 	double nmass_g_opt, pmass_g_opt;
 
@@ -632,7 +632,7 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 	vm_p = CN * exp(P) / tfac;
 	vm_np = CN * exp(NP) / tfac;
 
-	nactive_opt = nmass_g_opt / 1000.0; 
+	nactive_opt = nmass_g_opt / 1000.0;
 	pactive_opt = pmass_g_opt / 1000.0;
 
 	if (vm_nolim > vm_n && ifnlimvmax) {
@@ -651,8 +651,20 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 		vm_p = vm_nolim;
 	}
 
-	if (vm_np > 0.0)
-		vm_np = min(vm_np, vm_nolim);
+	if(ifnlimvmax || ifplimvmax)
+		if (vm_np > 0.0) {
+			if (ifnlimvmax && ifplimvmax)
+				vm_np = min(vm_np, vm_nolim);
+
+			if (ifnlimvmax && !ifplimvmax)
+				vm_np = min(vm_n, vm_nolim);
+
+			if (ifplimvmax && !ifnlimvmax)
+				vm_np = min(vm_p, vm_nolim);
+		}
+		else {
+			vm_np = vm_nolim;
+		}
 	else
 		vm_np = vm_nolim;
 

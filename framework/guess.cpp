@@ -3304,7 +3304,8 @@ void MassBalance::check_year(Gridcell& gridcell) {
 	check_year_C(gridcell);
 
 	if (ifcentury) {
-		check_year_N(gridcell);
+		if (ifnlim)
+			check_year_N(gridcell);
 		if(ifplim)
 			check_year_P(gridcell);
 	}

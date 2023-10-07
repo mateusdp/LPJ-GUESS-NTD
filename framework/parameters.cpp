@@ -1275,6 +1275,8 @@ void plib_callback(int callback) {
 		}
 
 		if (!itemparsed("ifntransform")) badins("ifntransform");
+		if (ifplim && !ifnlim)
+			ifntransform = 0;
 		if (ifntransform && !ifnlim) {
 			sendmessage("Error", "ifnlim have to be true for N transformation to work");
 			plibabort();
