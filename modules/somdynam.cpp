@@ -895,6 +895,7 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 			leachsum_nmass = soil.orgleachfrac * soil.sompool[SOILMICRO].cdec * soil.sompool[SOILMICRO].nmass / soil.sompool[SOILMICRO].cmass;
 			// Account for organic phosphorus leaching loss
 			leachsum_pmass = soil.orgleachfrac * soil.sompool[SOILMICRO].cdec * soil.sompool[SOILMICRO].pmass / soil.sompool[SOILMICRO].cmass;
+			// A very high sand_frac causes high organic leaching in the soil type 1, coarse inceptisoil, causing very high P limitation.
 		}
 
 		// Donor pool PASSIVE SOM
@@ -1498,6 +1499,7 @@ void leaching(Soil& soil) {
 		double cmpermonth_to_mmperday = 10.0 * 12.0 / 365.0;
 
 		soil.orgleachfrac = min(1.0, soil.dperc / (OMLECH_3 * cmpermonth_to_mmperday)) * (OMLECH_1 + OMLECH_2 * soil.soiltype.sand_frac);
+		// A very high sand_frac causes high organic leaching in the soil type 1, coarse inceptisoil, causing very high P limitation.
 	}
 	else {
 		minleachfrac = 0.0;
