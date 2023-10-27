@@ -1267,6 +1267,48 @@ void get_yearly_pwtr(double gridlat, double gridlong, double& ywtr) {
 	fclose(in_pwtr);
 }
 
+
+void get_yearly_pwtr_params(double gridlat, double gridlong, double& bi, double& pcont, double& shield, double& ea) {
+
+	xtring file_pwtr = param["file_pwtr"].str;
+
+	bool eof = false;
+	double lon, lat, obj, names, pbi, ppcont, pshield, pea, gridiff, gridifftemp, difref;
+
+	//ypdep = 0.0;
+	gridiff = 1000.0;
+	difref = 10.0;
+
+	//read phosphorus weathering values
+	FILE* in_pwtr = fopen(file_pwtr, "r");
+	eof = false;
+	int j = 0;
+	while (!eof) {
+
+		// Read next record in file
+		eof = !readfor(in_pwtr, "f, f, f, f, f, f, f, f", &lon, &lat, &obj, &names, &pbi, &ppcont, &pea, &pshield);
+
+		if (!eof) { // ignore blank lines at end (if any)
+
+			gridifftemp = pow(pow(lon - gridlong, 2), 0.5) + pow(pow(lat - gridlat, 2), 0.5);
+
+			//if (lon == gridlong && lat == gridlat)
+			if (gridifftemp < difref && gridifftemp < gridiff) {
+				bi = pbi;
+				pcont = ppcont;
+				shield = pshield;
+				ea = pea;
+				gridiff = gridifftemp;
+			}
+			j++;
+
+		}
+
+	}
+
+	fclose(in_pwtr);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // REFERENCES
 //

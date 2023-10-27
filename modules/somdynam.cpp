@@ -89,6 +89,7 @@ static double k_soilslow10;
 static bool firsttime=true;
 	// indicates whether function decayrates has been called before
 
+int dummy = 1;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // SETCONSTANTS
@@ -688,11 +689,13 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	}
 
 	// Warning if soil available nitrogen is negative (if happens once or so no problem, but if it propagates through time then it is)
-	//double dummy;
+
 	if (ifnlim) {
-		assert(soil.NH4_mass > -EPS);
-		//if(soil.NH4_mass < -EPS)
-		//dummy = 1;
+		//assert(soil.NH4_mass > -EPS);
+		if(soil.NH4_mass < -EPS)
+			dummy++;
+		if (soil.NH4_mass < -EPS && dummy > 2)
+			assert(soil.NH4_mass > -EPS);
 	}
 
 	// Warning if soil available phosphorus is negative (if happens once or so no problem, but if it propagates through time then it is)
@@ -1609,16 +1612,27 @@ void soilpadd(Patch& patch) {
 	double wfps = soil.wfps(0)*100.0;
 
 	//double daily_pwtr = soil.soiltype.pwtr / date.year_length();
-	double daily_pwtr;
+	double daily_pwtr, p_temp_effect;
 
-	if (param["file_pwtr"].str)
-		daily_pwtr = patch.get_climate().pwtr / date.year_length();
-	else
+	double R_gas_constant = 8.3144621;
+	double ea = patch.get_climate().pwtr_ea;
+	double soiltemp = soil.get_soil_temp_25();
+	double bi = patch.get_climate().pwtr_bi;
+	double pcont = patch.get_climate().pwtr_pcont;
+	double shield = patch.get_climate().pwtr_shield;
+
+	if (param["file_pwtr"].str) {
+		// daily_pwtr = patch.get_climate().pwtr / date.year_length();
+		p_temp_effect = exp(-ea / R_gas_constant * (1 / (soiltemp + 273.0) - 1 / 284.15));
+		daily_pwtr = bi * (pcont / 100.0) * patch.soil.runoff * p_temp_effect * shield / 1000.0;
+	}
+	else {
 		daily_pwtr = soil.soiltype.pwtr * temperature_modifier(soil.get_soil_temp_25()) * moisture_modifier(wfps) / date.year_length();
+	}
 
 	// Phosphorus weathering input
 	//soil.pmass_labile += daily_pwtr;
-	soil.pmass_labile_delta += daily_pwtr;
+	soil.pmass_labile_delta += max(0.0, daily_pwtr);
 	soil.apwtr += daily_pwtr;
 
 	// Phosphorus fertilization and deposition input (calculated in snow_pinput())

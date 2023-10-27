@@ -38,5 +38,6 @@ void respiration_temperature_response(double temp,double& gtemp);
 void daylengthinsoleet(Climate& climate);
 void get_monthly_pdep(double gridlat, double gridlong, double mpdep[12]);
 void get_yearly_pwtr(double gridlat, double gridlong, double& ywtr);
+void get_yearly_pwtr_params(double gridlat, double gridlong, double& bi, double& pcont, double& shield, double& ea);
 
 #endif // LPJ_GUESS_DRIVER_H
