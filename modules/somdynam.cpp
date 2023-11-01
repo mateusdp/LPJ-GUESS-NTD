@@ -1684,6 +1684,8 @@ void vegetation_n_uptake(Patch& patch) {
 
 	double nuptake_day;
 	double nuptake_day_myco;
+	double herb_frac;
+	double nmass_herb;
 
 	Vegetation& vegetation=patch.vegetation;
 	Soil& soil = patch.soil;
@@ -1704,11 +1706,21 @@ void vegetation_n_uptake(Patch& patch) {
 		nuptake_day_myco = 0.0;
 
 		if (indiv.myco_type)
-			nuptake_day_myco = indiv.ndemand * indiv.fnuptake * indiv.fractomax_nmyco;
+			nuptake_day_myco = indiv.ndemand * indiv.fractomax_nmyco;
 
 		nuptake_day           = indiv.ndemand * indiv.fnuptake;
+
+		if (ifherbivory && indiv.pft.lifeform == TREE) {
+			herb_frac = exp(0.03251 - 0.30222 * log(indiv.ctop_leaf_avr));
+
+			nmass_herb = indiv.leaffndemand  * nuptake_day * herb_frac;
+		}
+		else {
+			nmass_herb = 0.0;
+		}
+
 		indiv.anuptake        += nuptake_day;
-		indiv.nmass_leaf      += indiv.leaffndemand  * nuptake_day;
+		indiv.nmass_leaf      += indiv.leaffndemand  * nuptake_day - nmass_herb;
 		indiv.nmass_root      += indiv.rootfndemand  * nuptake_day;
 		indiv.nmass_sap       += indiv.sapfndemand   * nuptake_day;
 		if (indiv.pft.phenology == CROPGREEN && ifnlim)
@@ -1718,12 +1730,12 @@ void vegetation_n_uptake(Patch& patch) {
 
 
 		if (ifntransform) {
-			double ammonium = (nuptake_day - nuptake_day_myco) * ammonium_frac;
+			double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * ammonium_frac;
 			soil.NH4_mass -= ammonium;
-			soil.NO3_mass -= (nuptake_day - nuptake_day_myco) - ammonium;
+			soil.NO3_mass -= (nuptake_day - nuptake_day_myco - nmass_herb) - ammonium;
 		} 
 		else {
-			soil.nmass_subtract(nuptake_day - nuptake_day_myco);
+			soil.nmass_subtract(nuptake_day - nuptake_day_myco - nmass_herb);
 		}
 
 		soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
@@ -1761,6 +1773,8 @@ void vegetation_p_uptake(Patch& patch) {
 
 	double puptake_day;
 	double puptake_day_myco;
+	double herb_frac;
+	double pmass_herb;
 
 	Vegetation& vegetation = patch.vegetation;
 	Soil& soil = patch.soil;
@@ -1780,11 +1794,21 @@ void vegetation_p_uptake(Patch& patch) {
 		puptake_day_myco = 0.0;
 
 		if (indiv.myco_type)
-			puptake_day_myco = indiv.pdemand * indiv.fpuptake * indiv.fractomax_pmyco;
+			puptake_day_myco = indiv.pdemand * indiv.fractomax_pmyco;
 
 		puptake_day = indiv.pdemand * indiv.fpuptake;
+
+		if (ifherbivory && indiv.pft.lifeform == TREE) {
+			herb_frac = exp(0.03251 - 0.30222 * log(indiv.ctop_leaf_avr));
+
+			pmass_herb = indiv.leaffndemand  * puptake_day * herb_frac;
+		}
+		else {
+			pmass_herb = 0.0;
+		}
+
 		indiv.apuptake += puptake_day;
-		indiv.pmass_leaf += indiv.leaffpdemand  * puptake_day;
+		indiv.pmass_leaf += indiv.leaffpdemand  * puptake_day - pmass_herb;
 		indiv.pmass_root += indiv.rootfpdemand  * puptake_day;
 		indiv.pmass_sap += indiv.sapfpdemand   * puptake_day;
 		if (indiv.pft.phenology == CROPGREEN && ifplim)
@@ -1793,7 +1817,7 @@ void vegetation_p_uptake(Patch& patch) {
 			indiv.pstore_longterm += indiv.storefpdemand * puptake_day;
 		
 		//soil.pmass_labile = max(0.0, soil.pmass_labile - puptake_day);
-		soil.pmass_labile_delta -= (puptake_day - puptake_day_myco);
+		soil.pmass_labile_delta -= (puptake_day - puptake_day_myco - pmass_herb);
 
 		soil.sompool[SOILSTRUCT].pmass -= puptake_day_myco * 0.18;
 		soil.sompool[SOILMETA].pmass -= puptake_day_myco * 0.82;
