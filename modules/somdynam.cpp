@@ -1684,7 +1684,6 @@ void vegetation_n_uptake(Patch& patch) {
 
 	double nuptake_day;
 	double nuptake_day_myco;
-	double herb_frac;
 	double nmass_herb;
 
 	Vegetation& vegetation=patch.vegetation;
@@ -1710,14 +1709,10 @@ void vegetation_n_uptake(Patch& patch) {
 
 		nuptake_day           = indiv.ndemand * indiv.fnuptake;
 
-		if (ifherbivory && indiv.pft.lifeform == TREE) {
-			herb_frac = exp(0.03251 - 0.30222 * log(indiv.ctop_leaf_avr));
-
-			nmass_herb = indiv.leaffndemand  * nuptake_day * herb_frac;
-		}
-		else {
+		if (ifherbivory)
+			nmass_herb = indiv.leaffndemand  * nuptake_day * indiv.herb_frac;
+		else 
 			nmass_herb = 0.0;
-		}
 
 		indiv.anuptake        += nuptake_day;
 		indiv.nmass_leaf      += indiv.leaffndemand  * nuptake_day - nmass_herb;
@@ -1773,7 +1768,6 @@ void vegetation_p_uptake(Patch& patch) {
 
 	double puptake_day;
 	double puptake_day_myco;
-	double herb_frac;
 	double pmass_herb;
 
 	Vegetation& vegetation = patch.vegetation;
@@ -1798,14 +1792,10 @@ void vegetation_p_uptake(Patch& patch) {
 
 		puptake_day = indiv.pdemand * indiv.fpuptake;
 
-		if (ifherbivory && indiv.pft.lifeform == TREE) {
-			herb_frac = exp(0.03251 - 0.30222 * log(indiv.ctop_leaf_avr));
-
-			pmass_herb = indiv.leaffndemand  * puptake_day * herb_frac;
-		}
-		else {
+		if (ifherbivory)
+			pmass_herb = indiv.leaffndemand  * puptake_day * indiv.herb_frac;
+		else 
 			pmass_herb = 0.0;
-		}
 
 		indiv.apuptake += puptake_day;
 		indiv.pmass_leaf += indiv.leaffpdemand  * puptake_day - pmass_herb;

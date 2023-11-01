@@ -3116,6 +3116,9 @@ public:
 	double myco_col;
 	/// mycorrhiza type AMF (0) or ECM (1)
 	double myco_type;
+	
+	/// Leaf cmass loss herbivory fraction
+	double herb_frac;
 
 	/// minimum leaf C:N mass ratio allowed when nitrogen demand is determined
 	double cton_leaf_min;
@@ -3699,6 +3702,11 @@ public:
 
 		if (ifdynltor)
 			ltor = pft.ltor_max;
+
+		if (ifherbivory)
+			herb_frac = exp(0.03251 - 0.30222 * log(ctop_leaf_avr));
+		else
+			herb_frac = 0.0;
 	}
 	
 	
