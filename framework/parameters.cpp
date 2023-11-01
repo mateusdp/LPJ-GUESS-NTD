@@ -825,6 +825,8 @@ void plib_declarations(int id,xtring setname) {
 			"Maximum SRL value in trait variation (m/kgC)");
 		declareitem("srl_min", &ppft->srl_min, 0, 1000000.0, 1, CB_NONE,
 			"Minimum SRL value in trait variation (m/kgC)");
+		declareitem("myco_type", &ppft->myco_type, 0, 1, 1, CB_NONE,
+			"Whether mycorrhiza are Arbuscular Mycorrhizae Fungi (0) or Ecto Mycorrhizae Fungi (1)");
 		
 		declareitem("intc",&ppft->intc,0.0,1.0,1,CB_NONE,"Interception coefficient");
 
@@ -2024,6 +2026,12 @@ void plib_callback(int callback) {
 				if (!itemparsed("wsg_max")) badins("wsg_max");
 				if (!itemparsed("wsg_min")) badins("wsg_min");
 				if (!itemparsed("srl_min")) badins("srl_min");
+			}
+
+			if (ifsrlvary) {
+				if (!itemparsed("srl_max")) badins("srl_max");
+				if (!itemparsed("srl_min")) badins("srl_min");
+				if (!itemparsed("myco_type")) badins("myco_type");
 			}
 
 			if (run_landcover) {

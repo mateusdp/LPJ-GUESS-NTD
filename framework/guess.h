@@ -2101,6 +2101,8 @@ public:
 	double srl_max;
 	/// Min SRL in trait variation (m/kgC)
 	double srl_min;
+	/// Mycorhiza type, AMF or ECM
+	double myco_type;
 
 	// Bioclimatic limits (all temperatures deg C)
 
@@ -3112,6 +3114,8 @@ public:
 	double d_root;
 	/// mycorrhiza colonization rate (-)
 	double myco_col;
+	/// mycorrhiza type AMF (0) or ECM (1)
+	double myco_type;
 
 	/// minimum leaf C:N mass ratio allowed when nitrogen demand is determined
 	double cton_leaf_min;
@@ -3224,6 +3228,10 @@ public:
 	double rpc;
 	/// Mycelle projective cover (RPC) under full mycorrhiza cover as fraction of modelled area
 	double rpc_myco;
+	/// Proportion of uptaken N by mycorrhiza today
+	double fractomax_nmyco;
+	/// Proportion of uptaken P by mycorrhiza today
+	double fractomax_pmyco;
 	/// fraction of PAR absorbed by foliage over projective area today, taking account of leaf phenological state
 	double fpar;
 	/// average density of individuals over patch (indiv/m2)
@@ -3685,6 +3693,7 @@ public:
 		ctop_stem_max = pft.ctop_stem_max;
 
 		wooddens = pft.wooddens;
+		myco_type = pft.myco_type;
 		srl = 0.0;
 		myco_col = 0.0;
 

@@ -1322,7 +1322,7 @@ void transfer_litter(Patch& patch) {
 			}
 		}
 
-		// ROOT
+		// ROOT (Mycorrhiza c litter goes in root litter since it has no N or P mass)
 
 		if (!negligible(cmass_litter_root) || !negligible(nmass_litter_root) || !negligible(pmass_litter_root)) {
 		//if (!negligible(cmass_litter_root) || !negligible(nmass_litter_root)) {
@@ -1683,6 +1683,7 @@ void vegetation_n_uptake(Patch& patch) {
 	//     where fnuptake is individual uptake capacity calculated in fnuptake in canexch.cpp
 
 	double nuptake_day;
+	double nuptake_day_myco;
 
 	Vegetation& vegetation=patch.vegetation;
 	Soil& soil = patch.soil;
@@ -1700,6 +1701,11 @@ void vegetation_n_uptake(Patch& patch) {
 		if (date.day == 0)
 			indiv.anuptake = 0.0;
 
+		nuptake_day_myco = 0.0;
+
+		if (indiv.myco_type)
+			nuptake_day_myco = indiv.ndemand * indiv.fnuptake * indiv.fractomax_nmyco;
+
 		nuptake_day           = indiv.ndemand * indiv.fnuptake;
 		indiv.anuptake        += nuptake_day;
 		indiv.nmass_leaf      += indiv.leaffndemand  * nuptake_day;
@@ -1712,14 +1718,16 @@ void vegetation_n_uptake(Patch& patch) {
 
 
 		if (ifntransform) {
-			double ammonium = nuptake_day * ammonium_frac;
+			double ammonium = (nuptake_day - nuptake_day_myco) * ammonium_frac;
 			soil.NH4_mass -= ammonium;
-			soil.NO3_mass -= nuptake_day - ammonium;
+			soil.NO3_mass -= (nuptake_day - nuptake_day_myco) - ammonium;
 		} 
 		else {
-			soil.nmass_subtract(nuptake_day);
+			soil.nmass_subtract(nuptake_day - nuptake_day_myco);
 		}
 
+		soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
+		soil.sompool[SOILMETA].nmass -= nuptake_day_myco * 0.82;
 
 		if (!negligible(indiv.phen))
 			indiv.cton_leaf_aavr += min(indiv.cton_leaf(),indiv.cton_leaf_max);
@@ -1752,6 +1760,7 @@ void vegetation_p_uptake(Patch& patch) {
 	//     where fpuptake is individual uptake capacity calculated in fpuptake in canexch.cpp
 
 	double puptake_day;
+	double puptake_day_myco;
 
 	Vegetation& vegetation = patch.vegetation;
 	Soil& soil = patch.soil;
@@ -1768,6 +1777,11 @@ void vegetation_p_uptake(Patch& patch) {
 		if (date.day == 0)
 			indiv.apuptake = 0.0;
 
+		puptake_day_myco = 0.0;
+
+		if (indiv.myco_type)
+			puptake_day_myco = indiv.pdemand * indiv.fpuptake * indiv.fractomax_pmyco;
+
 		puptake_day = indiv.pdemand * indiv.fpuptake;
 		indiv.apuptake += puptake_day;
 		indiv.pmass_leaf += indiv.leaffpdemand  * puptake_day;
@@ -1779,7 +1793,10 @@ void vegetation_p_uptake(Patch& patch) {
 			indiv.pstore_longterm += indiv.storefpdemand * puptake_day;
 		
 		//soil.pmass_labile = max(0.0, soil.pmass_labile - puptake_day);
-		soil.pmass_labile_delta -= puptake_day;
+		soil.pmass_labile_delta -= (puptake_day - puptake_day_myco);
+
+		soil.sompool[SOILSTRUCT].pmass -= puptake_day_myco * 0.18;
+		soil.sompool[SOILMETA].pmass -= puptake_day_myco * 0.82;
 				
 		if (!negligible(indiv.phen))
 			indiv.ctop_leaf_aavr += min(indiv.ctop_leaf(), indiv.ctop_leaf_max);
