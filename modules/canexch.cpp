@@ -1694,7 +1694,7 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double maxpup_myco;
 
 		if (!indiv.myco_type)
-			maxpup_myco = min(1.0 * 0.013 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
+			maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
 		else
 			maxpup_myco = min(1.0 * indiv.pft.puptoroot * porg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 
