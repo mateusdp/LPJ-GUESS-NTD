@@ -1733,9 +1733,9 @@ void vegetation_n_uptake(Patch& patch) {
 			/*soil.NH4_mass -= indiv.ndemand * indiv.fnuptake * indiv.fractomax_nmyco;
 			soil.NO3_mass -= indiv.ndemand * indiv.fnuptake * (1 - indiv.fractomax_nmyco);*/
 			if (!indiv.myco_type) {
-				//soil.nmass_subtract(nuptake_day - nuptake_day_myco, NO3);
-				//soil.nmass_subtract(nuptake_day_myco, NH4);
-				//soil.nmass_inc(nmass_herb, NO);
+				/*soil.nmass_subtract(nuptake_day - nuptake_day_myco, NO3);
+				soil.nmass_subtract(nuptake_day_myco, NH4);
+				soil.nmass_inc(nmass_herb, NO);*/
 				double ammonium = (nuptake_day - nmass_herb) * ammonium_frac;  // Only no errors if ammonium frac is considered...
 				soil.NH4_mass -= ammonium;
 				soil.NO3_mass -= (nuptake_day - nmass_herb) - ammonium;
