@@ -3714,7 +3714,7 @@ public:
 	void ctonp_tradeoffs() {
 
 		//double frac_mintomax = 1.48;	// Max min from Baez & Homeier (2017)
-		double frac_mintomax = 1.3981; // Max min fromHomeier (2020)
+		double frac_mintomax = 1.3981; // Max min from Homeier (2020)
 		//double frac_mintomax = 2.78;
 		// Fraction between leaf and root C:N ratio
 		double frac_leaftoroot = 1.057143; // Kerstin Ecuador Data (Friend = 1.16)
