@@ -21,14 +21,17 @@
 
 void interception(Patch& patch, Climate& climate);
 void canopy_exchange(Patch& patch, Climate& climate);
-void photosynthesis(const PhotosynthesisEnvironment& ps_env, 
+void photosynthesis(const PhotosynthesisEnvironment& ps_env,
 					const PhotosynthesisStresses& ps_stresses,
 					const Pft& pft,
-					double lambda, 
-					double nactive, 
+					double lambda,
+					double nactive,
 					double pactive,
+					double nmax,
+					double pmax,
 					double vm,
 					PhotosynthesisResult& result);
+
 
 
 /// Nitrogen- and landuse specific alpha a

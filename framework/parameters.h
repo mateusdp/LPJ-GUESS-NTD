@@ -159,6 +159,9 @@ extern bool ifnlim;
 /// whether plant growth limited by available P
 extern bool ifplim;
 
+/// whether plant growth limited by available P and/or N (Walker 2014 approach)
+extern bool ifwalkernplim;
+
 /// whether plant growth, allocation and dynamics occur on a daily timestep
 extern bool ifdaily;
 

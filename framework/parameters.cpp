@@ -44,6 +44,7 @@ bool ifcdebt;
 bool ifcentury;
 bool ifnlim;
 bool ifplim;
+bool ifwalkernplim;
 bool ifdaily;
 int freenyears;
 double nrelocfrac;
@@ -518,6 +519,8 @@ void plib_declarations(int id,xtring setname) {
 			"Whether plant growth limited by available nitrogen");
 		declareitem("ifplim", &ifplim, 1, CB_NONE,
 			"Whether plant growth limited by available phosphorus");
+		declareitem("ifwalkernplim", &ifwalkernplim, 1, CB_NONE,
+			"Whether plant growth limited by available nitrogen or phosphorus, walker 2014 approach");
 		declareitem("ifdaily", &ifdaily, 1, CB_NONE,
 			"Whether plant growth, allocation and dynamics occur on a daily timestep");
 		declareitem("freenyears",&freenyears,0,1000,1,CB_NONE,
@@ -1559,6 +1562,7 @@ void plib_callback(int callback) {
 		if (!itemparsed("ifcentury")) badins("ifcentury");
 		if (!itemparsed("ifnlim")) badins("ifnlim");
 		if (!itemparsed("ifplim")) badins("ifplim");
+		if (!itemparsed("ifwalkernplim")) badins("ifwalkernplim");
 		if (!itemparsed("ifdaily")) badins("ifdaily");
 		if (!itemparsed("freenyears")) badins("freenyears");
 

@@ -1706,6 +1706,8 @@ void vegetation_n_uptake(Patch& patch) {
 
 		if (indiv.myco_type)
 			nuptake_day_myco = indiv.ndemand * indiv.fractomax_nmyco;
+		else
+			nuptake_day_myco = indiv.ndemand * indiv.fnuptake * indiv.fractomax_nmyco;
 
 		nuptake_day           = indiv.ndemand * indiv.fnuptake;
 
@@ -1725,16 +1727,36 @@ void vegetation_n_uptake(Patch& patch) {
 
 
 		if (ifntransform) {
-			double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * ammonium_frac;
+			/*double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * ammonium_frac;
 			soil.NH4_mass -= ammonium;
-			soil.NO3_mass -= (nuptake_day - nuptake_day_myco - nmass_herb) - ammonium;
+			soil.NO3_mass -= (nuptake_day - nuptake_day_myco - nmass_herb) - ammonium;*/
+			/*soil.NH4_mass -= indiv.ndemand * indiv.fnuptake * indiv.fractomax_nmyco;
+			soil.NO3_mass -= indiv.ndemand * indiv.fnuptake * (1 - indiv.fractomax_nmyco);*/
+			if (!indiv.myco_type) {
+				//soil.nmass_subtract(nuptake_day - nuptake_day_myco, NO3);
+				//soil.nmass_subtract(nuptake_day_myco, NH4);
+				//soil.nmass_inc(nmass_herb, NO);
+				double ammonium = (nuptake_day - nmass_herb) * ammonium_frac;  // Only no errors if ammonium frac is considered...
+				soil.NH4_mass -= ammonium;
+				soil.NO3_mass -= (nuptake_day - nmass_herb) - ammonium;
+				/*soil.NH4_mass -= indiv.ndemand * indiv.fnuptake * indiv.fractomax_nmyco;
+				soil.NO3_mass -= indiv.ndemand * indiv.fnuptake * (1 - indiv.fractomax_nmyco);*/
+			}
+			else {
+				double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * ammonium_frac;  // Only no errors if ammonium frac is considered...
+				soil.NH4_mass -= ammonium;
+				soil.NO3_mass -= (nuptake_day - nuptake_day_myco - nmass_herb) - ammonium;
+				soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
+				soil.sompool[SOILMETA].nmass -= nuptake_day_myco * 0.82;
+			}
+
 		} 
 		else {
 			soil.nmass_subtract(nuptake_day - nuptake_day_myco - nmass_herb);
 		}
 
-		soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
-		soil.sompool[SOILMETA].nmass -= nuptake_day_myco * 0.82;
+		/*soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
+		soil.sompool[SOILMETA].nmass -= nuptake_day_myco * 0.82;*/
 
 		if (!negligible(indiv.phen))
 			indiv.cton_leaf_aavr += min(indiv.cton_leaf(),indiv.cton_leaf_max);
