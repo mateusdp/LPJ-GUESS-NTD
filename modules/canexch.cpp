@@ -1439,7 +1439,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double nmin_scale = kNmin + nmin_avail / (nmin_avail + gridcell.pft[indiv.pft.id].Km);
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics for mycorrhiza
-		double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 2.03e-6 * gridcell.soiltype.wtot);
+		//double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 2.03e-6 * gridcell.soiltype.wtot);
+		double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 4.5e-9 * gridcell.soiltype.wtot); // N Km Pérez-Tienda et al.
 		//double nmin_scale_myco = kNmin + nmin_avail / (nmin_avail + 2.03e-6 * gridcell.soiltype.wtot);
 
 		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + gridcell.pft[indiv.pft.id].Km);
@@ -1479,7 +1480,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double maxnup_myco;
 
 		if(!indiv.myco_type)
-			maxnup_myco = min(1.0 * 0.013 * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
+			//maxnup_myco = min(1.0 * 0.013 * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
+			maxnup_myco = min(1.0 * 7e-3 * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // The OK 12 hs
 		else
 			maxnup_myco = min(1.0 * indiv.pft.nuptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 		
@@ -1694,7 +1696,8 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double maxpup_myco;
 
 		if (!indiv.myco_type)
-			maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
+			//maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
+			maxpup_myco = min(9.13e-4 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // The OK 12 hs
 		else
 			maxpup_myco = min(1.0 * indiv.pft.puptoroot * porg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 
