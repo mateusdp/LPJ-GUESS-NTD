@@ -1440,7 +1440,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics for mycorrhiza
 		//double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 2.03e-6 * gridcell.soiltype.wtot);
-		double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 4.5e-9 * gridcell.soiltype.wtot); // N Km Pérez-Tienda et al.
+		//double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 4.5e-9 * gridcell.soiltype.wtot); // N Km Pérez-Tienda et al.
+		double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 0.5 * gridcell.pft[indiv.pft.id].Km); // 50% less AMF
 		//double nmin_scale_myco = kNmin + nmin_avail / (nmin_avail + 2.03e-6 * gridcell.soiltype.wtot);
 
 		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + gridcell.pft[indiv.pft.id].Km);
@@ -1481,7 +1482,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		if(!indiv.myco_type)
 			//maxnup_myco = min(1.0 * 0.013 * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
-			maxnup_myco = min(1.0 * 7e-3 * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // The OK 12 hs
+			//maxnup_myco = min(1.0 * 7e-3 * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // The OK 12 hs
+		    maxnup_myco = min(1.5 * indiv.pft.nuptoroot * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); //50% more AMF
 		else
 			maxnup_myco = min(1.0 * indiv.pft.nuptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 		
@@ -1659,7 +1661,8 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
 		double pmin_scale = kPmin + pmin_avail / (pmin_avail + gridcell.pft[indiv.pft.id].Kmp);
 
-		double pmin_scale_myco = max(0.0, kPmin + pmin_avail / (pmin_avail + 1.63e-7 * gridcell.soiltype.wtot));
+		//double pmin_scale_myco = max(0.0, kPmin + pmin_avail / (pmin_avail + 1.63e-7 * gridcell.soiltype.wtot));
+		double pmin_scale_myco = max(0.0, kPmin + pmin_avail / (pmin_avail + 0.5 * gridcell.pft[indiv.pft.id].Kmp)); //50% less AMF
 
 		double porg_scale_myco = max(0.0, kPmin + porg_avail_myco / (porg_avail_myco + gridcell.pft[indiv.pft.id].Kmp));
 
@@ -1697,7 +1700,8 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 
 		if (!indiv.myco_type)
 			//maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
-			maxpup_myco = min(9.13e-4 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // The OK 12 hs
+			//maxpup_myco = min(9.13e-4 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // The OK 12 hs
+			maxpup_myco = min(1.5 * indiv.pft.puptoroot * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // 50% more AMF
 		else
 			maxpup_myco = min(1.0 * indiv.pft.puptoroot * porg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 
