@@ -171,6 +171,7 @@ extern bool ifwsgvary;
 extern bool ifsrlvary;
 extern bool ifdynltor;
 extern bool ifdynreloc;
+extern bool ifmycovary;
 extern bool ifherbivory;
 extern int sla_width;
 extern int wsg_width;

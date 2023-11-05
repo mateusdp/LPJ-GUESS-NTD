@@ -43,7 +43,7 @@ private:
 	void define_output_tables();
 
 	// Output file names ...
-	xtring file_cmass, file_cmass_myco, file_anpp,file_agpp,file_fpc,file_aaet,file_dens,file_lai,file_cflux,file_doc,file_cpool,file_clitter,file_runoff;
+	xtring file_cmass, file_cmass_amf, file_cmass_ecm, file_anpp,file_agpp,file_fpc,file_aaet,file_dens,file_lai,file_cflux,file_doc,file_cpool,file_clitter,file_runoff;
 	xtring file_mnpp,file_mlai,file_mgpp,file_mra,file_maet,file_mpet,file_mevap,file_mrunoff,file_mintercep,file_mrh;
 	xtring file_mnee,file_mwcont_upper,file_mwcont_lower;
 	xtring file_firert,file_speciesheights,file_speciesdiam;
@@ -78,7 +78,7 @@ private:
 	xtring file_msnow, file_mwtp, file_mald;
 
 	// Output tables
-	Table out_cmass, out_cmass_myco, out_anpp, out_agpp, out_fpc, out_aaet, out_dens, out_lai, out_cflux, out_doc, out_cpool, out_clitter, out_firert, out_runoff, out_speciesheights;
+	Table out_cmass, out_cmass_amf, out_cmass_ecm, out_anpp, out_agpp, out_fpc, out_aaet, out_dens, out_lai, out_cflux, out_doc, out_cpool, out_clitter, out_firert, out_runoff, out_speciesheights;
 	Table out_speciesdiam, out_wetland_water_added;
 
 	Table out_mnpp, out_mlai, out_mgpp, out_mra, out_maet, out_mpet, out_mevap, out_mrunoff, out_mintercep;

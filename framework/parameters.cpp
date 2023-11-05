@@ -61,6 +61,7 @@ bool ifwsgvary;
 bool ifsrlvary;
 bool ifdynltor;
 bool ifdynreloc;
+bool ifmycovary;
 bool ifherbivory;
 int sla_width;
 int wsg_width;
@@ -542,6 +543,8 @@ void plib_declarations(int id,xtring setname) {
 			"Whether leaf to fine root ratio is allowed to accumulatively vary with stress");
 		declareitem("ifdynreloc", &ifdynreloc, 1, CB_NONE,
 			"Whether nitrogen and phosphorus resorption is allowed to accumulatively vary with stress");
+		declareitem("ifmycovary", &ifmycovary, 1, CB_NONE,
+			"Activation of mycorrhiza type variation. Only for trees, grasses are always AMF.");
 		declareitem("ifherbivory", &ifherbivory, 1, CB_NONE,
 			"Activation of Herbivory Module.");
 		declareitem("sla_width", &sla_width, 0, 5000, 1, CB_NONE,
@@ -1571,6 +1574,7 @@ void plib_callback(int callback) {
 		if (!itemparsed("ifsrlvary")) badins("ifsrlvary");
 		if (!itemparsed("ifdynltor")) badins("ifdynltor");
 		if (!itemparsed("ifdynreloc")) badins("ifdynreloc");
+		if (!itemparsed("ifmycovary")) badins("ifmycovary");
 		if (!itemparsed("ifherbivory")) badins("ifherbivory");
 		if (!itemparsed("sla_width")) badins("sla_width");
 		if (!itemparsed("wsg_width")) badins("wsg_width");
