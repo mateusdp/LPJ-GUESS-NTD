@@ -1993,6 +1993,8 @@ public:
 	double cton_sap;
 	/// Maximum nitrogen (NH4+ and NO3- seperatly) uptake per fine root [kgN kgC-1 day-1]
 	double nuptoroot;
+	/// Maximum nitrogen (NH4+ and NO3- seperatly) uptake per AMF hyphae [kgN kgC-1 day-1]
+	double nuptoamf;
 	/// coefficient to compensate for vertical distribution of fine root on nitrogen uptake
 	double nupscoeff;
 	/// fraction of sapwood (root for herbaceous pfts) that can be used as a nitrogen longterm storage scalar
@@ -2018,6 +2020,8 @@ public:
 	double ctop_sap;
 	/// Maximum phosphorus uptake per fine root [kgP kgC-1 day-1]
 	double puptoroot;
+	/// Maximum phosphorus uptake per AMF hyphae [kgP kgC-1 day-1]
+	double puptoamf;
 	/// coefficient to compensate for vertical distribution of fine root on phosphorus uptake
 	double pupscoeff;
 	/// fraction of sapwood (root for herbaceous pfts) that can be used as a phosphorus longterm storage scalar
@@ -2028,6 +2032,10 @@ public:
 	double km_volume;
 	/** Half saturation concentration for P uptake [kgP l-1] (Silveira & Cardoso 2004) */
 	double kmp_volume;
+	/** Half saturation concentration for AMF N uptake [kgN l-1] (Rothstein 2000) */
+	double km_amf_volume;
+	/** Half saturation concentration for AMF P uptake [kgP l-1] (Silveira & Cardoso 2004) */
+	double kmp_amf_volume;
 
 	/// fraction of NPP allocated to reproduction
 	double reprfrac;
