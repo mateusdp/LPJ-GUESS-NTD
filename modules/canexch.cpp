@@ -1468,13 +1468,13 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_NO3_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		//// Guarantee that rpc and rpc myco together do not exceed 1
-		//if (indiv.rpc + indiv.rpc_myco > 1.0)
-		//{
-		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-		//	indiv.rpc *= rescale;
-		//	indiv.rpc_myco *= rescale;
-		//}
+		// Guarantee that rpc and rpc myco together do not exceed 1
+		if (indiv.rpc + indiv.rpc_myco > 1.0)
+		{
+			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+			indiv.rpc *= rescale;
+			indiv.rpc_myco *= rescale;
+		}
 
 		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
@@ -1496,7 +1496,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// Maximum nitrogen uptake due to all scalars (times 2 because considering both NO3- and NH4+ uptake)
 		// and soil available nitrogen within individual projectived coverage
 		//double maxnup = min(2.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
-		double maxnup = min(1.0 * indiv.pft.no3uptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
+		double maxnup = min(1.0 * indiv.pft.nh4uptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
 
 		double maxnup_NH4 = min(indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4);
 		double maxnup_NO3 = min(indiv.pft.no3uptoroot * nmin_scale_NO3 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NO3);
@@ -1524,11 +1524,12 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
-		//double fractomax = ndemand_tot > 0.0 ? min((maxnup + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
+		//fractomax = ndemand_tot > 0.0 ? min((maxnup + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
 				
 
 		if (ifsrlvary) 
-			fractomax = min(fractomax_NH4, fractomax_NO3);
+			//fractomax = min(fractomax_NH4, fractomax_NO3);
+			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4, ndemand_NH4) + min(maxnup_NO3, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;
 			//fractomax = fractomax_NH4 * 0.25 + fractomax_NO3 * 0.75;
 		else 
 			fractomax = ndemand_tot > 0.0 ? min(maxnup / ndemand_tot, 1.0) : 0.0;
@@ -1717,13 +1718,13 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		//// Guarantee that rpc and rpc myco together do not exceed 1
-		//if (indiv.rpc + indiv.rpc_myco > 1.0)
-		//{
-		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-		//	indiv.rpc *= rescale;
-		//	indiv.rpc_myco *= rescale;
-		//}
+		// Guarantee that rpc and rpc myco together do not exceed 1
+		if (indiv.rpc + indiv.rpc_myco > 1.0)
+		{
+			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+			indiv.rpc *= rescale;
+			indiv.rpc_myco *= rescale;
+		}
 
 		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
@@ -1807,13 +1808,13 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	// Added patch rpc
 	double tot_nmass_avail;
 
-	//// Guarantee that rpc and rpc myco together do not exceed 1
-	//if (patch.rpc_total + patch.rpc_myco_total > 1.0)
-	//{
-	//	double rescale = 1.0 / (patch.rpc_total + patch.rpc_myco_total);
-	//	patch.rpc_total *= rescale;
-	//	patch.rpc_myco_total *= rescale;
-	//}
+	// Guarantee that rpc and rpc myco together do not exceed 1
+	if (patch.rpc_total + patch.rpc_myco_total > 1.0)
+	{
+		double rescale = 1.0 / (patch.rpc_total + patch.rpc_myco_total);
+		patch.rpc_total *= rescale;
+		patch.rpc_myco_total *= rescale;
+	}
 
 	if(ifsrlvary)
 		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.rpc_total + patch.rpc_myco_total);
