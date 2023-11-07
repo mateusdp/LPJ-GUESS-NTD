@@ -1448,7 +1448,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double nmin_scale_NH4 = kNmin + soil.nmass_avail(NH4) / (soil.nmass_avail(NH4) + 2.03e-6 * gridcell.soiltype.wtot);
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics for mycorrhiza
-		double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + indiv.pft.km_amf_volume * gridcell.soiltype.wtot);
+		double nmin_scale_NO3_myco = kNmin + soil.nmass_avail(NO3) / (soil.nmass_avail(NO3) + 6.2e-6 * gridcell.soiltype.wtot);
+		double nmin_scale_NH4_myco = kNmin + soil.nmass_avail(NH4) / (soil.nmass_avail(NH4) + 2.03e-6 * gridcell.soiltype.wtot);
 		//double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 4.5e-9 * gridcell.soiltype.wtot); // N Km Pérez-Tienda et al.
 		//double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + 0.5 * gridcell.pft[indiv.pft.id].Km); // 50% less AMF
 		//double nmin_scale_myco = kNmin + nmin_avail / (nmin_avail + 2.03e-6 * gridcell.soiltype.wtot);
@@ -1462,7 +1463,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail = 0.0;
 		double max_indiv_avail_NH4 = 0.0;
 		double max_indiv_avail_NO3 = 0.0;
-		double max_indiv_avail_myco = 0.0;
+		double max_indiv_avail_NH4_myco = 0.0;
+		double max_indiv_avail_NO3_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
 		//// Guarantee that rpc and rpc myco together do not exceed 1
@@ -1480,7 +1482,9 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
 			max_indiv_avail_NH4 = min(1.0, indiv.rpc) * soil.nmass_avail(NH4);
 			max_indiv_avail_NO3 = min(1.0, indiv.rpc) * soil.nmass_avail(NO3);
-			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail_myco;
+			//max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail_myco;
+			max_indiv_avail_NH4_myco = min(1.0, indiv.rpc_myco) * soil.nmass_avail(NH4);
+			max_indiv_avail_NO3_myco = min(1.0, indiv.rpc_myco) * soil.nmass_avail(NO3);
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
 		}
 		else {
@@ -1495,27 +1499,39 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double maxnup_NH4 = min(0.009 * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4);
 		double maxnup_NO3 = min(0.001 * nmin_scale_NO3 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NO3);
 
-		double maxnup_myco = 0.0;
+		double maxnup_nh4_myco = 0.0;
+		double maxnup_no3_myco = 0.0;
+		double maxnup_org_myco = 0.0;
+		double fractomax_NH4 = 0.0;
+		double fractomax_NO3 = 0.0;
+		double fractomax = 0.0;
 
-		if(!indiv.myco_type)
-			maxnup_myco = min(1.0 * indiv.pft.nuptoamf * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
+		if (!indiv.myco_type) {
+			//maxnup_myco = min(1.0 * indiv.pft.nuptoamf * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
+			maxnup_nh4_myco = min(0.009 * nmin_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
+			maxnup_no3_myco = min(0.001 * nmin_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
 			//maxnup_myco = min(1.0 * 7e-3 * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // The OK 12 hs
-		    //maxnup_myco = min(1.5 * indiv.pft.nuptoroot * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); //50% more AMF
-		else
-			maxnup_myco = min(1.0 * indiv.pft.nuptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			//maxnup_myco = min(1.5 * indiv.pft.nuptoroot * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); //50% more AMF
+			fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_nh4_myco) / ndemand_NH4, 1.0) : 0.0;
+			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_no3_myco) / ndemand_NO3, 1.0) : 0.0;
+		} else {
+			maxnup_org_myco = min(0.0028 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_org_myco) / ndemand_NH4, 1.0) : 0.0;
+			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_org_myco) / ndemand_NO3, 1.0) : 0.0;
+		}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
-		double fractomax = ndemand_tot > 0.0 ? min((maxnup + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
+		//double fractomax = ndemand_tot > 0.0 ? min((maxnup + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
+				
 
-		double fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_myco) / ndemand_NH4, 1.0) : 0.0;
-		double fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_myco) / ndemand_NO3, 1.0) : 0.0;
-
-		if (ifsrlvary)
+		if (ifsrlvary) 
 			fractomax = min(fractomax_NH4, fractomax_NO3);
+		else 
+			fractomax = ndemand_tot > 0.0 ? min(maxnup / ndemand_tot, 1.0) : 0.0;
 		//fractomax = fractomax_NH4 * 0.25 + fractomax_NO3 * 0.75;
 
 
-		indiv.fractomax_nmyco = ndemand_tot > 0.0 ? min(maxnup_myco / ndemand_tot, 1.0) : 0.0;
+		indiv.fractomax_nmyco = ndemand_tot > 0.0 ? min(maxnup_org_myco / ndemand_tot, 1.0) : 0.0;
 
 		// Root and leaf demand from storage pools
 		indiv.leafndemand_store = indiv.leafndemand * (1.0 - fractomax);
