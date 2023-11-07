@@ -1528,8 +1528,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 				
 
 		if (ifsrlvary) 
-			fractomax = min(fractomax_NH4, fractomax_NO3);
-			//fractomax = fractomax_NH4 * 0.25 + fractomax_NO3 * 0.75;
+			//fractomax = min(fractomax_NH4, fractomax_NO3);
+			fractomax = fractomax_NH4 * 0.25 + fractomax_NO3 * 0.75;
 		else 
 			fractomax = ndemand_tot > 0.0 ? min(maxnup / ndemand_tot, 1.0) : 0.0;
 
