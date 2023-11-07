@@ -825,7 +825,8 @@ void dailyaccounting_gridcell(Gridcell& gridcell) {
 			// Initialise gridcellpfts Michaelis-Menten kinetic Km value
 			pftlist.firstobj();
 			while (pftlist.isobj) {
-				gridcell.pft[pftlist.getobj().id].Km = pftlist.getobj().km_volume * gridcell.soiltype.wtot;
+				gridcell.pft[pftlist.getobj().id].Km_nh4 = pftlist.getobj().km_volume_nh4 * gridcell.soiltype.wtot;
+				gridcell.pft[pftlist.getobj().id].Km_no3 = pftlist.getobj().km_volume_no3 * gridcell.soiltype.wtot;
 				gridcell.pft[pftlist.getobj().id].Kmp = pftlist.getobj().kmp_volume * gridcell.soiltype.wtot;
 				pftlist.nextobj();
 			}

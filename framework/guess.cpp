@@ -3087,7 +3087,8 @@ double Individual::wscal_mean() const {
 
 void Gridcellpft::serialize(ArchiveStream& arch) {
 	arch & addtw
-		& Km
+		& Km_no3
+		& Km_nh4
 		& Kmp
 		& autumnoccurred
 		& springoccurred

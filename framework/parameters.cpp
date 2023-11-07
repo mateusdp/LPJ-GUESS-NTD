@@ -737,15 +737,19 @@ void plib_declarations(int id,xtring setname) {
 			"Reference Fine root C:N mass ratio");
 		declareitem("cton_sap",&ppft->cton_sap,1.0,1.0e4,1,CB_NONE,
 			"Reference Sapwood C:N mass ratio");
-		declareitem("nuptoroot",&ppft->nuptoroot,0.0,1.0,1,CB_NONE,
-			"Maximum nitrogen uptake per fine root");
+		declareitem("nh4uptoroot",&ppft->nh4uptoroot,0.0,1.0,1,CB_NONE,
+			"Maximum nh4 uptake per fine root");
+		declareitem("no3uptoroot", &ppft->no3uptoroot, 0.0, 1.0, 1, CB_NONE,
+			"Maximum no3 uptake per fine root");
 		declareitem("puptoroot", &ppft->puptoroot, 0.0, 1.0, 1, CB_NONE,
 			"Maximum phosphorus uptake per fine root");
 		declareitem("nuptoamf", &ppft->nuptoamf, 0.0, 1.0, 1, CB_NONE,
 			"Maximum nitrogen uptake per AMF hyphae");
 		declareitem("puptoamf", &ppft->puptoamf, 0.0, 1.0, 1, CB_NONE,
 			"Maximum phosphorus uptake per AMF hyphae");
-		declareitem("km_volume",&ppft->km_volume,0.0,10.0,1,CB_NONE,
+		declareitem("km_volume_no3",&ppft->km_volume_no3,0.0,10.0,1,CB_NONE,
+			"Michaelis-Menten kinetic parameters for nitrogen uptake");
+		declareitem("km_volume_nh4", &ppft->km_volume_nh4, 0.0, 10.0, 1, CB_NONE,
 			"Michaelis-Menten kinetic parameters for nitrogen uptake");
 		declareitem("kmp_volume", &ppft->kmp_volume, 0.0, 10.0, 1, CB_NONE,
 			"Michaelis-Menten kinetic parameters for phosphorus uptake");
@@ -2022,7 +2026,8 @@ void plib_callback(int callback) {
 
 
 			if (!itemparsed("cton_root")) badins("cton_root");
-			if (!itemparsed("nuptoroot")) badins("nuptoroot");
+			if (!itemparsed("nh4uptoroot")) badins("nh4uptoroot");
+			if (!itemparsed("no3uptoroot")) badins("no3uptoroot");
 			if (!itemparsed("puptoroot")) badins("puptoroot");
 			if (!itemparsed("nuptoamf")) badins("nuptoamf");
 			if (!itemparsed("puptoamf")) badins("puptoamf");

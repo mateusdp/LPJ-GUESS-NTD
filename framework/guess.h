@@ -1991,8 +1991,10 @@ public:
 	double cton_root;
 	/// reference sapwood C:N mass ratio
 	double cton_sap;
-	/// Maximum nitrogen (NH4+ and NO3- seperatly) uptake per fine root [kgN kgC-1 day-1]
-	double nuptoroot;
+	/// Maximum nitrogen (NH4+) uptake per fine root [kgN kgC-1 day-1]
+	double nh4uptoroot;
+	/// Maximum nitrogen (NO3-) uptake per fine root [kgN kgC-1 day-1]
+	double no3uptoroot;
 	/// Maximum nitrogen (NH4+ and NO3- seperatly) uptake per AMF hyphae [kgN kgC-1 day-1]
 	double nuptoamf;
 	/// coefficient to compensate for vertical distribution of fine root on nitrogen uptake
@@ -2028,8 +2030,10 @@ public:
 	double fpstorage;
 
 	/// Michaelis-Menten kinetic parameters
-	/** Half saturation concentration for N uptake [kgN l-1] (Rothstein 2000) */
-	double km_volume;
+	/** Half saturation concentration for NO3 uptake [kgN l-1] (Rothstein 2000) */
+	double km_volume_no3;
+	/** Half saturation concentration for NH4 uptake [kgN l-1] (Rothstein 2000) */
+	double km_volume_nh4;
 	/** Half saturation concentration for P uptake [kgP l-1] (Silveira & Cardoso 2004) */
 	double kmp_volume;
 	/** Half saturation concentration for AMF N uptake [kgN l-1] (Rothstein 2000) */
@@ -5645,7 +5649,9 @@ public:
 	/// Michaelis-Menten kinetic parameters
 	/** Half saturation concentration for N uptake (Rothstein 2000, Macduff 2002)
 	 */
-	double Km;
+	double Km_nh4;
+
+	double Km_no3;
 	/** Half saturation concentration for P uptake (Silveira & Cardoso 2004)
 	*/
 	double Kmp;
@@ -5714,7 +5720,8 @@ public:
 	 */
 	Gridcellpft(int i,Pft& p):id(i),pft(p) {
 		addtw = 0.0;
-		Km = 0.0;
+		Km_no3 = 0.0;
+		Km_nh4 = 0.0;
 
 		autumnoccurred=false;
 		springoccurred=false;
