@@ -1323,8 +1323,10 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 	patch.ndemand = 0.0;
 
 	// soil available mineral nitrogen (kgN/m2)
-	const double nmin_avail = soil.nmass_avail(NO3);
-	const double nmin_avail_myco = soil.nmass_avail(NH4);
+	const double nmin_avail = soil.nmass_avail(NO);
+	const double nmin_avail_myco = soil.nmass_avail(NO);
+	/*const double nmin_avail_NO3 = soil.nmass_avail(NO3);
+	const double nmin_avail_NH4 = soil.nmass_avail(NH4);*/
 	const double norg_avail_myco = soil.sompool[SOILSTRUCT].nmass + soil.sompool[SOILMETA].nmass;
 	//const double nmin_avail = soil.nmass_avail(NO);
 	// Scalar to soil temperature (Eqn A9, Comins & McMurtrie 1993) for nitrogen uptake
@@ -1333,6 +1335,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 	
 	/// Rate of nitrogen uptake not associated with Michaelis-Menten Kinetics (Zaehle and Friend 2010)
 	double kNmin = 0.05;
+	//double kNmin = 0.0;
 
 	vegetation.firstobj();
 	while (vegetation.isobj) {
@@ -1422,6 +1425,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Total nitrogen demand
 		double ndemand_tot = indiv.leafndemand + indiv.rootndemand + indiv.sapndemand + indiv.storendemand + indiv.hondemand;
+		double ndemand_NH4 = ndemand_tot * 0.25;
+		double ndemand_NO3 = ndemand_tot * 0.75;
 
 		/// Add in order to reduce mycorrhiza benefits
 		//// Mycorrhiza nitrogen demand
@@ -1437,6 +1442,10 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics
 		double nmin_scale = kNmin + nmin_avail / (nmin_avail + gridcell.pft[indiv.pft.id].Km);
+		//double nmin_scale_NH4 = nmin_avail_NH4 / (nmin_avail_NH4 + );
+
+		double nmin_scale_NO3 = kNmin + soil.nmass_avail(NO3) / (soil.nmass_avail(NO3) + 6.2e-6 * gridcell.soiltype.wtot);
+		double nmin_scale_NH4 = kNmin + soil.nmass_avail(NH4) / (soil.nmass_avail(NH4) + 2.03e-6 * gridcell.soiltype.wtot);
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics for mycorrhiza
 		double nmin_scale_myco = kNmin + nmin_avail_myco / (nmin_avail_myco + indiv.pft.km_amf_volume * gridcell.soiltype.wtot);
@@ -1451,6 +1460,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// 4 times smaller than the root area
 		// Added root projective cover	
 		double max_indiv_avail = 0.0;
+		double max_indiv_avail_NH4 = 0.0;
+		double max_indiv_avail_NO3 = 0.0;
 		double max_indiv_avail_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
@@ -1463,12 +1474,17 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		//}
 
 		if (ifsrlvary) {
+			/*max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
+			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail_myco;
+			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;*/
 			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
+			max_indiv_avail_NH4 = min(1.0, indiv.rpc) * soil.nmass_avail(NH4);
+			max_indiv_avail_NO3 = min(1.0, indiv.rpc) * soil.nmass_avail(NO3);
 			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail_myco;
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
 		}
 		else {
-			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * nmin_avail;
+			double max_indiv_avail = min(1.0, indiv.fpc * 4.0) * nmin_avail;
 		}
 
 		// Maximum nitrogen uptake due to all scalars (times 2 because considering both NO3- and NH4+ uptake)
@@ -1476,7 +1492,10 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		//double maxnup = min(2.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
 		double maxnup = min(1.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
 
-		double maxnup_myco;
+		double maxnup_NH4 = min(0.009 * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4);
+		double maxnup_NO3 = min(0.001 * nmin_scale_NO3 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NO3);
+
+		double maxnup_myco = 0.0;
 
 		if(!indiv.myco_type)
 			maxnup_myco = min(1.0 * indiv.pft.nuptoamf * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
@@ -1487,6 +1506,14 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
 		double fractomax = ndemand_tot > 0.0 ? min((maxnup + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
+
+		double fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_myco) / ndemand_NH4, 1.0) : 0.0;
+		double fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_myco) / ndemand_NO3, 1.0) : 0.0;
+
+		if (ifsrlvary)
+			fractomax = min(fractomax_NH4, fractomax_NO3);
+		//fractomax = fractomax_NH4 * 0.25 + fractomax_NO3 * 0.75;
+
 
 		indiv.fractomax_nmyco = ndemand_tot > 0.0 ? min(maxnup_myco / ndemand_tot, 1.0) : 0.0;
 
@@ -1656,9 +1683,9 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		indiv.ctop_status = max(0.0, (ptoc - 1.0 / indiv.ctop_leaf_min) / (1.0 / indiv.ctop_leaf_avr - 1.0 / indiv.ctop_leaf_min));
 
 		// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
-		double pmin_scale = kPmin + pmin_avail / (pmin_avail + gridcell.pft[indiv.pft.id].Kmp);
+		double pmin_scale = kPmin + (pmin_avail - 1.15e-7) / ((pmin_avail - 1.15e-7) + gridcell.pft[indiv.pft.id].Kmp);
 
-		double pmin_scale_myco = max(0.0, kPmin + pmin_avail / (pmin_avail + indiv.pft.kmp_amf_volume * gridcell.soiltype.wtot));
+		double pmin_scale_myco = max(0.0, kPmin + (pmin_avail - 7.6e-8) / ((pmin_avail - 7.6e-8) + indiv.pft.kmp_amf_volume * gridcell.soiltype.wtot));
 		//double pmin_scale_myco = max(0.0, kPmin + pmin_avail / (pmin_avail + 0.5 * gridcell.pft[indiv.pft.id].Kmp)); //50% less AMF
 
 		double porg_scale_myco = max(0.0, kPmin + porg_avail_myco / (porg_avail_myco + gridcell.pft[indiv.pft.id].Kmp));
@@ -1693,7 +1720,7 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double maxpup = min(indiv.pft.puptoroot * pmin_scale * temp_scale * indiv.ctop_status * indiv.cmass_root_today(), max_indiv_avail);
 
 		//double maxpup_myco = min(0.00183 * pmin_scale_myco * temp_scale * indiv.ctop_status * indiv.cmass_root_today(), max_indiv_avail_myco);
-		double maxpup_myco;
+		double maxpup_myco = 0.0;
 
 		if (!indiv.myco_type)
 			maxpup_myco = min(indiv.pft.puptoamf * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
