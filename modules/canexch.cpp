@@ -1327,7 +1327,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 	// soil available mineral nitrogen (kgN/m2)
 	const double nmin_avail = soil.nmass_avail(NO);
-	const double nmin_avail_myco = soil.nmass_avail(NO);
+	const double nmin_avail_myco = soil.nmass_avail(NH4);
 	/*const double nmin_avail_NO3 = soil.nmass_avail(NO3);
 	const double nmin_avail_NH4 = soil.nmass_avail(NH4);*/
 	const double norg_avail_myco = soil.sompool[SOILSTRUCT].nmass + soil.sompool[SOILMETA].nmass;
@@ -1349,6 +1349,9 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		//fraction of N uptaken by mycorrhiza
 		indiv.fractomax_nmyco = 0.0;
+
+		//fraction of N uptaken by mycorrhiza
+		indiv.frac_nh4 = 0.0;
 
 		// Assume that optimal leaf nitrogen isn't above allowed limit
 		indiv.n_opt_isabovelim = false;
@@ -1428,8 +1431,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Total nitrogen demand
 		double ndemand_tot = indiv.leafndemand + indiv.rootndemand + indiv.sapndemand + indiv.storendemand + indiv.hondemand;
-		double ndemand_NH4 = ndemand_tot * 0.25;
-		double ndemand_NO3 = ndemand_tot * 0.75;
+		double ndemand_NH4 = ndemand_tot * 0.0;
+		double ndemand_NO3 = ndemand_tot * 1.0;
 
 		/// Add in order to reduce mycorrhiza benefits
 		//// Mycorrhiza nitrogen demand
@@ -1517,15 +1520,18 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_myco, ndemand_NH4) + min(maxnup_NO3 + maxnup_myco, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;
 			/*fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_myco) / ndemand_NH4, 1.0) : 0.0;
 			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_myco) / ndemand_NO3, 1.0) : 0.0;*/
+			/*fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_nh4_myco) / ndemand_NH4, 1.0) : 0.0;
+			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_no3_myco) / ndemand_NO3, 1.0) : 0.0;*/
 			/*maxnup_nh4_myco = min(0.009 * nmin_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
 			maxnup_no3_myco = min(0.001 * nmin_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
-			fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_nh4_myco) / ndemand_NH4, 1.0) : 0.0;
-			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_no3_myco) / ndemand_NO3, 1.0) : 0.0;*/
+			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_nh4_myco, ndemand_NH4) + min(maxnup_NO3 + maxnup_no3_myco, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;*/
+			indiv.frac_nh4 = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_nh4_myco, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 		} else {
 			maxnup_org_myco = min(0.0028 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
-			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_org_myco, ndemand_NH4) + min(maxnup_NO3 + maxnup_org_myco, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;
 			/*fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_org_myco) / ndemand_NH4, 1.0) : 0.0;
 			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_org_myco) / ndemand_NO3, 1.0) : 0.0;*/
+			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4, ndemand_NH4) + min(maxnup_NO3, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;
+			indiv.frac_nh4 = ndemand_tot > 0.0 ? min((min(maxnup_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 		}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity

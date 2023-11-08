@@ -3243,6 +3243,8 @@ public:
 	double rpc;
 	/// Mycelle projective cover (RPC) under full mycorrhiza cover as fraction of modelled area
 	double rpc_myco;
+	/// Proportion of uptaken NH4 by plant today
+	double frac_nh4;
 	/// Proportion of uptaken N by mycorrhiza today
 	double fractomax_nmyco;
 	/// Proportion of uptaken P by mycorrhiza today

@@ -1151,10 +1151,10 @@ bool allometry(Individual& indiv) {
 
 			// Root projective cover calculation, if SRL variation is activated.
 			if (ifsrlvary) {
-				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;*/
-				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
+				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
+				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;*/
 				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
 				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
 				// root surface area divided by soil surface area. This is calculated by ssa = 50 m2/g * soil dens = 1.5e6 g/m3 * soil depth = 2.5 m. 
@@ -1201,10 +1201,10 @@ bool allometry(Individual& indiv) {
 
 				// Root projective cover calculation, if SRL variation is activated.
 				if (ifsrlvary) {
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
-					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;*/
+					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;*/
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
 					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / (3.75e6 * 50.0);
@@ -2143,10 +2143,10 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 
 			//Dynamic nitrogen and phosphorus resorption based on stress
 			if (ifdynreloc) {
-				/*indiv.nrelocfrac = min(1.0, indiv.nrelocfrac * (1 / nscal));
-				indiv.prelocfrac = min(1.0, indiv.prelocfrac * (1 / pscal));*/
-				indiv.nrelocfrac = min(1.0, 0.5 * (1 / nscal));
-				indiv.prelocfrac = min(1.0, 0.5 * (1 / pscal));
+				indiv.nrelocfrac = min(1.0, indiv.nrelocfrac * (1 / nscal));
+				indiv.prelocfrac = min(1.0, indiv.prelocfrac * (1 / pscal));
+				/*indiv.nrelocfrac = min(1.0, 0.5 * (1 / nscal));
+				indiv.prelocfrac = min(1.0, 0.5 * (1 / pscal));*/
 			}
 
 			// Choose more limiting factor between nitrogen and phosphorus
