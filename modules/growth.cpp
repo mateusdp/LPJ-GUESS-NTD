@@ -1153,10 +1153,13 @@ bool allometry(Individual& indiv) {
 			if (ifsrlvary) {
 				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
 				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;*/
-				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;
-				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / (2.25e3 * 50.0);
-				indiv.rpc_myco = indiv.cmass_myco * 1000.0 * 2.0e-6 * PI / (3.75e-7 * 2.25e3 * 50.0);*/
+				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
+				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
+				// root surface area divided by soil surface area. This is calculated by ssa = 50 m2/g * soil dens = 1.5e6 g/m3 * soil depth = 2.5 m. 
+				//indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / (3.75e6 * 50.0);
+				//indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / (3.75e6 * 50.0);
 			}
 			else {
 				indiv.rpc = 0.0;
@@ -1198,14 +1201,14 @@ bool allometry(Individual& indiv) {
 
 				// Root projective cover calculation, if SRL variation is activated.
 				if (ifsrlvary) {
-					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;*/
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
 					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;*/
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;
-					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / (2.25e3 * 50.0);
-					indiv.rpc_myco = indiv.cmass_myco * 1000.0 * 2.0e-6 * PI / (3.75e-7 * 2.25e3 * 50.0);*/
+					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
+					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / (3.75e6 * 50.0);
+					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / (3.75e6 * 50.0);*/
 				}
 				else {
 					indiv.rpc = 0.0;

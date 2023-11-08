@@ -632,6 +632,9 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 	vm_p = CN * exp(P) / tfac;
 	vm_np = CN * exp(NP) / tfac;
 
+	if (nactive == 0.0 || pactive == 0.0)
+		vm_n = vm_p = vm_np = 0.0;
+
 	nactive_opt = nmass_g_opt / 1000.0;
 	pactive_opt = pmass_g_opt / 1000.0;
 
@@ -652,7 +655,7 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 	}
 
 	if (ifnlimvmax || ifplimvmax)
-		if (vm_np > 0.0) {
+		if (vm_np >= 0.0) {
 			if (ifnlimvmax && ifplimvmax)
 				vm_np = min(vm_np, vm_nolim);
 
@@ -1468,13 +1471,13 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_NO3_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		// Guarantee that rpc and rpc myco together do not exceed 1
-		if (indiv.rpc + indiv.rpc_myco > 1.0)
-		{
-			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-			indiv.rpc *= rescale;
-			indiv.rpc_myco *= rescale;
-		}
+		//// Guarantee that rpc and rpc myco together do not exceed 1
+		//if (indiv.rpc + indiv.rpc_myco > 1.0)
+		//{
+		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+		//	indiv.rpc *= rescale;
+		//	indiv.rpc_myco *= rescale;
+		//}
 
 		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
@@ -1720,13 +1723,13 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		// Guarantee that rpc and rpc myco together do not exceed 1
-		if (indiv.rpc + indiv.rpc_myco > 1.0)
-		{
-			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-			indiv.rpc *= rescale;
-			indiv.rpc_myco *= rescale;
-		}
+		//// Guarantee that rpc and rpc myco together do not exceed 1
+		//if (indiv.rpc + indiv.rpc_myco > 1.0)
+		//{
+		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+		//	indiv.rpc *= rescale;
+		//	indiv.rpc_myco *= rescale;
+		//}
 
 		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
@@ -1810,13 +1813,13 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	// Added patch rpc
 	double tot_nmass_avail;
 
-	// Guarantee that rpc and rpc myco together do not exceed 1
-	if (patch.rpc_total + patch.rpc_myco_total > 1.0)
-	{
-		double rescale = 1.0 / (patch.rpc_total + patch.rpc_myco_total);
-		patch.rpc_total *= rescale;
-		patch.rpc_myco_total *= rescale;
-	}
+	//// Guarantee that rpc and rpc myco together do not exceed 1
+	//if (patch.rpc_total + patch.rpc_myco_total > 1.0)
+	//{
+	//	double rescale = 1.0 / (patch.rpc_total + patch.rpc_myco_total);
+	//	patch.rpc_total *= rescale;
+	//	patch.rpc_myco_total *= rescale;
+	//}
 
 	if(ifsrlvary)
 		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.rpc_total + patch.rpc_myco_total);
