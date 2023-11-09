@@ -1727,20 +1727,20 @@ void vegetation_n_uptake(Patch& patch) {
 
 		if (ifntransform) {
 			if (!indiv.myco_type) {
-				//double ammonium = (nuptake_day - nmass_herb) * ammonium_frac;  // Only no errors if ammonium frac is considered...
-				//soil.NH4_mass -= ammonium;
-				//soil.NO3_mass -= (nuptake_day - nmass_herb) - ammonium;
-				double ammonium = (nuptake_day - nmass_herb) * indiv.frac_nh4;  // Only no errors if ammonium frac is considered...
+				double ammonium = (nuptake_day - nmass_herb) * ammonium_frac;  // Only no errors if ammonium frac is considered...
 				soil.NH4_mass -= ammonium;
 				soil.NO3_mass -= (nuptake_day - nmass_herb) - ammonium;
+				//double ammonium = (nuptake_day - nmass_herb) * indiv.frac_nh4;  // Only no errors if ammonium frac is considered...
+				//soil.NH4_mass -= ammonium;
+				//soil.NO3_mass -= (nuptake_day - nmass_herb) - ammonium;
 			}
 			else {
-				//double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * ammonium_frac;  // Only no errors if ammonium frac is considered...
-				//soil.NH4_mass -= ammonium;
-				//soil.NO3_mass -= (nuptake_day - nuptake_day_myco - nmass_herb) - ammonium;
-				double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * indiv.frac_nh4;  // Only no errors if ammonium frac is considered...
+				double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * ammonium_frac;  // Only no errors if ammonium frac is considered...
 				soil.NH4_mass -= ammonium;
 				soil.NO3_mass -= (nuptake_day - nuptake_day_myco - nmass_herb) - ammonium;
+				//double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * indiv.frac_nh4;  // Only no errors if ammonium frac is considered...
+				//soil.NH4_mass -= ammonium;
+				//soil.NO3_mass -= (nuptake_day - nuptake_day_myco - nmass_herb) - ammonium;
 				soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
 				soil.sompool[SOILMETA].nmass -= nuptake_day_myco * 0.82;
 			}

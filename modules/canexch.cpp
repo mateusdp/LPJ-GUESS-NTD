@@ -1517,7 +1517,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		if (!indiv.myco_type) {
 			maxnup_myco = min(indiv.pft.nuptoamf * nmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
-			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_myco, ndemand_NH4) + min(maxnup_NO3 + maxnup_myco, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;
+			//fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4, ndemand_NH4) + min(maxnup_NO3, ndemand_NO3) + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
 			/*fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_myco) / ndemand_NH4, 1.0) : 0.0;
 			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_myco) / ndemand_NO3, 1.0) : 0.0;*/
 			/*fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_nh4_myco) / ndemand_NH4, 1.0) : 0.0;
@@ -1526,17 +1526,17 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			maxnup_no3_myco = min(0.001 * nmin_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
 			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_nh4_myco, ndemand_NH4) + min(maxnup_NO3 + maxnup_no3_myco, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;*/
 			//indiv.frac_nh4 = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_nh4_myco, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
-			indiv.frac_nh4 = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_myco, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
+			//indiv.frac_nh4 = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_myco, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 		} else {
-			maxnup_org_myco = min(0.0028 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			maxnup_myco = min(0.009 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 			/*fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_org_myco) / ndemand_NH4, 1.0) : 0.0;
 			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_org_myco) / ndemand_NO3, 1.0) : 0.0;*/
-			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4, ndemand_NH4) + min(maxnup_NO3, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;
+			//fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4, ndemand_NH4) + min(maxnup_NO3, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;
 			//indiv.frac_nh4 = ndemand_tot > 0.0 ? min((min(maxnup_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 		}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
-		//fractomax = ndemand_tot > 0.0 ? min((maxnup + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
+		fractomax = ndemand_tot > 0.0 ? min((maxnup_NO3 + maxnup_myco) / ndemand_tot, 1.0) : 0.0;
 				
 
 		//if (ifsrlvary) 
@@ -1547,7 +1547,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		//	fractomax = ndemand_tot > 0.0 ? min(maxnup / ndemand_tot, 1.0) : 0.0;
 
 
-		indiv.fractomax_nmyco = ndemand_tot > 0.0 ? min(maxnup_org_myco / ndemand_tot, 1.0) : 0.0;
+		indiv.fractomax_nmyco = ndemand_tot > 0.0 ? min(maxnup_myco / ndemand_tot, 1.0) : 0.0;
 
 		// Root and leaf demand from storage pools
 		indiv.leafndemand_store = indiv.leafndemand * (1.0 - fractomax);
