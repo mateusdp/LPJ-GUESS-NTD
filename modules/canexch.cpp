@@ -1460,7 +1460,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double nmin_scale_NH4_myco = kNmin + soil.nmass_avail(NH4) / (soil.nmass_avail(NH4) + 2.03e-6 * gridcell.soiltype.wtot);*/
 
 
-		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + 9e-6 * gridcell.soiltype.wtot);
+		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + 8e-6 * gridcell.soiltype.wtot);
 
 		// Maximum available soil mineral nitrogen for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
@@ -1474,13 +1474,13 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_NO3_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		//// Guarantee that rpc and rpc myco together do not exceed 1
-		//if (indiv.rpc + indiv.rpc_myco > 1.0)
-		//{
-		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-		//	indiv.rpc *= rescale;
-		//	indiv.rpc_myco *= rescale;
-		//}
+		// Guarantee that rpc and rpc myco together do not exceed 1
+		if (indiv.rpc + indiv.rpc_myco > 1.0)
+		{
+			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+			indiv.rpc *= rescale;
+			indiv.rpc_myco *= rescale;
+		}
 
 		if (ifsrlvary) {
 			max_indiv_avail = min(1.0, indiv.rpc/2.0) * nmin_avail;
@@ -1528,7 +1528,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			//indiv.frac_nh4 = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_nh4_myco, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 			//indiv.frac_nh4 = ndemand_tot > 0.0 ? min((min(maxnup_NH4 + maxnup_myco, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 		} else {
-			maxnup_myco = min(0.049 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			maxnup_myco = min(0.016 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 			/*fractomax_NH4 = ndemand_NH4 > 0.0 ? min((maxnup_NH4 + maxnup_org_myco) / ndemand_NH4, 1.0) : 0.0;
 			fractomax_NO3 = ndemand_NO3 > 0.0 ? min((maxnup_NO3 + maxnup_org_myco) / ndemand_NO3, 1.0) : 0.0;*/
 			//fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NH4, ndemand_NH4) + min(maxnup_NO3, ndemand_NO3)) / ndemand_tot, 1.0) : 0.0;
@@ -1730,18 +1730,18 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		//// Guarantee that rpc and rpc myco together do not exceed 1
-		//if (indiv.rpc + indiv.rpc_myco > 1.0)
-		//{
-		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-		//	indiv.rpc *= rescale;
-		//	indiv.rpc_myco *= rescale;
-		//}
+		// Guarantee that rpc and rpc myco together do not exceed 1
+		if (indiv.rpc + indiv.rpc_myco > 1.0)
+		{
+			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+			indiv.rpc *= rescale;
+			indiv.rpc_myco *= rescale;
+		}
 
 		if (ifsrlvary) {
-			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
-			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * pmin_avail;
-			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;
+			max_indiv_avail = min(1.0, indiv.rpc/2.0) * pmin_avail;
+			max_indiv_avail_myco = min(1.0, indiv.rpc_myco / 2.0) * pmin_avail;
+			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco / 2.0) * porg_avail_myco;
 		}
 		else {	
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
@@ -1820,13 +1820,13 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 	// Added patch rpc
 	double tot_nmass_avail;
 
-	//// Guarantee that rpc and rpc myco together do not exceed 1
-	//if (patch.rpc_total + patch.rpc_myco_total > 1.0)
-	//{
-	//	double rescale = 1.0 / (patch.rpc_total + patch.rpc_myco_total);
-	//	patch.rpc_total *= rescale;
-	//	patch.rpc_myco_total *= rescale;
-	//}
+	// Guarantee that rpc and rpc myco together do not exceed 1
+	if (patch.rpc_total + patch.rpc_myco_total > 1.0)
+	{
+		double rescale = 1.0 / (patch.rpc_total + patch.rpc_myco_total);
+		patch.rpc_total *= rescale;
+		patch.rpc_myco_total *= rescale;
+	}
 
 	if(ifsrlvary)
 		tot_nmass_avail = patch.soil.nmass_avail(NO) * min(1.0, patch.rpc_total + patch.rpc_myco_total);
