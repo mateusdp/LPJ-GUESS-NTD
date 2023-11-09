@@ -1483,11 +1483,11 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		//}
 
 		if (ifsrlvary) {
-			max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
-			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * nmin_avail_myco;
-			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
-			max_indiv_avail_NH4 = min(1.0, indiv.rpc) * soil.nmass_avail(NH4);
-			max_indiv_avail_NO3 = min(1.0, indiv.rpc) * soil.nmass_avail(NO3);
+			max_indiv_avail = min(1.0, indiv.rpc/2.0) * nmin_avail;
+			max_indiv_avail_myco = min(1.0, indiv.rpc_myco / 2.0) * nmin_avail_myco;
+			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco / 2.0) * norg_avail_myco;
+			max_indiv_avail_NH4 = min(1.0, indiv.rpc / 2.0) * soil.nmass_avail(NH4);
+			max_indiv_avail_NO3 = min(1.0, indiv.rpc / 2.0) * soil.nmass_avail(NO3);
 			/*max_indiv_avail = min(1.0, indiv.rpc) * nmin_avail;
 			max_indiv_avail_NH4 = min(1.0, indiv.rpc) * soil.nmass_avail(NH4);
 			max_indiv_avail_NO3 = min(1.0, indiv.rpc) * soil.nmass_avail(NO3);
