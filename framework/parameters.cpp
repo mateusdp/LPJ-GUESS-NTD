@@ -743,20 +743,12 @@ void plib_declarations(int id,xtring setname) {
 			"Maximum no3 uptake per fine root");
 		declareitem("puptoroot", &ppft->puptoroot, 0.0, 1.0, 1, CB_NONE,
 			"Maximum phosphorus uptake per fine root");
-		declareitem("nuptoamf", &ppft->nuptoamf, 0.0, 1.0, 1, CB_NONE,
-			"Maximum nitrogen uptake per AMF hyphae");
-		declareitem("puptoamf", &ppft->puptoamf, 0.0, 1.0, 1, CB_NONE,
-			"Maximum phosphorus uptake per AMF hyphae");
 		declareitem("km_volume_no3",&ppft->km_volume_no3,0.0,10.0,1,CB_NONE,
 			"Michaelis-Menten kinetic parameters for nitrogen uptake");
 		declareitem("km_volume_nh4", &ppft->km_volume_nh4, 0.0, 10.0, 1, CB_NONE,
 			"Michaelis-Menten kinetic parameters for nitrogen uptake");
 		declareitem("kmp_volume", &ppft->kmp_volume, 0.0, 10.0, 1, CB_NONE,
 			"Michaelis-Menten kinetic parameters for phosphorus uptake");
-		declareitem("km_amf_volume", &ppft->km_amf_volume, 0.0, 10.0, 1, CB_NONE,
-			"Michaelis-Menten kinetic parameters for AMF nitrogen uptake");
-		declareitem("kmp_amf_volume", &ppft->kmp_amf_volume, 0.0, 10.0, 1, CB_NONE,
-			"Michaelis-Menten kinetic parameters for AMF phosphorus uptake");
 		declareitem("fnstorage",&ppft->fnstorage,0.0,10.0,1,CB_NONE,
 			"fraction of sapwood (root for herbaceous pfts) that can be used as a nitrogen storage scalar");
 		//CURRENTLY FPSTORAGE SAME AS FNSTORAGE
@@ -2029,10 +2021,6 @@ void plib_callback(int callback) {
 			if (!itemparsed("nh4uptoroot")) badins("nh4uptoroot");
 			if (!itemparsed("no3uptoroot")) badins("no3uptoroot");
 			if (!itemparsed("puptoroot")) badins("puptoroot");
-			if (!itemparsed("nuptoamf")) badins("nuptoamf");
-			if (!itemparsed("puptoamf")) badins("puptoamf");
-			if (!itemparsed("km_amf_volume")) badins("km_amf_volume");
-			if (!itemparsed("kmp_amf_volume")) badins("kmp_amf_volume");
 			if (!itemparsed("fnstorage")) badins("fnstorage");
 			if (!itemparsed("fpstorage")) badins("fpstorage");
 

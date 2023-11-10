@@ -1995,8 +1995,6 @@ public:
 	double nh4uptoroot;
 	/// Maximum nitrogen (NO3-) uptake per fine root [kgN kgC-1 day-1]
 	double no3uptoroot;
-	/// Maximum nitrogen (NH4+ and NO3- seperatly) uptake per AMF hyphae [kgN kgC-1 day-1]
-	double nuptoamf;
 	/// coefficient to compensate for vertical distribution of fine root on nitrogen uptake
 	double nupscoeff;
 	/// fraction of sapwood (root for herbaceous pfts) that can be used as a nitrogen longterm storage scalar
@@ -2022,8 +2020,6 @@ public:
 	double ctop_sap;
 	/// Maximum phosphorus uptake per fine root [kgP kgC-1 day-1]
 	double puptoroot;
-	/// Maximum phosphorus uptake per AMF hyphae [kgP kgC-1 day-1]
-	double puptoamf;
 	/// coefficient to compensate for vertical distribution of fine root on phosphorus uptake
 	double pupscoeff;
 	/// fraction of sapwood (root for herbaceous pfts) that can be used as a phosphorus longterm storage scalar
@@ -2036,10 +2032,6 @@ public:
 	double km_volume_nh4;
 	/** Half saturation concentration for P uptake [kgP l-1] (Silveira & Cardoso 2004) */
 	double kmp_volume;
-	/** Half saturation concentration for AMF N uptake [kgN l-1] (Rothstein 2000) */
-	double km_amf_volume;
-	/** Half saturation concentration for AMF P uptake [kgP l-1] (Silveira & Cardoso 2004) */
-	double kmp_amf_volume;
 
 	/// fraction of NPP allocated to reproduction
 	double reprfrac;
@@ -3243,8 +3235,6 @@ public:
 	double rpc;
 	/// Mycelle projective cover (RPC) under full mycorrhiza cover as fraction of modelled area
 	double rpc_myco;
-	/// Proportion of uptaken NH4 by plant today
-	double frac_nh4;
 	/// Proportion of uptaken N by mycorrhiza today
 	double fractomax_nmyco;
 	/// Proportion of uptaken P by mycorrhiza today
