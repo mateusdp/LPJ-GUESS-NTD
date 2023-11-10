@@ -1328,7 +1328,10 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 	// soil available mineral nitrogen (kgN/m2)
 	const double nmin_avail_NH4 = soil.nmass_avail(NH4);
 	const double nmin_avail_NO3 = soil.nmass_avail(NO3);
-	const double norg_avail_myco = soil.sompool[SOILSTRUCT].nmass + soil.sompool[SOILMETA].nmass;
+	double norg_avail_myco = soil.sompool[SOILSTRUCT].nmass + soil.sompool[SOILMETA].nmass;
+
+	if (date.year < freenyears)
+		norg_avail_myco = soil.nmass_avail(NO);
 
 	// Scalar to soil temperature (Eqn A9, Comins & McMurtrie 1993) for nitrogen uptake
 	double soilT = patch.soil.get_soil_temp_25();
@@ -1443,10 +1446,15 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics
 
-		double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + gridcell.pft[indiv.pft.id].Km_no3);
-		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (soil.nmass_avail(NH4) + gridcell.pft[indiv.pft.id].Km_nh4);
+		/*double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + gridcell.pft[indiv.pft.id].Km_no3);
+		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + gridcell.pft[indiv.pft.id].Km_nh4);
 
-		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + gridcell.pft[indiv.pft.id].Km_nh4);
+		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + gridcell.pft[indiv.pft.id].Km_nh4);*/
+
+		double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3);
+		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + indiv.pft.km_volume_nh4);
+
+		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + indiv.pft.km_volume_nh4);
 
 		// Maximum available soil mineral nitrogen for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
@@ -1490,12 +1498,12 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double fractomax, fractomax_myco;
 
 		if (!indiv.myco_type) {
-			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
-			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * nmin_scale_NO3 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
+			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * 1.5 * nmin_scale_NH4 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
+			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * 1.5 * nmin_scale_NO3 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
 		}
 		else {
-			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
-			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * 1.5 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * 1.5 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 		}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
