@@ -1446,14 +1446,23 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics
 
-		double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + gridcell.pft[indiv.pft.id].Km_no3);
+		/*double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + gridcell.pft[indiv.pft.id].Km_no3);
 		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + gridcell.pft[indiv.pft.id].Km_nh4);
 
 		double nmin_scale_NO3_myco = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + (gridcell.pft[indiv.pft.id].Km_no3 / 1.66));
 		double nmin_scale_NH4_myco = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.66));
 
 		double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_no3 / 1.28));
-		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.28));
+		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.28));*/
+
+		double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3);
+		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + indiv.pft.km_volume_nh4);
+
+		double nmin_scale_NO3_myco = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + (indiv.pft.km_volume_no3 / 1.66));
+		double nmin_scale_NH4_myco = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + (indiv.pft.km_volume_nh4 / 1.66));
+
+		double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (indiv.pft.km_volume_no3 / 1.28));
+		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (indiv.pft.km_volume_nh4 / 1.28));
 
 		/*double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3);
 		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + indiv.pft.km_volume_nh4);
