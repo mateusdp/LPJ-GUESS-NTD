@@ -1426,8 +1426,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Total nitrogen demand
 		double ndemand_tot = indiv.leafndemand + indiv.rootndemand + indiv.sapndemand + indiv.storendemand + indiv.hondemand;
-		double ndemand_NO3 = ndemand_tot * 0.99;
-		double ndemand_NH4 = ndemand_tot * 0.01;
+		double ndemand_NO3 = ndemand_tot * 1.0;
+		double ndemand_NH4 = ndemand_tot * 0.0;
 
 		/// Add in order to reduce mycorrhiza benefits
 		//// Mycorrhiza nitrogen demand
