@@ -1465,11 +1465,11 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		}
 
 		if (ifsrlvary) {
-			max_indiv_avail_NH4 = min(1.0, indiv.rpc) * nmin_avail_NH4;
-			max_indiv_avail_NO3 = min(1.0, indiv.rpc) * nmin_avail_NO3;
-			max_indiv_avail_NH4_myco = min(1.0, indiv.rpc_myco) * nmin_avail_NH4;
-			max_indiv_avail_NO3_myco = min(1.0, indiv.rpc_myco) * nmin_avail_NO3;
-			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
+			max_indiv_avail_NH4 = min(1.0, indiv.rpc / 2.0) * nmin_avail_NH4;
+			max_indiv_avail_NO3 = min(1.0, indiv.rpc / 2.0) * nmin_avail_NO3;
+			max_indiv_avail_NH4_myco = min(1.0, indiv.rpc_myco / 2.0) * nmin_avail_NH4;
+			max_indiv_avail_NO3_myco = min(1.0, indiv.rpc_myco / 2.0) * nmin_avail_NO3;
+			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco / 2.0) * norg_avail_myco;
 		}
 		else {
 			double max_indiv_avail = min(1.0, indiv.fpc * 4.0) * (nmin_avail_NH4 + nmin_avail_NO3);
@@ -1711,9 +1711,9 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		}
 
 		if (ifsrlvary) {
-			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
-			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * pmin_avail;
-			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;
+			max_indiv_avail = min(1.0, indiv.rpc / 2.0) * pmin_avail;
+			max_indiv_avail_myco = min(1.0, indiv.rpc_myco / 2.0) * pmin_avail;
+			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco / 2.0) * porg_avail_myco;
 		}
 		else {	
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
