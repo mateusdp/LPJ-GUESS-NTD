@@ -1426,6 +1426,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Total nitrogen demand
 		double ndemand_tot = indiv.leafndemand + indiv.rootndemand + indiv.sapndemand + indiv.storendemand + indiv.hondemand;
+		double ndemand_NO3 = ndemand_tot * 0.9;
+		double ndemand_NH4 = ndemand_tot * 0.1;
 
 		/// Add in order to reduce mycorrhiza benefits
 		//// Mycorrhiza nitrogen demand
@@ -1499,7 +1501,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
 		if (ifsrlvary) {
 			// Uptake is sum of root NO3 uptake and mycorrhiza NH4 from AMF or EMF sources.
-			fractomax = ndemand_tot > 0.0 ? min((maxnup_NO3 + maxnup_NH4) / ndemand_tot, 1.0) : 0.0;
+			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NO3, ndemand_NO3) + min(maxnup_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 			fractomax_myco = ndemand_tot > 0.0 ? min((maxnup_myco_NO3 + maxnup_myco_NH4) / ndemand_tot, 1.0) : 0.0;
 			//// Guarantee that fractomax and fractomax myco together do not exceed 1
 			if (fractomax + fractomax_myco > 1.0)
