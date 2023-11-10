@@ -1452,6 +1452,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// Added root projective cover	
 		double max_indiv_avail_NH4 = 0.0;
 		double max_indiv_avail_NO3 = 0.0;
+		double max_indiv_avail_NH4_myco = 0.0;
+		double max_indiv_avail_NO3_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
 		// Guarantee that rpc and rpc myco together do not exceed 1
@@ -1463,8 +1465,10 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		}
 
 		if (ifsrlvary) {
-			max_indiv_avail_NH4 = min(1.0, indiv.rpc_myco) * nmin_avail_NH4;
+			max_indiv_avail_NH4 = min(1.0, indiv.rpc) * nmin_avail_NH4;
 			max_indiv_avail_NO3 = min(1.0, indiv.rpc) * nmin_avail_NO3;
+			max_indiv_avail_NH4_myco = min(1.0, indiv.rpc_myco) * nmin_avail_NH4;
+			max_indiv_avail_NO3_myco = min(1.0, indiv.rpc_myco) * nmin_avail_NO3;
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
 		}
 		else {
@@ -1476,22 +1480,27 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		//double maxnup = min(2.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
 		double maxnup = min(1.0 * indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4 + max_indiv_avail_NO3);
 
-		//double maxnup_NH4 = min(indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4);
+		double maxnup_NH4 = min(indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4);
 		double maxnup_NO3 = min(indiv.pft.no3uptoroot * nmin_scale_NO3 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NO3);
 
-		double maxnup_myco;
+		double maxnup_myco_NO3;
+		double maxnup_myco_NH4;
 		double fractomax, fractomax_myco;
 
-		if (!indiv.myco_type) 
-			maxnup_myco = min(indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4);
-		 else 
-			maxnup_myco = min(indiv.pft.nh4uptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+		if (!indiv.myco_type) {
+			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
+			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * nmin_scale_NO3 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
+		}
+		else {
+			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+		}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
 		if (ifsrlvary) {
 			// Uptake is sum of root NO3 uptake and mycorrhiza NH4 from AMF or EMF sources.
-			fractomax = ndemand_tot > 0.0 ? min(maxnup_NO3 / ndemand_tot, 1.0) : 0.0;
-			fractomax_myco = ndemand_tot > 0.0 ? min(maxnup_myco / ndemand_tot, 1.0) : 0.0;
+			fractomax = ndemand_tot > 0.0 ? min((maxnup_NO3 + maxnup_NH4) / ndemand_tot, 1.0) : 0.0;
+			fractomax_myco = ndemand_tot > 0.0 ? min((maxnup_myco_NO3 + maxnup_myco_NH4) / ndemand_tot, 1.0) : 0.0;
 			//// Guarantee that fractomax and fractomax myco together do not exceed 1
 			if (fractomax + fractomax_myco > 1.0)
 			{
