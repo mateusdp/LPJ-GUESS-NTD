@@ -1446,15 +1446,15 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics
 
-		/*double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + gridcell.pft[indiv.pft.id].Km_no3);
+		double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + gridcell.pft[indiv.pft.id].Km_no3);
 		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + gridcell.pft[indiv.pft.id].Km_nh4);
 
-		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + gridcell.pft[indiv.pft.id].Km_nh4);*/
+		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + gridcell.pft[indiv.pft.id].Km_nh4);
 
-		double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3);
+		/*double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3);
 		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + indiv.pft.km_volume_nh4);
 
-		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + indiv.pft.km_volume_nh4);
+		double norg_scale_myco = kNmin + norg_avail_myco / (norg_avail_myco + indiv.pft.km_volume_nh4);*/
 
 		// Maximum available soil mineral nitrogen for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
@@ -1475,11 +1475,11 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		}
 
 		if (ifsrlvary) {
-			max_indiv_avail_NH4 = min(1.0, indiv.rpc / 2.0) * nmin_avail_NH4;
-			max_indiv_avail_NO3 = min(1.0, indiv.rpc / 2.0) * nmin_avail_NO3;
-			max_indiv_avail_NH4_myco = min(1.0, indiv.rpc_myco / 2.0) * nmin_avail_NH4;
-			max_indiv_avail_NO3_myco = min(1.0, indiv.rpc_myco / 2.0) * nmin_avail_NO3;
-			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco / 2.0) * norg_avail_myco;
+			max_indiv_avail_NH4 = min(1.0, indiv.rpc) * nmin_avail_NH4;
+			max_indiv_avail_NO3 = min(1.0, indiv.rpc) * nmin_avail_NO3;
+			max_indiv_avail_NH4_myco = min(1.0, indiv.rpc_myco) * nmin_avail_NH4;
+			max_indiv_avail_NO3_myco = min(1.0, indiv.rpc_myco) * nmin_avail_NO3;
+			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
 		}
 		else {
 			double max_indiv_avail = min(1.0, indiv.fpc * 4.0) * (nmin_avail_NH4 + nmin_avail_NO3);
@@ -1498,12 +1498,12 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double fractomax, fractomax_myco;
 
 		if (!indiv.myco_type) {
-			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * 1.5 * nmin_scale_NH4 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
-			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * 1.5 * nmin_scale_NO3 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
+			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
+			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * nmin_scale_NO3 * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
 		}
 		else {
-			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * 1.5 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
-			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * 1.5 * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			maxnup_myco_NH4 = min(indiv.pft.nh4uptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			maxnup_myco_NO3 = min(indiv.pft.no3uptoroot * norg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
 		}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
@@ -1721,9 +1721,9 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		}
 
 		if (ifsrlvary) {
-			max_indiv_avail = min(1.0, indiv.rpc / 2.0) * pmin_avail;
-			max_indiv_avail_myco = min(1.0, indiv.rpc_myco / 2.0) * pmin_avail;
-			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco / 2.0) * porg_avail_myco;
+			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
+			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * pmin_avail;
+			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;
 		}
 		else {	
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
