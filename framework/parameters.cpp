@@ -62,6 +62,7 @@ bool ifsrlvary;
 bool ifdynltor;
 bool ifdynreloc;
 bool ifmycovary;
+bool ifno3fracvary;
 bool ifherbivory;
 int sla_width;
 int wsg_width;
@@ -545,6 +546,8 @@ void plib_declarations(int id,xtring setname) {
 			"Whether nitrogen and phosphorus resorption is allowed to accumulatively vary with stress");
 		declareitem("ifmycovary", &ifmycovary, 1, CB_NONE,
 			"Activation of mycorrhiza type variation. Only for trees, grasses are always AMF.");
+		declareitem("ifno3fracvary", &ifno3fracvary, 1, CB_NONE,
+			"Activation of NO3 demand fraction variation.");
 		declareitem("ifherbivory", &ifherbivory, 1, CB_NONE,
 			"Activation of Herbivory Module.");
 		declareitem("sla_width", &sla_width, 0, 5000, 1, CB_NONE,
@@ -840,6 +843,8 @@ void plib_declarations(int id,xtring setname) {
 			"Minimum SRL value in trait variation (m/kgC)");
 		declareitem("myco_type", &ppft->myco_type, 0, 1, 1, CB_NONE,
 			"Whether mycorrhiza are Arbuscular Mycorrhizae Fungi (0) or Ecto Mycorrhizae Fungi (1)");
+		declareitem("no3_fndemand", &ppft->no3_fndemand, 0, 1, 1, CB_NONE,
+			"Fraction of n demand which is nitrate (NO3)");
 		
 		declareitem("intc",&ppft->intc,0.0,1.0,1,CB_NONE,"Interception coefficient");
 
@@ -1579,6 +1584,7 @@ void plib_callback(int callback) {
 		if (!itemparsed("ifdynltor")) badins("ifdynltor");
 		if (!itemparsed("ifdynreloc")) badins("ifdynreloc");
 		if (!itemparsed("ifmycovary")) badins("ifmycovary");
+		if (!itemparsed("ifno3fracvary")) badins("ifno3fracvary");
 		if (!itemparsed("ifherbivory")) badins("ifherbivory");
 		if (!itemparsed("sla_width")) badins("sla_width");
 		if (!itemparsed("wsg_width")) badins("wsg_width");
@@ -2047,6 +2053,7 @@ void plib_callback(int callback) {
 				if (!itemparsed("srl_max")) badins("srl_max");
 				if (!itemparsed("srl_min")) badins("srl_min");
 				if (!itemparsed("myco_type")) badins("myco_type");
+				if (!itemparsed("no3_fndemand")) badins("no3_fndemand");
 			}
 
 			if (run_landcover) {

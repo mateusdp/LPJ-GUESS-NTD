@@ -2107,6 +2107,8 @@ public:
 	double srl_min;
 	/// Mycorhiza type, AMF or ECM
 	double myco_type;
+	/// Fraction of ndemand which is nitrate (NO3)
+	double no3_fndemand;
 
 	// Bioclimatic limits (all temperatures deg C)
 
@@ -3337,6 +3339,8 @@ public:
 	double nstore_labile_luc;
 	/// daily total nitrogen demand
 	double ndemand;
+	/// Fraction of ndemand which is nitrate (NO3)
+	double no3_fndemand;
 	/// fraction of individual nitrogen demand available for uptake
 	double fnuptake;
 	/// annual nitrogen uptake
@@ -3701,6 +3705,7 @@ public:
 
 		wooddens = pft.wooddens;
 		myco_type = pft.myco_type;
+		no3_fndemand = pft.no3_fndemand;
 		srl = 0.0;
 		myco_col = 0.0;
 

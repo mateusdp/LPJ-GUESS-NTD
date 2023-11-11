@@ -1429,8 +1429,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Total nitrogen demand
 		double ndemand_tot = indiv.leafndemand + indiv.rootndemand + indiv.sapndemand + indiv.storendemand + indiv.hondemand;
-		double ndemand_NO3 = ndemand_tot * 1.0;
-		double ndemand_NH4 = ndemand_tot * 0.0;
+		double ndemand_NO3 = ndemand_tot * indiv.no3_fndemand;
+		double ndemand_NH4 = ndemand_tot * (1 - indiv.no3_fndemand);
 
 		/// Add in order to reduce mycorrhiza benefits
 		//// Mycorrhiza nitrogen demand
@@ -1521,9 +1521,23 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
 		if (ifsrlvary) {
+			//// Uptake is sum of root NO3 uptake and mycorrhiza NH4 from AMF or EMF sources.
+			//fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NO3, ndemand_NO3) + min(maxnup_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
+			//fractomax_myco = ndemand_tot > 0.0 ? min((maxnup_myco_NO3 + maxnup_myco_NH4) / ndemand_tot, 1.0) : 0.0;
+			////// Guarantee that fractomax and fractomax myco together do not exceed 1
+			//if (fractomax + fractomax_myco > 1.0)
+			//{
+			//	double rescale = 1.0 / (fractomax + fractomax_myco);
+			//	fractomax *= rescale;
+			//	fractomax_myco *= rescale;
+			//	fractomax = 1.0;
+			//}
+			//else {
+			//	fractomax += fractomax_myco;
+			//}
 			// Uptake is sum of root NO3 uptake and mycorrhiza NH4 from AMF or EMF sources.
 			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NO3, ndemand_NO3) + min(maxnup_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
-			fractomax_myco = ndemand_tot > 0.0 ? min((maxnup_myco_NO3 + maxnup_myco_NH4) / ndemand_tot, 1.0) : 0.0;
+			fractomax_myco = ndemand_tot > 0.0 ? min((min(maxnup_myco_NO3, ndemand_NO3) + min(maxnup_myco_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 			//// Guarantee that fractomax and fractomax myco together do not exceed 1
 			if (fractomax + fractomax_myco > 1.0)
 			{
@@ -1709,13 +1723,17 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		// Scale to maximum phosphorus concentrations
 		indiv.ctop_status = max(0.0, (ptoc - 1.0 / indiv.ctop_leaf_min) / (1.0 / indiv.ctop_leaf_avr - 1.0 / indiv.ctop_leaf_min));
 
+		//// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
+		//double pmin_scale =  max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + gridcell.pft[indiv.pft.id].Kmp);
+		//double pmin_scale_myco = max(0.0,  max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));
+
+		//double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));
 		// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
-		double pmin_scale =  max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + gridcell.pft[indiv.pft.id].Kmp);
+		
+		double pmin_scale = max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + indiv.pft.kmp_volume);
+		double pmin_scale_myco = max(0.0, max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
 
-		double pmin_scale_myco = max(0.0,  max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));
-		//double pmin_scale_myco = max(0.0, kPmin + pmin_avail / (pmin_avail + 0.5 * gridcell.pft[indiv.pft.id].Kmp)); //50% less AMF
-
-		double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));
+		double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
 
 		// Maximum available soil mineral phosphorus for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
