@@ -1532,8 +1532,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			//}
 			// Uptake is sum of root NO3 uptake and mycorrhiza NH4 from AMF or EMF sources.
 			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NO3, ndemand_NO3) + min(maxnup_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
-			//fractomax_myco = ndemand_tot > 0.0 ? min((min(maxnup_myco_NO3, ndemand_NO3) + min(maxnup_myco_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
-			fractomax_myco = ndemand_tot > 0.0 ? min((maxnup_myco_NO3 + maxnup_myco_NH4) / ndemand_tot, 1.0) : 0.0; // myco do not have the same demand as roots
+			fractomax_myco = ndemand_tot > 0.0 ? min((min(maxnup_myco_NO3, ndemand_NO3) + min(maxnup_myco_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
+			//fractomax_myco = ndemand_tot > 0.0 ? min((maxnup_myco_NO3 + maxnup_myco_NH4) / ndemand_tot, 1.0) : 0.0; // myco do not have the same demand as roots
 			//// Guarantee that fractomax and fractomax myco together do not exceed 1
 			if (fractomax + fractomax_myco > 1.0)
 			{
