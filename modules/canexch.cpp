@@ -1518,15 +1518,15 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		if (!indiv.myco_type) {
 			maxnup_myco_NH4 = nmin_avail_NH4 < 6.3e-6 ? min(1.66 * indiv.pft.nh4uptoroot * nmin_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco) :
-				                                        min(1.66 * 3.4e-3 * nmin_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
+				                                        min(1.66 * 3.4e-3 * nmin_scale_NH4_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_NH4_myco);
 			maxnup_myco_NO3 = nmin_avail_NO3 < 6.3e-6 ? min(1.66 * indiv.pft.no3uptoroot * nmin_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco):
-														min(1.66 * 2.8e-3 * nmin_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
+														min(1.66 * 2.8e-3 * nmin_scale_NO3_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_NO3_myco);
 		}
 		else {
 			maxnup_myco_NH4 = nmin_avail_NH4 < 6.3e-6 ? min(1.28 * indiv.pft.nh4uptoroot * norg_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco) :
-													    min(1.28 * 3.4e-3 * norg_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+													    min(1.28 * 3.4e-3 * norg_scale_NH4_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_org_myco);
 			maxnup_myco_NO3 = nmin_avail_NO3 < 6.3e-6 ? min(1.28 * indiv.pft.no3uptoroot * norg_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco) :
-														min(1.28 * 2.8e-3 * norg_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+														min(1.28 * 2.8e-3 * norg_scale_NO3_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_org_myco);
 		}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
