@@ -1765,11 +1765,11 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double fractomax, fractomax_myco;
 
 		if (!indiv.myco_type)
-			maxpup_myco = min(1.31 * indiv.pft.puptoroot * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco);
+			maxpup_myco = min(1.31 * indiv.pft.puptoroot * pmin_scale_myco * temp_scale * indiv.ctop_status * indiv.cmass_myco, max_indiv_avail_myco);
 			//maxpup_myco = min(9.13e-4 * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // The OK 12 hs
 			//maxpup_myco = min(1.5 * indiv.pft.puptoroot * pmin_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_myco); // 50% more AMF
 		else
-			maxpup_myco = min(1.31 * indiv.pft.puptoroot * porg_scale_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+			maxpup_myco = min(1.31 * indiv.pft.puptoroot * porg_scale_myco * temp_scale * indiv.ctop_status * indiv.cmass_myco, max_indiv_avail_org_myco);
 
 
 		// Phosphorus demand limitation due to maximum nitrogen uptake capacity
