@@ -1281,7 +1281,7 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 		dprec, dpdep);
 
 	// Phosphorus weathering
-	if (param["file_pwtr"].str) {
+	if (param["file_pwtr"].str != "") {
 		if (date.day == 0 && date.year == 0)
 			 // get_yearly_pwtr(gridcell.get_lat(), gridcell.get_lon(), gridcell.climate.pwtr);
 			get_yearly_pwtr_params(gridcell.get_lat(), gridcell.get_lon(), gridcell.climate.pwtr_bi, 

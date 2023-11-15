@@ -1611,7 +1611,6 @@ void soilpadd(Patch& patch) {
 
 	double wfps = soil.wfps(0)*100.0;
 
-	//double daily_pwtr = soil.soiltype.pwtr / date.year_length();
 	double daily_pwtr, p_temp_effect;
 
 	double R_gas_constant = 8.3144621;
@@ -1621,13 +1620,14 @@ void soilpadd(Patch& patch) {
 	double pcont = patch.get_climate().pwtr_pcont;
 	double shield = patch.get_climate().pwtr_shield;
 
-	if (param["file_pwtr"].str) {
+	if (param["file_pwtr"].str != "") {
 		// daily_pwtr = patch.get_climate().pwtr / date.year_length();
 		p_temp_effect = exp(-ea / R_gas_constant * (1 / (soiltemp + 273.0) - 1 / 284.15));
 		daily_pwtr = bi * (pcont / 100.0) * patch.soil.runoff * p_temp_effect * shield / 1000.0;
 	}
 	else {
-		daily_pwtr = soil.soiltype.pwtr * temperature_modifier(soil.get_soil_temp_25()) * moisture_modifier(wfps) / date.year_length();
+		//daily_pwtr = soil.soiltype.pwtr * temperature_modifier(soil.get_soil_temp_25()) * moisture_modifier(wfps) / date.year_length();
+		daily_pwtr = soil.soiltype.pwtr / date.year_length();
 	}
 
 	// Phosphorus weathering input
