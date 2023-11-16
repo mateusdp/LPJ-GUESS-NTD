@@ -558,9 +558,12 @@ void vmax_p(double b, double c1, double c2, double apar, double tscal,
 	// Calculate Phosphorus-limited Vmax for current leaf phosphorus
 	// Hidaka et al. 2013, Amax dependent on gP/m²
 
+	////		- from Amax nmolCO2/m2/sec to Vm gC/m2/day
+	//double CN = 1.0e-9 * 3600 * daylength * CMASS;
+	//double tfac = 1.0;
+
 	//		- from Amax nmolCO2/m2/sec to Vm gC/m2/day
-	//double CN = 1.0e-9 * 3600 * daylength * CMASS / c2;
-	double CN = 1.0e-9 * 3600 * daylength * CMASS;
+	double CN = 1.0e-9 * 3600 * daylength * CMASS / c2;
 
 	//double tfac = exp(-0.0693 * (temp - 25.0));
 	//temperature effects already included in c2.
@@ -632,6 +635,10 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 	vm_p = CN * exp(P) / tfac;
 	vm_np = CN * exp(NP) / tfac;
 
+	// If N or P in leaf is zero, no photosynthesis
+	if (nactive == 0.0 || pactive == 0.0)
+		vm_n = vm_p = vm_np = 0.0;
+
 	nactive_opt = nmass_g_opt / 1000.0;
 	pactive_opt = pmass_g_opt / 1000.0;
 
@@ -652,7 +659,8 @@ void vmax_walker(double b, double c1, double c2, double apar, double tscal,
 	}
 
 	if(ifnlimvmax || ifplimvmax)
-		if (vm_np > 0.0) {
+		//if (vm_np > 0.0) {
+		if (vm_np >= 0.0) {
 			if (ifnlimvmax && ifplimvmax)
 				vm_np = min(vm_np, vm_nolim);
 
