@@ -764,7 +764,7 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						}
 
 						if (ifsrlvary) {
-							indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, wsg_width, stand.seed);
+							indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, srl_width, stand.seed);
 							indiv.srl_tradeoffs();
 							if (ifmycovary)
 								indiv.myco_type = 2 * randomize_trait(0, 1, 2, stand.seed);
