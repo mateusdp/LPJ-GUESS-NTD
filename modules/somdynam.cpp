@@ -1064,9 +1064,9 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 		//soil.pmass_labile = 0.0;
 		//Value of sorbed phosphorus pool, based on labile p and soil parameters [KgP/m-2].
 		//Equilibrated instantanously based on Wang 2007, 2010
-		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
+		soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
 		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + PMASS_SAT, 2.0);
-		soil.pmass_sorbed = soil.soiltype.spmax;
+		//soil.pmass_sorbed = soil.soiltype.spmax;
 		//soil.pmass_sorbed = 0.0;
 	}
 }
