@@ -121,12 +121,9 @@ void pmass_add(Soil &soil, double delta) {
 	double b = -soil.pmass_labile - soil.soiltype.kplab - soil.soiltype.spmax + soil.pmass_sorbed + delta;
 	double c = soil.pmass_sorbed * soil.pmass_labile + soil.pmass_sorbed  * soil.soiltype.kplab + delta * soil.pmass_labile + delta * soil.soiltype.kplab - soil.pmass_labile * soil.soiltype.spmax;
 
-	double bha = pow(b, 2.0) - 4 * a * c;
+	double bha = std::max(0.0, std::pow(b, 2.0) - 4.0 * a * c);
 
-	double labile_inc;
-
-	//if(soil.pmass_labile ==  soil.pmass_sorbed)
-	labile_inc = (-b - sqrt(bha)) / 2 * a;
+	double labile_inc = (-b - std::sqrt(bha)) / 2.0 * a;
 
 	soil.pmass_labile += labile_inc;
 	soil.pmass_sorbed += delta - labile_inc;
@@ -581,6 +578,9 @@ void transferdecomp(Soil& soil, pooltype donor, pooltype receiver,
 	// associated phosphorus increment in receiver pool
 	double pinc = cdec * (1.0 - respfrac) * soil.sompool[receiver].ptoc;
 
+	if(std::isnan(pinc))
+		pinc = 0.0;
+
 	// if increase in receiver nitrogen greater than decrease in donor nitrogen,
 	// balance must be immobilisation from mineral nitrogen pool
 	// otherwise balance is nitrogen mineralisation
@@ -675,14 +675,14 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	// Set P:C ratios for humus, soil microbial, passive and slow pool based on estimated mineral nitrogen pool
 	// (Parton et al 1988, Fig 2)
 
-	setptoc(soil, soil.pmass_labile, SLOWSOM, 200.0, 90.0, 0.0, PMASS_SAT);
+	setptoc(soil, pmin_mass, SLOWSOM, 200.0, 90.0, 0.0, PMASS_SAT);
 
-	setptoc(soil, soil.pmass_labile, PASSIVESOM, 200.0, 20.0, 0.0, PMASS_SAT);
+	setptoc(soil, pmin_mass, PASSIVESOM, 200.0, 20.0, 0.0, PMASS_SAT);
 
-	//setptoc(soil, soil.pmass_labile, SOILMICRO, 32.0, 32.0, 0.0, PMASS_SAT); //Check this
-	setptoc(soil, soil.pmass_labile, SOILMICRO, 80.0, 30.0, 0.0, PMASS_SAT); //Check this
+	//setptoc(soil, pmin_mass, SOILMICRO, 32.0, 32.0, 0.0, PMASS_SAT); //Check this
+	setptoc(soil, pmin_mass, SOILMICRO, 80.0, 30.0, 0.0, PMASS_SAT); //Check this
 
-	setptoc(soil, soil.pmass_labile, SURFHUMUS, 200.0, 90.0, 0.0, PMASS_SAT);
+	setptoc(soil, pmin_mass, SURFHUMUS, 200.0, 90.0, 0.0, PMASS_SAT);
 
 
 	if (!ifequilsom) {
