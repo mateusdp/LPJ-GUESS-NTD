@@ -677,9 +677,8 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 
 	setptoc(soil, pmin_mass, SLOWSOM, 200.0, 90.0, 0.0, PMASS_SAT);
 
-	setptoc(soil, pmin_mass, PASSIVESOM, 200.0, 20.0, 0.0, PMASS_SAT);
+	//setptoc(soil, pmin_mass, PASSIVESOM, 200.0, 20.0, 0.0, PMASS_SAT);
 
-	//setptoc(soil, pmin_mass, SOILMICRO, 32.0, 32.0, 0.0, PMASS_SAT); //Check this
 	setptoc(soil, pmin_mass, SOILMICRO, 80.0, 30.0, 0.0, PMASS_SAT); //Check this
 
 	setptoc(soil, pmin_mass, SURFHUMUS, 200.0, 90.0, 0.0, PMASS_SAT);

@@ -76,8 +76,22 @@ void Soil::init_states() {
 	sompool[SLOWSOM].ntoc = 1.0 / 20.0;
 	sompool[SURFMICRO].ntoc = 1.0 / 20.0;
 
-	// passive has a fixed value
+	// Set initial CENTURY pool P:C ratios
+	// (Parton et al 1988, Fig 2)
+	sompool[SOILMICRO].ptoc = 1.0 / 80.0;
+	sompool[SURFHUMUS].ptoc = 1.0 / 150.0;
+	sompool[SLOWSOM].ptoc = 1.0 / 200.0;
+	sompool[SURFMICRO].ptoc = 1.0 / 80.0;
+	/*sompool[SOILMICRO].ptoc = 1.0 / 30.0;
+	sompool[SURFHUMUS].ptoc = 1.0 / 90.0;
+	sompool[SLOWSOM].ptoc = 1.0 / 90.0;
+	sompool[SURFMICRO].ptoc = 1.0 / 35.0;*/
+
+	// passive has a fixed value (why? passive SOM should also vary.)
 	sompool[PASSIVESOM].ntoc = 1.0 / 9.0;
+
+	sompool[PASSIVESOM].ptoc = 1.0 / 200.0;
+	//sompool[PASSIVESOM].ptoc = 1.0 / 90.0;
 	
 	NO2_mass = 0.0;
 	NO2_mass_w = 0.0;
