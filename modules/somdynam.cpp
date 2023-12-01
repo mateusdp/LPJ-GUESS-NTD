@@ -58,11 +58,12 @@ static const double ATMFRAC=0.7;
 // their minimum (nitrogen saturation) (Parton et al 1993, Fig. 4)
 // Comment: NMASS_SAT is too high when considering BNF - Zaehle
 static const double NMASS_SAT = 0.002 * 0.05;
-static const double PMASS_SAT = 0.002 * 0.001;
+static const double PMASS_SAT = 0.002;
 // Corresponds to the nitrogen concentration in litter where SOM C:N ratio reach
 // their minimum (nitrogen saturation) (Parton et al 1993, Fig. 4)
 static const double NCONC_SAT = 0.02;
-static const double PCONC_SAT = 0.004;
+//static const double PCONC_SAT = 0.004;
+static const double PCONC_SAT = 0.02;
 
 //Phosphorus Constants
 // rate constant for sorbed P [d-1] (Wang et al. 2007)
@@ -647,6 +648,33 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 		soil.apimmob = 0.0;
 	}
 
+	///////////////////////////// Balanced dynamics of P labile and P sorbed, also flux into strongly sorbed pool
+
+	double delta_plabile = soil.pmass_labile_delta;
+
+	double delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
+
+	pmass_add(soil, delta_plabile);
+
+	pmass_add(soil, -delta_strongly_sorbed);
+
+	// Silly protection against negative p values, improve.
+	if (soil.pmass_labile < 0.0) {
+		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile);
+		soil.pmass_labile = 0.0;
+	}
+
+	if (soil.pmass_sorbed < 0.0) {
+		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed);
+		soil.pmass_sorbed = 0.0;
+	}
+
+	patch.fluxes.report_flux(Fluxes::P_SOIL, delta_strongly_sorbed);
+
+	soil.pmass_labile_delta = 0.0;
+
+	////////////////////////////////////////////////////////////////
+
 	// Warning if soil available nitrogen is negative (if happens once or so no problem, but if it propagates through time then it is)
 
 	if (ifnlim) {
@@ -1007,15 +1035,11 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	soil.pmass_labile_delta += pmin_inc;
 
 
-	///////////////////////////// Balanced dynamics of P labile and P sorbed, also flux into strongly sorbed pool
+	///////////////////////////// Balanced dynamics of P labile and P sorbed
 
-	double delta_plabile = soil.pmass_labile_delta;
-
-	double delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
+	delta_plabile = soil.pmass_labile_delta;
 
 	pmass_add(soil, delta_plabile);
-
-	pmass_add(soil, -delta_strongly_sorbed);
 
 	// Silly protection against negative p values, improve.
 	if (soil.pmass_labile < 0.0) {
@@ -1028,7 +1052,7 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 		soil.pmass_sorbed = 0.0;
 	}
 
-	patch.fluxes.report_flux(Fluxes::P_SOIL, delta_strongly_sorbed);
+	soil.pmass_labile_delta = 0.0;
 
 	////////////////////////////////////////////////////////////////
 
@@ -1539,6 +1563,8 @@ void soilpadd(Patch& patch) {
 
 	Soil& soil = patch.soil;
 
+	const double pmin_avail = soil.pmass_labile;
+
 	double wfps = soil.wfps(0)*100.0;
 
 	double daily_pwtr, p_temp_effect;
@@ -1560,10 +1586,12 @@ void soilpadd(Patch& patch) {
 		daily_pwtr = soil.soiltype.pwtr / date.year_length();
 	}
 
-	// Phosphorus weathering input
-	//soil.pmass_labile += daily_pwtr;
-	soil.pmass_labile_delta += max(0.0, daily_pwtr);
-	soil.apwtr += daily_pwtr;
+	if (pmin_avail + daily_pwtr < PMASS_SAT) {
+		// Phosphorus weathering input
+		//soil.pmass_labile += daily_pwtr;
+		soil.pmass_labile_delta += max(0.0, daily_pwtr);
+		soil.apwtr += daily_pwtr;
+	}
 
 	// Phosphorus fertilization and deposition input (calculated in snow_pinput())
 	//soil.pmass_labile += soil.pmass_labile_input;
@@ -1891,7 +1919,7 @@ void equilsom(Soil& soil) {
  */
 void som_dynamics_century(Patch& patch, Climate& climate, bool tillage) {
 
-	patch.soil.pmass_labile_delta = 0.0;
+//	patch.soil.pmass_labile_delta = 0.0;
 
 	// Transfer litter to SOM pools
 	transfer_litter(patch);
