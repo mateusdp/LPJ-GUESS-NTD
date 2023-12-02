@@ -113,21 +113,65 @@ void setconstants() {
 // BALANCE LABILE AND SORBED P POOLS
 // Internal function (do not call directly from framework)
 
-void pmass_add(Soil &soil, double delta) {
+void balance_p_labile_sorbed(Soil &soil, bool flux_direction) {
 
-	/*double a = 1.0;
-	double b = 1.0 + soil.soiltype.kplab;
-	double c = delta - soil.soiltype.spmax - soil.pmass_sorbed + soil.pmass_sorbed * soil.soiltype.kplab - delta * soil.soiltype.kplab;*/
+	// DESCRIPTION
+	// flux_direction = true - remove plabile to balance with sorbed (when pmass_labile is added)
+	// flux_direction = false - add plabile to balance with sorbed (when pmass_labile is removed)
+
+
+
 	double a = -1.0;
-	double b = -soil.pmass_labile - soil.soiltype.kplab - soil.soiltype.spmax + soil.pmass_sorbed + delta;
-	double c = soil.pmass_sorbed * soil.pmass_labile + soil.pmass_sorbed  * soil.soiltype.kplab + delta * soil.pmass_labile + delta * soil.soiltype.kplab - soil.pmass_labile * soil.soiltype.spmax;
+	double b = soil.soiltype.kplab + soil.pmass_labile + soil.soiltype.spmax;
+	double c = -soil.soiltype.spmax * soil.pmass_labile + soil.pmass_sorbed;
 
-	double bha = std::max(0.0, std::pow(b, 2.0) - 4.0 * a * c);
+	//if (!flux_direction)
+	//b *= -1.0;
 
-	double labile_inc = (-b - std::sqrt(bha)) / 2.0 * a;
+	double bha = pow(b, 2.0) - 4 * a * c;
 
-	soil.pmass_labile += labile_inc;
-	soil.pmass_sorbed += delta - labile_inc;
+	double x1 = (-b + sqrt(bha)) / 2 * a;
+	double x2 = (-b - sqrt(bha)) / 2 * a;
+
+	x1 = sqrt(pow(x1, 2));
+	x2 = sqrt(pow(x2, 2));
+
+	if (!flux_direction) {
+		double origsorbedx1 = soil.pmass_sorbed + x1;
+		double origsorbedx2 = soil.pmass_sorbed + x2;
+
+		if (origsorbedx1 = soil.soiltype.spmax * (soil.pmass_labile - x1) / (soil.soiltype.kplab + (soil.pmass_labile - x1)) && origsorbedx1 > 0.0 && soil.pmass_labile - x1 > 0.0) {
+			soil.pmass_labile -= x1;
+			soil.pmass_sorbed += x1;
+			return;
+		}
+		else {
+			if (origsorbedx2 = soil.soiltype.spmax * (soil.pmass_labile - x2) / (soil.soiltype.kplab + (soil.pmass_labile - x2)) && origsorbedx2 > 0.0 && soil.pmass_labile - x2 > 0.0) {
+				soil.pmass_labile -= x2;
+				soil.pmass_sorbed += x2;
+				return;
+			}
+		}
+	}
+	else {
+		double origsorbedx1 = soil.pmass_sorbed - x1;
+		double origsorbedx2 = soil.pmass_sorbed - x2;
+
+		if (origsorbedx1 = soil.soiltype.spmax * (soil.pmass_labile + x1) / (soil.soiltype.kplab + (soil.pmass_labile + x1)) && origsorbedx1 > 0.0 && soil.pmass_labile - x1 > 0.0) {
+			soil.pmass_labile += x1;
+			soil.pmass_sorbed -= x1;
+			return;
+		}
+		else {
+			if (origsorbedx2 = soil.soiltype.spmax * (soil.pmass_labile + x2) / (soil.soiltype.kplab + (soil.pmass_labile + x2)) && origsorbedx2 > 0.0 && soil.pmass_labile - x2 > 0.0) {
+				soil.pmass_labile += x2;
+				soil.pmass_sorbed -= x2;
+				return;
+			}
+		}
+
+	}
+
 
 }
 
@@ -648,32 +692,53 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 		soil.apimmob = 0.0;
 	}
 
+
 	///////////////////////////// Balanced dynamics of P labile and P sorbed, also flux into strongly sorbed pool
+
+	// Must include tfac = 1 for N to be dominant limitation in the andes
+	// with more complex delta_plabile inceptisol regions somehow lose a lot of P
 
 	double delta_plabile = soil.pmass_labile_delta;
 
 	double delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
 
-	pmass_add(soil, delta_plabile);
+	soil.pmass_labile += delta_plabile;
 
-	pmass_add(soil, -delta_strongly_sorbed);
+	if (delta_plabile > 0.0)
+		balance_p_labile_sorbed(soil, true);
+	else
+		balance_p_labile_sorbed(soil, false);
 
-	// Silly protection against negative p values, improve.
+	//Isnan fix for gcc compiler in goethe HLR
+	if (std::isnan(soil.pmass_labile))
+		soil.pmass_labile = 0.0;
+
 	if (soil.pmass_labile < 0.0) {
 		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile);
 		soil.pmass_labile = 0.0;
 	}
+
+
+	soil.pmass_sorbed -= delta_strongly_sorbed;
 
 	if (soil.pmass_sorbed < 0.0) {
 		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed);
 		soil.pmass_sorbed = 0.0;
 	}
 
+	balance_p_labile_sorbed(soil, true);
+
+
+	//Isnan fix for gcc compiler in goethe HLR
+	if (std::isnan(soil.pmass_labile))
+		soil.pmass_labile = 0.0;
+
 	patch.fluxes.report_flux(Fluxes::P_SOIL, delta_strongly_sorbed);
 
 	soil.pmass_labile_delta = 0.0;
 
 	////////////////////////////////////////////////////////////////
+
 
 	// Warning if soil available nitrogen is negative (if happens once or so no problem, but if it propagates through time then it is)
 
@@ -1035,22 +1100,47 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	soil.pmass_labile_delta += pmin_inc;
 
 
-	///////////////////////////// Balanced dynamics of P labile and P sorbed
+	///////////////////////////// Balanced dynamics of P labile and P sorbed, also flux into strongly sorbed pool
+
+	// Must include tfac = 1 for N to be dominant limitation in the andes
+	// with more complex delta_plabile inceptisol regions somehow lose a lot of P
 
 	delta_plabile = soil.pmass_labile_delta;
 
-	pmass_add(soil, delta_plabile);
+	delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
 
-	// Silly protection against negative p values, improve.
+	soil.pmass_labile += delta_plabile;
+
+	if (delta_plabile > 0.0)
+		balance_p_labile_sorbed(soil, true);
+	else
+		balance_p_labile_sorbed(soil, false);
+
+	//Isnan fix for gcc compiler in goethe HLR
+	if (std::isnan(soil.pmass_labile))
+		soil.pmass_labile = 0.0;
+
 	if (soil.pmass_labile < 0.0) {
 		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile);
 		soil.pmass_labile = 0.0;
 	}
 
+
+	soil.pmass_sorbed -= delta_strongly_sorbed;
+
 	if (soil.pmass_sorbed < 0.0) {
 		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed);
 		soil.pmass_sorbed = 0.0;
 	}
+
+	balance_p_labile_sorbed(soil, true);
+
+
+	//Isnan fix for gcc compiler in goethe HLR
+	if (std::isnan(soil.pmass_labile))
+		soil.pmass_labile = 0.0;
+
+	patch.fluxes.report_flux(Fluxes::P_SOIL, delta_strongly_sorbed);
 
 	soil.pmass_labile_delta = 0.0;
 
