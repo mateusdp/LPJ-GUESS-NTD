@@ -1107,7 +1107,7 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 
 	delta_plabile = soil.pmass_labile_delta;
 
-	delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
+	//delta_strongly_sorbed = USORB * soil.pmass_sorbed - USSORB * soil.pmass_strongly_sorbed;
 
 	soil.pmass_labile += delta_plabile;
 
@@ -1126,21 +1126,21 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	}
 
 
-	soil.pmass_sorbed -= delta_strongly_sorbed;
+	//soil.pmass_sorbed -= delta_strongly_sorbed;
 
 	if (soil.pmass_sorbed < 0.0) {
 		patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed);
 		soil.pmass_sorbed = 0.0;
 	}
 
-	balance_p_labile_sorbed(soil, true);
+	//balance_p_labile_sorbed(soil, true);
 
 
 	//Isnan fix for gcc compiler in goethe HLR
 	if (std::isnan(soil.pmass_labile))
 		soil.pmass_labile = 0.0;
 
-	patch.fluxes.report_flux(Fluxes::P_SOIL, delta_strongly_sorbed);
+	//patch.fluxes.report_flux(Fluxes::P_SOIL, delta_strongly_sorbed);
 
 	soil.pmass_labile_delta = 0.0;
 
