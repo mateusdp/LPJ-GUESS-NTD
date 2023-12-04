@@ -113,73 +113,88 @@ void setconstants() {
 // BALANCE LABILE AND SORBED P POOLS
 // Internal function (do not call directly from framework)
 
+void pmass_add(Soil &soil, double delta) {
+
+	if (delta == 0.0)
+		return;
+
+	double a = -1.0;
+	double b = -soil.pmass_labile - soil.soiltype.kplab - soil.soiltype.spmax + soil.pmass_sorbed + delta;
+	double c = soil.pmass_sorbed * soil.pmass_labile + soil.pmass_sorbed  * soil.soiltype.kplab + delta * soil.pmass_labile + delta * soil.soiltype.kplab - soil.pmass_labile * soil.soiltype.spmax;
+
+	double bha = std::max(0.0, std::pow(b, 2.0) - 4.0 * a * c);
+
+	double labile_inc = (-b - std::sqrt(bha)) / 2.0 * a;
+
+	labile_inc = std::sqrt(pow(labile_inc, 2));
+
+	double sorb_inc = std::sqrt(pow(delta, 2)) - std::sqrt(pow(labile_inc, 2.0));
+
+	if (delta > 0.0) {
+		soil.pmass_labile += labile_inc;
+		soil.pmass_sorbed += sorb_inc;
+		
+		if (soil.pmass_labile > PMASS_SAT) {
+			soil.pmass_labile = PMASS_SAT;
+			soil.patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile - PMASS_SAT);
+		}
+
+		if (soil.pmass_sorbed > (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT)) {
+			soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
+			soil.patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed - (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT));
+		}
+	}
+	else {
+		if (labile_inc < soil.pmass_labile)
+			soil.pmass_labile -= labile_inc;
+		else
+			soil.pmass_labile = 0.0;
+
+		if (sorb_inc < soil.pmass_sorbed)
+			soil.pmass_sorbed -= sorb_inc;
+		else
+			soil.pmass_sorbed = 0.0;
+	}
+}
+
 //void pmass_add(Soil &soil, double delta) {
 //
 //	if (delta == 0.0)
 //		return;
 //
-//	/*double a = 1.0;
-//	double b = 1.0 + soil.soiltype.kplab;
-//	double c = delta - soil.soiltype.spmax - soil.pmass_sorbed + soil.pmass_sorbed * soil.soiltype.kplab - delta * soil.soiltype.kplab;*/
-//	double a = -1.0;
-//	double b = -soil.pmass_labile - soil.soiltype.kplab - soil.soiltype.spmax + soil.pmass_sorbed + delta;
-//	double c = soil.pmass_sorbed * soil.pmass_labile + soil.pmass_sorbed  * soil.soiltype.kplab + delta * soil.pmass_labile + delta * soil.soiltype.kplab - soil.pmass_labile * soil.soiltype.spmax;
+//	double k = soil.soiltype.kplab;
+//	double s = soil.soiltype.spmax;
 //
-//	double bha = std::max(0.0, std::pow(b, 2.0) - 4.0 * a * c);
-//
-//	double labile_inc = (-b - std::sqrt(bha)) / 2.0 * a;
-//
-//	labile_inc = std::sqrt(pow(labile_inc, 2));
-//
-//	double sorb_inc = std::sqrt(pow(delta, 2)) - std::sqrt(pow(labile_inc, 2.0));
-//
-//	if (delta > 0.0) {
-//		soil.pmass_labile += labile_inc;
-//		soil.pmass_sorbed += sorb_inc;
+//	double total_p = soil.pmass_labile + soil.pmass_sorbed + delta;
+//	
+//	if (total_p < 1e-20) {
+//		soil.pmass_labile = 0.0;
+//		soil.pmass_sorbed = 0.0;
 //	}
 //	else {
-//		if (labile_inc < soil.pmass_labile)
-//			soil.pmass_labile -= labile_inc;
-//		else
-//			soil.pmass_labile = 0.0;
 //
-//		if (sorb_inc < soil.pmass_sorbed)
-//			soil.pmass_sorbed -= sorb_inc;
-//		else
-//			soil.pmass_sorbed = 0.0;
+//		double b = -(1 - k / total_p - s / total_p);
+//		double c = -k / total_p;
+//		double bha = b * b - 4.0 * c;
+//
+//		double f11 = (-b + std::sqrt(bha)) / 2.0;
+//
+//		soil.pmass_labile = f11 * total_p;
+//		soil.pmass_sorbed = (1 - f11) * total_p;
+//
+//		if (soil.pmass_labile > PMASS_SAT) {
+//			soil.pmass_labile = PMASS_SAT;
+//			soil.patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile - PMASS_SAT);
+//		}
+//
+//		if (soil.pmass_sorbed > (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT)) {
+//			soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
+//			soil.patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed - (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT));
+//		}
+//
 //	}
+//
 //}
-
-void pmass_add(Soil &soil, double delta) {
-
-	double k = soil.soiltype.kplab;
-	double s = soil.soiltype.spmax;
-
-	double total_p = soil.pmass_labile + soil.pmass_sorbed + delta;
-	
-	if (total_p < 1e-20) {
-		soil.pmass_labile = 0.0;
-		soil.pmass_sorbed = 0.0;
-	}
-	else {
-
-		/*if (total_p < 0.0)
-			s = 1;*/
-
-		double b = -(1 - k / total_p - s / total_p);
-		double c = -k / total_p;
-		double bha = b * b - 4.0 * c;
-
-		/*if(bha < 0.0)
-			s = 1;*/
-
-		double f11 = (-b + std::sqrt(bha)) / 2.0;
-
-		soil.pmass_labile = f11 * total_p;
-		soil.pmass_sorbed = (1 - f11) * total_p;
-	}
-
-}
 
 //void pmass_sub(Soil &soil, double delta) {
 //
