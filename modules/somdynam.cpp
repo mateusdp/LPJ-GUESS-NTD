@@ -134,15 +134,15 @@ void pmass_add(Soil &soil, double delta) {
 		soil.pmass_labile += labile_inc;
 		soil.pmass_sorbed += sorb_inc;
 		
-		if (soil.pmass_labile > PMASS_SAT) {
-			soil.pmass_labile = PMASS_SAT;
-			soil.patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile - PMASS_SAT);
-		}
+		//if (soil.pmass_labile > PMASS_SAT) {
+		//	soil.pmass_labile = PMASS_SAT;
+		//	soil.patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_labile - PMASS_SAT);
+		//}
 
-		if (soil.pmass_sorbed > (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT)) {
-			soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
-			soil.patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed - (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT));
-		}
+		//if (soil.pmass_sorbed > (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT)) {
+		//	soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
+		//	soil.patch.fluxes.report_flux(Fluxes::P_SOIL, soil.pmass_sorbed - (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT));
+		//}
 	}
 	else {
 		if (labile_inc < soil.pmass_labile)
