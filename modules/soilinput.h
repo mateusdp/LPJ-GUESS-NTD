@@ -147,9 +147,9 @@ const double data[10][15] = {
 	//    0      1      2      3      4      5      6       7       8       9       10      11		12		13		14          soilcode
 	//  --------------------------------------------------------------------------------------------------------------------
 	{ 5.0, 0.110,   0.2, 0.800,   0.4,	0.074,	0.395,	0.90,	0.05,    0.01,    0.029,  0.421,	0.065,	0.145, 0.00005 },    // 0	Ice (copied from coarse: Stefan) (Inceptisol)
-	{ 5.0, 0.110,   0.2, 0.800,   0.4,	0.074,	0.395,	0.45,	0.25,    0.01,    0.029,  0.421,	0.065,	0.145, 0.00005 },    // 1	Coarse (Inceptisol) P cycle note: A high (0.90) sand_frac causes high organic leaching in this soil, causing very high P limitation.
+	//{ 5.0, 0.110,   0.2, 0.800,   0.4,	0.074,	0.395,	0.45,	0.25,    0.01,    0.029,  0.421,	0.065,	0.145, 0.00005 },    // 1	Coarse (Inceptisol) P cycle note: A high (0.90) sand_frac causes high organic leaching in this soil, causing very high P limitation.
 	//																															 //     Texture currently fixed at 7, fine-medium-coarse, inceptisol values. 
-	//{ 5.0, 0.110,   0.2, 0.800,   0.4,	0.074,	0.395,	0.90,	0.05,    0.01,    0.029,  0.421,	0.065,	0.145, 0.00005 },    // 1	Coarse (Inceptisol)
+	{ 5.0, 0.110,   0.2, 0.800,   0.4,	0.074,	0.395,	0.90,	0.05,    0.01,    0.029,  0.421,	0.065,	0.145, 0.00005 },    // 1	Coarse (Inceptisol)
 	{ 4.0, 0.150,   0.2, 0.650,   0.4,	0.184,	0.439,	0.35,	0.15,    0.01,    0.119,  0.464,	0.075,	0.134, 0.00001 },    // 2	Medium (Entisol, Alfisol)
 	{ 3.0, 0.120,   0.2, 0.500,   0.4,	0.274,	0.454,	0.30,	0.45,    0.01,    0.139,  0.468,	0.065,	0.077, 0.000003 },    // 3	Fine (Gelisol, with oxisol weathering)
 	{ 4.5, 0.130,   0.2, 0.725,   0.4,	0.129,	0.417,	0.60,	0.15,    0.01,    0.047,  0.434,	0.01,	0.145, 0.000003 },    // 4	Medium-coarse (Oxisol/Ultisol)

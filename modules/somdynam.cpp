@@ -1531,6 +1531,7 @@ void leaching(Soil& soil) {
 	if (pmin_avail > 0.0) {
 
 		double leaching_p = pmin_avail * minleachfrac;
+		leaching_p *= 0.18;
 
 		/*soil.pmass_labile -= leaching_p;
 		soil.pmass_labile = max(0.0, soil.pmass_labile);*/
