@@ -1029,6 +1029,11 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
  
 	}
 
+	// Most of organic leaching is retained in the ecosystem (82%, Wilcke), and mineralized (Parton 1988)
+	double leachsum_pmass_retained = leachsum_pmass * 1.0;
+
+	double leachsum_pmass_lost = leachsum_pmass * 0.0;
+
 
 	// Update pool sizes
 
@@ -1052,7 +1057,9 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 
 		// Sum annual organic phosphorus leaching
 
-		soil.aorgPleach += leachsum_pmass;
+		//soil.aorgPleach += leachsum_pmass;
+		// Leached organic phosphorus is assumed to be mineralized (Parton 1988, pg. 117)
+		soil.aorgPleach += leachsum_pmass_lost;
 
 		// Sum annual organic carbon leaching
 
@@ -1071,7 +1078,9 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	// Adding mineral nitrogen to soil available pool
 	double nmin_inc = nmin_actual - nimmob; 
 		
-	double pmin_inc = pmin_actual - pimmob;
+	//double pmin_inc = pmin_actual - pimmob;
+	// Leached organic phosphorus is assumed to be mineralized (Parton 1988, pg. 117)
+	double pmin_inc = pmin_actual - pimmob + leachsum_pmass_retained;
 
 	//soil.pmass_labile = max(0.0, soil.pmass_labile + pmin_inc);
 	//soil.pmass_labile_delta += pmin_inc;
@@ -1531,7 +1540,7 @@ void leaching(Soil& soil) {
 	if (pmin_avail > 0.0) {
 
 		double leaching_p = pmin_avail * minleachfrac;
-		leaching_p *= 0.18;
+		//leaching_p *= 0.18;
 
 		/*soil.pmass_labile -= leaching_p;
 		soil.pmass_labile = max(0.0, soil.pmass_labile);*/
