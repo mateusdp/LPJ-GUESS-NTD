@@ -450,7 +450,7 @@ void CommonOutput::define_output_tables() {
 	// SOIL P pools
 	ColumnDescriptors soil_ppool_columns;
 	soil_ppool_columns += ColumnDescriptor("PO4", 13, 5);
-	soil_ppool_columns += ColumnDescriptor("SoilP_S", 9, 5);
+	soil_ppool_columns += ColumnDescriptor("SoilP_S", 13, 5);
 	//soil_ppool_columns += ColumnDescriptor("SoilP_SS", 9, 2);
 	//soil_ppool_columns += ColumnDescriptor("SoilP_OC", 9, 2);
 

@@ -1347,8 +1347,10 @@ void growth(Stand& stand, Patch& patch) {
 
 		// Save leaf annual average C:N and C:P ratios
 		if (!negligible(indiv.nday_leafon)) {
-			indiv.cton_leaf_aavr /= indiv.nday_leafon;
-			indiv.ctop_leaf_aavr /= indiv.nday_leafon;
+			double nday_leafon_double = static_cast<double>(indiv.nday_leafon + 2);
+			nday_leafon_double /= 2.0;
+			indiv.cton_leaf_aavr /= nday_leafon_double;
+			indiv.ctop_leaf_aavr /= nday_leafon_double;
 		}
 		else {
 			indiv.cton_leaf_aavr = indiv.pft.cton_leaf_max;

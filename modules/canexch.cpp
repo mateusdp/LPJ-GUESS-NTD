@@ -1766,9 +1766,13 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 
 			if (!negligible(indiv.nday_leafon)) {
 				//if (ifnlim && ifplim)
-					indiv.nday_leafon /= 2.0;
+					/*indiv.nday_leafon /= 2.0;
 				indiv.avmaxnlim /= (double)indiv.nday_leafon;
-				indiv.avmaxplim /= (double)indiv.nday_leafon;
+				indiv.avmaxplim /= (double)indiv.nday_leafon;*/
+				double nday_leafon_double = static_cast<double>(indiv.nday_leafon + 2);
+				nday_leafon_double /= 2.0;
+				indiv.avmaxnlim /= nday_leafon_double;
+				indiv.avmaxplim /= nday_leafon_double;
 			}
 			else {
 				indiv.avmaxnlim = 0.0;
