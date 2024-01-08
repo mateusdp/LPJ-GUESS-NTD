@@ -1778,6 +1778,13 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				plot("Soil N [kgN/m2]","coarse litter", date.year, cwdn);
 				plot("Soil N [kgN/m2]","soil",          date.year, centuryn);
 				plot("Soil N [kgN/m2]","total",         date.year, surfsoillittern + cwdn + centuryn);
+
+				if (ifplim) {
+					plot("Soil P [kgP/m2]", "fine litter", date.year, surfsoillitterp);
+					plot("Soil P [kgP/m2]", "coarse litter", date.year, cwdp);
+					plot("Soil P [kgP/m2]", "soil", date.year, centuryp);
+					plot("Soil P [kgP/m2]", "total", date.year, surfsoillitterp + cwdp + centuryp);
+				}
 			}
 
 			plot("H2O flux [mm/yr]", "transp", date.year, aaet);
