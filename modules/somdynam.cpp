@@ -58,7 +58,7 @@ static const double ATMFRAC=0.7;
 // their minimum (nitrogen saturation) (Parton et al 1993, Fig. 4)
 // Comment: NMASS_SAT is too high when considering BNF - Zaehle
 static const double NMASS_SAT = 0.002 * 0.05;
-static const double PMASS_SAT = 0.002;
+static const double PMASS_SAT = 0.002 * 0.001;
 // Corresponds to the nitrogen concentration in litter where SOM C:N ratio reach
 // their minimum (nitrogen saturation) (Parton et al 1993, Fig. 4)
 static const double NCONC_SAT = 0.02;
@@ -754,11 +754,11 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 
 	setptoc(soil, pmin_mass, SLOWSOM, 200.0, 90.0, 0.0, PMASS_SAT);
 
-	//setptoc(soil, pmin_mass, PASSIVESOM, 200.0, 20.0, 0.0, PMASS_SAT);
+	setptoc(soil, pmin_mass, PASSIVESOM, 200.0, 20.0, 0.0, PMASS_SAT);
 
 	setptoc(soil, pmin_mass, SOILMICRO, 80.0, 30.0, 0.0, PMASS_SAT); //Check this
 
-	setptoc(soil, pmin_mass, SURFHUMUS, 200.0, 90.0, 0.0, PMASS_SAT);
+	//setptoc(soil, pmin_mass, SURFHUMUS, 200.0, 90.0, 0.0, PMASS_SAT);
 
 
 	if (!ifequilsom) {
@@ -1037,9 +1037,9 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	}
 
 	// Most of organic leaching is retained in the ecosystem (82%, Wilcke), and mineralized (Parton 1988)
-	double leachsum_pmass_retained = leachsum_pmass * 1.0;
+	double leachsum_pmass_retained = leachsum_pmass * 0.0;
 
-	double leachsum_pmass_lost = leachsum_pmass * 0.0;
+	double leachsum_pmass_lost = leachsum_pmass * 1.0;
 
 
 	// Update pool sizes
@@ -1152,9 +1152,9 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 		//soil.pmass_labile = 0.0;
 		//Value of sorbed phosphorus pool, based on labile p and soil parameters [KgP/m-2].
 		//Equilibrated instantanously based on Wang 2007, 2010
-		soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
+		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax) / (soil.soiltype.kplab + PMASS_SAT);
 		//soil.pmass_sorbed = (PMASS_SAT * soil.soiltype.spmax * soil.soiltype.kplab) / pow(soil.soiltype.kplab + PMASS_SAT, 2.0);
-		//soil.pmass_sorbed = soil.soiltype.spmax;
+		soil.pmass_sorbed = soil.soiltype.spmax;
 		//soil.pmass_sorbed = 0.0;
 	}
 }
