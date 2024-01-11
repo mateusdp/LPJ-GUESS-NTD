@@ -1037,9 +1037,9 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 	}
 
 	// Most of organic leaching is retained in the ecosystem (82%, Wilcke), and mineralized (Parton 1988)
-	double leachsum_pmass_retained = leachsum_pmass * 0.0;
+	double leachsum_pmass_retained = leachsum_pmass * 1.0;
 
-	double leachsum_pmass_lost = leachsum_pmass * 1.0;
+	double leachsum_pmass_lost = leachsum_pmass * 0.0;
 
 
 	// Update pool sizes
