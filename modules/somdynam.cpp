@@ -1653,13 +1653,13 @@ void soilpadd(Patch& patch) {
 		daily_pwtr = soil.soiltype.pwtr / date.year_length();
 	}
 
-	if (pmin_avail + daily_pwtr < PMASS_SAT) {
+	//if (pmin_avail + daily_pwtr < PMASS_SAT) {
 		// Phosphorus weathering input
 		//soil.pmass_labile += daily_pwtr;
 		//soil.pmass_labile_delta += max(0.0, daily_pwtr);
 		pmass_add(soil, daily_pwtr);
 		soil.apwtr += daily_pwtr;
-	}
+	//}
 
 	// Phosphorus fertilization and deposition input (calculated in snow_pinput())
 	//soil.pmass_labile += soil.pmass_labile_input;
