@@ -373,16 +373,16 @@ void CommonOutput::define_output_tables() {
 
 	// PFLUX
 	ColumnDescriptors pflux_columns;
-	pflux_columns += ColumnDescriptor("PO4dep", 8, 2);
-	pflux_columns += ColumnDescriptor("wtr", 8, 2);
-	pflux_columns += ColumnDescriptor("fert", 8, 2);
+	pflux_columns += ColumnDescriptor("PO4dep", 8, 4);
+	pflux_columns += ColumnDescriptor("wtr", 8, 4);
+	pflux_columns += ColumnDescriptor("fert", 8, 4);
 	pflux_columns += ColumnDescriptor("flux", 13, 4);
 	pflux_columns += ColumnDescriptor("leach", 13, 4);
 	if (run_landcover) {
-		pflux_columns += ColumnDescriptor("seed", 8, 2);
-		pflux_columns += ColumnDescriptor("harvest", 8, 2);
-		pflux_columns += ColumnDescriptor("LU_ch", 8, 3);
-		pflux_columns += ColumnDescriptor("Slow_h", 8, 3);
+		pflux_columns += ColumnDescriptor("seed", 8, 4);
+		pflux_columns += ColumnDescriptor("harvest", 8, 4);
+		pflux_columns += ColumnDescriptor("LU_ch", 8, 4);
+		pflux_columns += ColumnDescriptor("Slow_h", 8, 4);
 	}
 	pflux_columns += ColumnDescriptor("NEE", 11 + bm_extra_prec, 5 + bm_extra_prec);
 
@@ -420,14 +420,14 @@ void CommonOutput::define_output_tables() {
 
 	// PSOURCES
 	ColumnDescriptors psources_columns;
-	psources_columns += ColumnDescriptor("PO4dep", 8, 2);
-	psources_columns += ColumnDescriptor("wtr", 8, 2);
-	psources_columns += ColumnDescriptor("fert", 8, 2);
-	psources_columns += ColumnDescriptor("input", 8, 2);
-	psources_columns += ColumnDescriptor("min", 8, 2);
-	psources_columns += ColumnDescriptor("imm", 8, 2);
-	psources_columns += ColumnDescriptor("netmin", 8, 2);
-	psources_columns += ColumnDescriptor("Total", 8, 2);
+	psources_columns += ColumnDescriptor("PO4dep", 8, 4);
+	psources_columns += ColumnDescriptor("wtr", 8, 4);
+	psources_columns += ColumnDescriptor("fert", 8, 4);
+	psources_columns += ColumnDescriptor("input", 8, 4);
+	psources_columns += ColumnDescriptor("min", 8, 4);
+	psources_columns += ColumnDescriptor("imm", 8, 4);
+	psources_columns += ColumnDescriptor("netmin", 8, 4);
+	psources_columns += ColumnDescriptor("Total", 8, 4);
 
 	// PPOOL
 	ColumnDescriptors ppool_columns;
