@@ -58,7 +58,8 @@ static const double ATMFRAC=0.7;
 // their minimum (nitrogen saturation) (Parton et al 1993, Fig. 4)
 // Comment: NMASS_SAT is too high when considering BNF - Zaehle
 static const double NMASS_SAT = 0.002 * 0.05;
-static const double PMASS_SAT = 0.002 * 0.001;
+//static const double PMASS_SAT = 0.002 * 0.001;
+static const double PMASS_SAT = 0.002;
 // Corresponds to the nitrogen concentration in litter where SOM C:N ratio reach
 // their minimum (nitrogen saturation) (Parton et al 1993, Fig. 4)
 static const double NCONC_SAT = 0.02;
@@ -1653,13 +1654,13 @@ void soilpadd(Patch& patch) {
 		daily_pwtr = soil.soiltype.pwtr / date.year_length();
 	}
 
-	//if (pmin_avail + daily_pwtr < PMASS_SAT) {
+	if (pmin_avail + daily_pwtr < PMASS_SAT || date.year <= freenyears) {
 		// Phosphorus weathering input
 		//soil.pmass_labile += daily_pwtr;
 		//soil.pmass_labile_delta += max(0.0, daily_pwtr);
 		pmass_add(soil, daily_pwtr);
 		soil.apwtr += daily_pwtr;
-	//}
+	}
 
 	// Phosphorus fertilization and deposition input (calculated in snow_pinput())
 	//soil.pmass_labile += soil.pmass_labile_input;
