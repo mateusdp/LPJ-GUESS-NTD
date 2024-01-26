@@ -56,7 +56,7 @@ private:
 	xtring file_nmass, file_cton_leaf, file_nsources, file_npool, file_nlitter, file_nuptake, file_vmaxnlim, file_nflux, file_pflux, file_ngases;
 	
 	// phosphorus
-	xtring file_pmass, file_ctop_leaf, file_vmaxplim, file_soil_npool, file_soil_ppool, file_soil_nflux;
+	xtring file_pmass, file_ctop_leaf, file_psources, file_ppool, file_plitter, file_puptake, file_vmaxplim, file_soil_npool, file_soil_ppool, file_soil_nflux;
 
 	// traits
 	xtring file_sla, file_wsg, file_srl;
@@ -88,7 +88,7 @@ private:
 	Table out_aiso, out_miso, out_amon, out_mmon, out_amon_mt1, out_amon_mt2, out_mmon_mt1, out_mmon_mt2;
 	
 	Table out_nmass, out_cton_leaf, out_nsources, out_npool, out_nlitter, out_nuptake, out_vmaxnlim, out_nflux, out_pflux, out_ngases;
-	Table out_pmass, out_ctop_leaf, out_vmaxplim, out_soil_npool, out_soil_ppool, out_soil_nflux;
+	Table out_pmass, out_ctop_leaf, out_psources, out_ppool, out_plitter, out_puptake, out_vmaxplim, out_soil_npool, out_soil_ppool, out_soil_nflux;
 	
 	Table out_sla, out_wsg, out_srl, out_inventory;
 
