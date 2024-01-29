@@ -689,6 +689,7 @@ struct PhotosynthesisResult : public Serializable {
 		vm          = 0;
 		je          = 0;
 		nactive_opt = 0.0;
+		pactive_opt = 0.0;
 		vmaxnlim    = 1.0;
 		vmaxplim	= 1.0;
 	}
