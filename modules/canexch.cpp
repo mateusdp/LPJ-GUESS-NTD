@@ -559,12 +559,12 @@ void vmax_p(double b, double c1, double c2, double apar, double tscal,
 	// Hidaka et al. 2013, Amax dependent on gP/m²
 
 	//		- from Amax nmolCO2/m2/sec to Vm gC/m2/day
-	//double CN = 1.0e-9 * 3600 * daylength * CMASS / c2;
-	double CN = 1.0e-9 * 3600 * daylength * CMASS;
+	double CN = 1.0e-9 * 3600 * daylength * CMASS / c2;
+	//double CN = 1.0e-9 * 3600 * daylength * CMASS;
 
-	//double tfac = exp(-0.0693 * (temp - 25.0));
+	double tfac = exp(-0.0693 * (temp - 25.0));
 	//temperature effects already included in c2.
-	double tfac = 1.0;
+	//double tfac = 1.0;
 
 	double vm_max = (11.10 + pactive * 1.0e6 * 366.33) * CN / tfac;
 
