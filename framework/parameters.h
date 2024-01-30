@@ -179,6 +179,9 @@ extern int wsg_width;
 extern int srl_width;
 extern double max_ctomyco_rate;
 
+//randomization seed value, same for stand and gridcell.
+extern int rand_seed;
+
 /// number of years to allow spinup without nitrogen limitation
 extern int freenyears;
 

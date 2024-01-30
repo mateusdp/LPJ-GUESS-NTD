@@ -69,6 +69,8 @@ int wsg_width;
 int srl_width;
 double max_ctomyco_rate;
 
+int rand_seed;
+
 //Maximum amount of NH4 nitrified
 double f_nitri_max;
 //Maximum gaseus losses in nitrification
@@ -558,6 +560,9 @@ void plib_declarations(int id,xtring setname) {
 			"Number of possible srl values between min and maximum trait ranges (trait resolution)");
 		declareitem("max_ctomyco_rate", &max_ctomyco_rate, 0.0, 1.0, 1, CB_NONE,
 			"Max rate of bminc to mycorrhiza annual increment (0 - 1)");
+
+		declareitem("rand_seed", &rand_seed, 0, 99999999, 1, CB_NONE,
+			"Random seed for stands and gridcells");
 
 
 		declareitem("k_N",    &k_N,    0.0001, 1.0, 1,CB_NONE, "Constant in denitrification");
@@ -1591,6 +1596,7 @@ void plib_callback(int callback) {
 		if (!itemparsed("srl_width")) badins("srl_width");
 		if (!itemparsed("max_ctomyco_rate")) badins("max_ctomyco_rate");
 
+		if (!itemparsed("rand_seed")) badins("rand_seed");
 
 		if (nyear_spinup <= freenyears) {
 			sendmessage("Error", "freenyears must be smaller than nyear_spinup");

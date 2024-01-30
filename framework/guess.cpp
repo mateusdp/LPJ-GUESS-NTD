@@ -811,7 +811,8 @@ Stand::Stand(int i, Gridcell* gc, Soiltype& st, landcovertype landcoverX, int np
 	transfer_area_st = new double[nst];
 	for(int i=0;i<nst;i++)
 		transfer_area_st[i] = 0.0;
-	seed = 12345678;
+	//seed = 12345678;
+	seed = rand_seed;
 
 	stid = 0;
 	pftid = -1;
@@ -3226,7 +3227,8 @@ Gridcell::Gridcell():climate(*this) {
 	nesterov_cur = 0.;
 
 	// Initialise BLAZE variables
-	seed = 12345678;
+	//seed = 12345678;
+	seed = rand_seed;
 
 	distinterval_gc = 1.0e10;
 	for (int i=0;i<12;i++) {
