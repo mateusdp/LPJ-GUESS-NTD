@@ -1352,6 +1352,12 @@ public:
 		GROSS_DENITRIF,
 		/// Reproduction costs
 		REPRC,
+		/// C flux from herbivory
+		C_HERB,
+		/// N flux from herbivory
+		N_HERB,
+		/// P flux from herbivory
+		P_HERB,
 		/// Total (i.e. CH4C_DIFF + CH4C_PLAN + CH4C_EBUL) CH4 flux to atmosphere from peatland soils (gC/m2).
 		CH4C,
 		/// Diffused CH4 flux to atmosphere from peatland soils (gC/m2).

@@ -2381,6 +2381,9 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 					////herbivore respiration goes as heterotrophic respiration to SOILC
 					indiv.report_flux(Fluxes::SOILC, cmass_herb_resp * indiv.densindiv);
 
+					// Report herbivory carbon flux
+					indiv.report_flux(Fluxes::C_HERB, cmass_herb * indiv.densindiv);
+
 					////////////////////////////////////////////////////////////////////
 
 					// Leaves
@@ -2532,6 +2535,9 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 
 					////herbivore respiration goes as heterotrophic respiration to SOILC
 					indiv.report_flux(Fluxes::SOILC, cmass_herb_resp * indiv.densindiv);
+
+					// Report herbivory carbon flux
+					indiv.report_flux(Fluxes::C_HERB, cmass_herb * indiv.densindiv);
 
 					////////////////////////////////////////////////////////////////////
 

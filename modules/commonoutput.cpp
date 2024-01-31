@@ -243,6 +243,8 @@ void CommonOutput::define_output_tables() {
 	cflux_columns += ColumnDescriptor("Soil",              8, 3);
 	cflux_columns += ColumnDescriptor("Fire",             10, 5);
 	cflux_columns += ColumnDescriptor("Est",               8, 3);
+	if (ifherbivory)
+		 cflux_columns += ColumnDescriptor("herb",		   8, 3);
 	if (run_landcover) {
 		 cflux_columns += ColumnDescriptor("Seed",         8, 3);
 		 cflux_columns += ColumnDescriptor("Harvest",      9, 3);
@@ -374,6 +376,8 @@ void CommonOutput::define_output_tables() {
 	nflux_columns += ColumnDescriptor("fert",              8, 2);
 	nflux_columns += ColumnDescriptor("flux",              8, 2);
 	nflux_columns += ColumnDescriptor("leach",             8, 2);
+	if (ifherbivory)
+		nflux_columns += ColumnDescriptor("herb",		   8, 2);
 	if (run_landcover) {
 		nflux_columns += ColumnDescriptor("seed",		   8, 2);
 		nflux_columns += ColumnDescriptor("harvest",       8, 2);
@@ -389,6 +393,8 @@ void CommonOutput::define_output_tables() {
 	pflux_columns += ColumnDescriptor("fert", 8, 2);
 	pflux_columns += ColumnDescriptor("flux", 13, 4);
 	pflux_columns += ColumnDescriptor("leach", 13, 4);
+	if (ifherbivory)
+		pflux_columns += ColumnDescriptor("herb", 8, 2);
 	if (run_landcover) {
 		pflux_columns += ColumnDescriptor("seed", 8, 2);
 		pflux_columns += ColumnDescriptor("harvest", 8, 2);
@@ -823,6 +829,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	int c, m;
 	double flux_veg, flux_repr, flux_soil, flux_fire, flux_est, flux_seed, flux_charvest;
 	double c_fast, c_slow, c_harv_slow;
+
+	double flux_herbc, flux_herbn, flux_herbp;
 
 	double surfsoillitterc,surfsoillittern,cwdc,cwdn,centuryc,centuryn,n_harv_slow,availn;
 	double surfsoillitterp, cwdp, centuryp, p_harv_slow, availp;
@@ -1539,6 +1547,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 
 	flux_veg = flux_repr = flux_soil = flux_fire = flux_est = flux_seed = flux_charvest = 0.0;
 
+	flux_herbc = flux_herbn = flux_herbp = 0.0;
+
 	// guess2008 - carbon pools
 	c_fast = c_slow = c_harv_slow = 0.0;
 
@@ -1587,6 +1597,10 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 			flux_est+=patch.fluxes.get_annual_flux(Fluxes::ESTC)*to_gridcell_average;
 			flux_seed+=patch.fluxes.get_annual_flux(Fluxes::SEEDC)*to_gridcell_average;
 			flux_charvest+=patch.fluxes.get_annual_flux(Fluxes::HARVESTC)*to_gridcell_average;
+
+			flux_herbc += patch.fluxes.get_annual_flux(Fluxes::C_HERB)*to_gridcell_average;
+			flux_herbn += patch.fluxes.get_annual_flux(Fluxes::N_HERB)*to_gridcell_average;
+			flux_herbp += patch.fluxes.get_annual_flux(Fluxes::P_HERB)*to_gridcell_average;
 
 			flux_nseed+=patch.fluxes.get_annual_flux(Fluxes::SEEDN)*to_gridcell_average;
 			flux_nharvest+=patch.fluxes.get_annual_flux(Fluxes::HARVESTN)*to_gridcell_average;
@@ -2051,6 +2065,10 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	outlimit(out,out_cflux, flux_soil + c_org_leach_gridcell);
 	outlimit(out,out_cflux, flux_fire);
 	outlimit(out,out_cflux, flux_est);
+
+	if (ifherbivory)
+		outlimit(out, out_cflux, flux_herbc);
+
 	if (run_landcover) {
 			outlimit(out,out_cflux, flux_seed);
 			outlimit(out,out_cflux, flux_charvest);
@@ -2078,6 +2096,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	outlimit(out,out_nflux, flux_ntot * M2_PER_HA);
 	outlimit(out,out_nflux, (n_min_leach_gridcell + n_org_leach_gridcell) * M2_PER_HA);
 
+	if (ifherbivory)
+		outlimit(out, out_nflux, flux_herbn * M2_PER_HA);
+
 	if (run_landcover) {
 			outlimit(out,out_nflux, flux_nseed * M2_PER_HA);
 			outlimit(out,out_nflux, flux_nharvest * M2_PER_HA);
@@ -2095,6 +2116,9 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	outlimit(out, out_pflux, -apfert_gridcell * M2_PER_HA);
 	outlimit(out, out_pflux, flux_ptot * M2_PER_HA);
 	outlimit(out, out_pflux, (p_min_leach_gridcell + p_org_leach_gridcell) * M2_PER_HA);
+
+	if (ifherbivory)
+		outlimit(out, out_pflux, flux_herbp * M2_PER_HA);
 
 	if (run_landcover) {
 		outlimit(out, out_pflux, flux_pseed * M2_PER_HA);
