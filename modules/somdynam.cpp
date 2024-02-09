@@ -1191,10 +1191,11 @@ void transfer_litter(Patch& patch) {
 			// Leaf litter lignin:N ratio
 			double leaf_lton;
 
-			if(!ifslavary)
+			if (!ifslavary || negligible(pft.cmass_leaf) || negligible(pft.nmass_leaf))
 				leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.pft.cton_leaf_avr); //maybe here is pft.pft.cmass_litter_leaf/pft.pft.nmass_litter_leaf
 			else
-				leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.cmass_litter_leaf / pft.nmass_litter_leaf);
+				//leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.cmass_litter_leaf / pft.nmass_litter_leaf);
+				leaf_lton = lignin_to_n_ratio(cmass_litter_leaf, nmass_litter_leaf, LIGCFRAC_LEAF, pft.cmass_leaf / pft.nmass_leaf);
 
 			// Metabolic litter fraction for leaf litter
 			double fm = metabolic_litter_fraction(leaf_lton);
@@ -1238,6 +1239,10 @@ void transfer_litter(Patch& patch) {
 			}
 		}
 
+		pft.cmass_leaf = 0.0;
+		pft.nmass_leaf = 0.0;
+		pft.pmass_leaf = 0.0;
+
 		// ROOT (Mycorrhiza c litter goes in root litter since it has no N or P mass)
 
 		if (!negligible(cmass_litter_root) || !negligible(nmass_litter_root) || !negligible(pmass_litter_root)) {
@@ -1248,10 +1253,11 @@ void transfer_litter(Patch& patch) {
 			// Root litter lignin:N ratio
 			double root_lton;
 
-			if(!ifslavary)
+			if(!ifslavary || negligible(pft.cmass_root) || negligible(pft.nmass_root))
 				root_lton = lignin_to_n_ratio(cmass_litter_root + cmass_litter_myco, nmass_litter_root, LIGCFRAC_ROOT, pft.pft.cton_root_avr); //maybe here is pft.pft.cmass_litter_root/pft.pft.nmass_litter_root
 			else
-				root_lton = lignin_to_n_ratio(cmass_litter_root + cmass_litter_myco, nmass_litter_root, LIGCFRAC_ROOT, pft.cmass_litter_root / pft.nmass_litter_root);
+				//root_lton = lignin_to_n_ratio(cmass_litter_root + cmass_litter_myco, nmass_litter_root, LIGCFRAC_ROOT, pft.cmass_litter_root / pft.nmass_litter_root);
+				root_lton = lignin_to_n_ratio(cmass_litter_root + cmass_litter_myco, nmass_litter_root, LIGCFRAC_ROOT, pft.cmass_root / pft.nmass_root);
 
 			// Metabolic litter fraction for root litter
 			double fm = metabolic_litter_fraction(root_lton);
@@ -1282,6 +1288,10 @@ void transfer_litter(Patch& patch) {
 					soil.sompool[SOILSTRUCT].cmass;
 			}
 		}
+
+		pft.cmass_root = 0.0;
+		pft.nmass_root = 0.0;
+		pft.pmass_root = 0.0;
 
 		// WOOD
 

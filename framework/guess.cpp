@@ -353,6 +353,12 @@ void Patchpft::serialize(ArchiveStream& arch) {
 		& pmass_litter_sap
 		& pmass_litter_heart
 		& pmass_harvested_products_slow
+		& cmass_leaf
+		& cmass_root
+		& nmass_leaf
+		& nmass_root
+		& pmass_leaf
+		& pmass_root
 		& swindow
 		& water_deficit_y
 		& inund_count

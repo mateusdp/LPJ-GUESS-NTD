@@ -2433,6 +2433,11 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						patchpft.cmass_mort += (litter_leaf_inc + litter_root_inc) * indiv.densindiv;
 						patch.pft[indiv.pft.id].cmass_litter_myco += litter_myco_inc * indiv.densindiv;
 
+						//calculating leaf and root C, N and P to calculate dynamic C:N and C:P per pft
+						patch.pft[indiv.pft.id].cmass_leaf += indiv.cmass_leaf;
+						patch.pft[indiv.pft.id].nmass_leaf += indiv.nmass_leaf;
+						patch.pft[indiv.pft.id].pmass_leaf += indiv.pmass_leaf;
+
 						// C litter exceeding existing biomass
 						indiv.report_flux(Fluxes::NPP, exceeds_cmass * indiv.densindiv);
 						indiv.report_flux(Fluxes::RA, -exceeds_cmass * indiv.densindiv);

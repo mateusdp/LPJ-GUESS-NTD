@@ -4959,6 +4959,19 @@ public:
 	/// remaining heartwood-derived phosphorus litter for PFT on modelled area basis (kgP/m2)
 	double pmass_litter_heart;
 
+	/// leaf-derived carbon for PFT on modelled area basis for calculating dynamic fine litter C:N (kgC/m2)
+	double cmass_leaf;
+	/// root-derived carbon for PFT on modelled area basis for calculating dynamic fine litter C:N (kgC/m2)
+	double cmass_root;
+	/// leaf-derived nitrogen for PFT on modelled area basis for calculating dynamic fine litter C:N (kgN/m2)
+	double nmass_leaf;
+	/// root-derived nitrogen for PFT on modelled area basis for calculating dynamic fine litter C:N (kgN/m2)
+	double nmass_root;
+	/// leaf-derived phosphorus for PFT on modelled area basis for calculating dynamic fine litter C:P (kgP/m2)
+	double pmass_leaf;
+	/// root-derived phosphorus for PFT on modelled area basis for calculating dynamic fine litter C:P (kgP/m2)
+	double pmass_root;
+
 	/// non-FPC-weighted canopy conductance value for PFT under water-stress conditions (mm/s)
 	double gcbase;
 	/// daily value of the above variable (mm/s)
@@ -5021,6 +5034,13 @@ public:
 		pmass_litter_root = 0.0;
 		pmass_litter_sap = 0.0;
 		pmass_litter_heart = 0.0;
+
+		cmass_leaf = 0.0;
+		cmass_root = 0.0;
+		nmass_leaf = 0.0;
+		nmass_root = 0.0;
+		pmass_leaf = 0.0;
+		pmass_root = 0.0;
 
 		wscal = 1.0;
 		wscal_mean = 1.0;

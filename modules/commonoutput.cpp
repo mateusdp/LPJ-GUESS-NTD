@@ -1851,7 +1851,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	outlimit(out,out_amon_mt2,  amon_mt2_gridcell);
 
 	outlimit(out,out_nmass,    (nmass_gridcell + nlitter_gridcell) * M2_PER_HA);
-	outlimit(out, out_pmass, (pmass_gridcell + nlitter_gridcell) * M2_PER_HA);
+	outlimit(out, out_pmass, (pmass_gridcell + plitter_gridcell) * M2_PER_HA);
 	outlimit(out,out_cton_leaf, cton_leaf_gridcell);
 	outlimit(out,out_vmaxnlim,  vmaxnlim_gridcell);
 	outlimit(out, out_ctop_leaf, ctop_leaf_gridcell);
@@ -2040,6 +2040,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 				plot("Soil N [kgN/m2]","soil",          date.year, centuryn);
 				plot("Soil N [kgN/m2]","total",         date.year, surfsoillittern + cwdn + centuryn);
 
+				plot("Litter C:N [-]", "CtoN", date.year, (surfsoillitterc) / (surfsoillittern));
+
 				if (ifplim) {
 					plot("Soil P [kgP/m2]", "fine litter", date.year, surfsoillitterp);
 					plot("Soil P [kgP/m2]", "coarse litter", date.year, cwdp);
@@ -2140,7 +2142,8 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 		outlimit(out,out_cpool, c_slow);
 	}
 	else {
-		outlimit(out,out_cpool, clitter_gridcell + surfsoillitterc + cwdc);
+		//outlimit(out,out_cpool, clitter_gridcell + surfsoillitterc + cwdc);
+		outlimit(out, out_cpool, surfsoillitterc);
 		outlimit(out,out_cpool, centuryc);
 	}
 
@@ -2170,12 +2173,14 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 	
 	if (ifcentury) {
 		outlimit(out,out_npool, nmass_gridcell + nlitter_gridcell);
-		outlimit(out,out_npool, surfsoillittern + cwdn);
+		//outlimit(out,out_npool, surfsoillittern + cwdn);
+		outlimit(out, out_npool, surfsoillittern);
 		outlimit(out,out_npool, centuryn + availn);
 
 		if (ifplim) {
 			outlimit(out, out_ppool, pmass_gridcell + plitter_gridcell);
-			outlimit(out, out_ppool, surfsoillitterp + cwdp);
+			//outlimit(out, out_ppool, surfsoillitterp + cwdp);
+			outlimit(out, out_ppool, surfsoillitterp);
 			outlimit(out, out_ppool, centuryp + availp);
 		}
 
