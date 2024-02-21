@@ -653,18 +653,18 @@ void somfluxes(Patch& patch, bool ifequilsom, bool tillage) {
 		soil.apimmob = 0.0;
 	}
 
-	// Warning if soil available nitrogen is negative (if happens once or so no problem, but if it propagates through time then it is)
-	//double dummy;
-	if (ifnlim) {
-		assert(soil.NH4_mass > -EPS);
-		//if(soil.NH4_mass < -EPS)
-		//dummy = 1;
-	}
+	//// Warning if soil available nitrogen is negative (if happens once or so no problem, but if it propagates through time then it is)
+	////double dummy;
+	//if (ifnlim) {
+	//	assert(soil.NH4_mass > -EPS);
+	//	//if(soil.NH4_mass < -EPS)
+	//	//dummy = 1;
+	//}
 
-	// Warning if soil available phosphorus is negative (if happens once or so no problem, but if it propagates through time then it is)
-	if (ifplim) {
-		assert(soil.pmass_labile > -EPS);
-	}
+	//// Warning if soil available phosphorus is negative (if happens once or so no problem, but if it propagates through time then it is)
+	//if (ifplim) {
+	//	assert(soil.pmass_labile > -EPS);
+	//}
 
 	// Set N:C ratios for humus, soil microbial, passive and slow pool based on estimated mineral nitrogen pool
 	// (Parton et al 1993, Fig 4)

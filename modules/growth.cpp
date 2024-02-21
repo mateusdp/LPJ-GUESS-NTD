@@ -2124,61 +2124,156 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 		}
 
 
-		// Annual stress changing of ltor
-		if (date.islastday && date.islastmonth) {
+		//// Annual stress changing of ltor
+		//if (date.islastday && date.islastmonth) {
 
+		//	if (!negligible(indiv.nday_leafon)) {
+		//		indiv.cton_leaf_aavr /= indiv.nday_leafon;
+		//		indiv.ctop_leaf_aavr /= indiv.nday_leafon;
+		//	}
+		//	else {
+		//		indiv.cton_leaf_aavr = indiv.cton_leaf_max;
+		//		indiv.ctop_leaf_aavr = indiv.ctop_leaf_max;
+		//	}
+
+		//	// Nitrogen and Phosphorus stress scalars for leaf to root allocation (adopted from Zaehle and Friend 2010 SM eq 19)
+		//	double cton_leaf_aopt = max(indiv.cton_leaf_aopt, indiv.cton_leaf_avr);
+		//	double ctop_leaf_aopt = max(indiv.ctop_leaf_aopt, indiv.ctop_leaf_avr);
+
+		//	if (ifnlim)
+		//		if (ifdynltor || ifdynreloc)
+		//			nscal = cton_leaf_aopt / indiv.cton_leaf_aavr;
+		//		else
+		//			nscal = min(1.0, cton_leaf_aopt / indiv.cton_leaf_aavr);
+		//	else
+		//		nscal = 1.0;
+
+		//	if (ifplim)
+		//		if (ifdynltor || ifdynreloc)
+		//			pscal = ctop_leaf_aopt / indiv.ctop_leaf_aavr;
+		//		else
+		//			pscal = min(1.0, ctop_leaf_aopt / indiv.ctop_leaf_aavr);
+		//	else
+		//		pscal = 1.0;
+
+		//	//Dynamic nitrogen and phosphorus resorption based on stress
+		//	if (ifdynreloc) {
+		//		indiv.nrelocfrac = min(1.0, indiv.nrelocfrac * (1 / nscal));
+		//		indiv.prelocfrac = min(1.0, indiv.prelocfrac * (1 / pscal));
+		//		/*indiv.nrelocfrac = min(1.0, 0.5 * (1 / nscal));
+		//		indiv.prelocfrac = min(1.0, 0.5 * (1 / pscal));*/
+		//	}
+
+		//	// Choose more limiting factor between nitrogen and phosphorus
+		//	double npscal = min(nscal, pscal);
+
+		//	// Set leaf:root mass ratio based on water stress parameter,
+		//	// nitrogen or phosphorus stress scalar
+		//	// Added dynamic ltor switch
+		//	if (!ifdynltor)
+		//		indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
+		//	else
+		//		// In the future, add influence of water stress on ltor, when root mass has an impact on water uptake.
+		//		if (indiv.wstress)
+		//			indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.ltor;
+		//		else
+		//			indiv.ltor = npscal * indiv.ltor;
+		//}
+
+
+		/////////////////////////////////////////////// Daily stress changing of ltor
+
+		double cton_leaf_today;
+		double ctop_leaf_today;
+
+		//Just for output reasons
+		if (date.islastday && date.islastmonth) {
 			if (!negligible(indiv.nday_leafon)) {
 				indiv.cton_leaf_aavr /= indiv.nday_leafon;
 				indiv.ctop_leaf_aavr /= indiv.nday_leafon;
 			}
 			else {
-				indiv.cton_leaf_aavr = indiv.cton_leaf_max;
-				indiv.ctop_leaf_aavr = indiv.ctop_leaf_max;
+				cton_leaf_today = indiv.cton_leaf_avr;
+				ctop_leaf_today = indiv.ctop_leaf_avr;
+			}
+		}
+
+		if (date.year > freenyears && !negligible(indiv.cmass_leaf) && !negligible(indiv.nmass_leaf) && !negligible(indiv.pmass_leaf)) {
+
+			if (!negligible(indiv.nday_leafon)) {
+				cton_leaf_today = min(indiv.cton_leaf(), indiv.cton_leaf_max);
+				ctop_leaf_today = min(indiv.ctop_leaf(), indiv.ctop_leaf_max);
+
+				cton_leaf_today = max(cton_leaf_today, indiv.cton_leaf_min);
+				ctop_leaf_today = max(ctop_leaf_today, indiv.ctop_leaf_min);
+			}
+			else {
+				cton_leaf_today = indiv.cton_leaf_avr;
+				ctop_leaf_today = indiv.ctop_leaf_avr;
 			}
 
 			// Nitrogen and Phosphorus stress scalars for leaf to root allocation (adopted from Zaehle and Friend 2010 SM eq 19)
-			double cton_leaf_aopt = max(indiv.cton_leaf_aopt, indiv.cton_leaf_avr);
-			double ctop_leaf_aopt = max(indiv.ctop_leaf_aopt, indiv.ctop_leaf_avr);
+			double cton_leaf_aopt = indiv.cton_leaf_avr;
+			double ctop_leaf_aopt = indiv.ctop_leaf_avr;
 
 			if (ifnlim)
 				if (ifdynltor || ifdynreloc)
-					nscal = cton_leaf_aopt / indiv.cton_leaf_aavr;
+					nscal = cton_leaf_aopt / cton_leaf_today;
 				else
-					nscal = min(1.0, cton_leaf_aopt / indiv.cton_leaf_aavr);
+					nscal = min(1.0, cton_leaf_aopt / cton_leaf_today);
 			else
 				nscal = 1.0;
 
 			if (ifplim)
 				if (ifdynltor || ifdynreloc)
-					pscal = ctop_leaf_aopt / indiv.ctop_leaf_aavr;
+					pscal = ctop_leaf_aopt / ctop_leaf_today;
 				else
-					pscal = min(1.0, ctop_leaf_aopt / indiv.ctop_leaf_aavr);
+					pscal = min(1.0, ctop_leaf_aopt / ctop_leaf_today);
 			else
 				pscal = 1.0;
 
+			//Vmax direct stress
+			if (indiv.photosynthesis.vmaxnlim > 0.0)
+				//nscal *= pow(indiv.photosynthesis.vmaxnlim, 0.125);
+				nscal *= 1.0 / (1.0 - log(indiv.photosynthesis.vmaxnlim) / 10.0);
+
+			if (indiv.photosynthesis.vmaxplim > 0.0)
+				//pscal *= pow(indiv.photosynthesis.vmaxplim, 0.125);
+				pscal *= 1.0 / (1.0 - log(indiv.photosynthesis.vmaxplim) / 10.0);
+
+			//Daily stress implementation (yearly stress divided by 365)
+			double nscal_day = ((nscal - 1.0) / 365.0 + 1.0);
+			double pscal_day = ((pscal - 1.0) / 365.0 + 1.0);
+
 			//Dynamic nitrogen and phosphorus resorption based on stress
 			if (ifdynreloc) {
-				indiv.nrelocfrac = min(1.0, indiv.nrelocfrac * (1 / nscal));
-				indiv.prelocfrac = min(1.0, indiv.prelocfrac * (1 / pscal));
+				indiv.nrelocfrac = min(1.0, indiv.nrelocfrac * (1 / nscal_day));
+				indiv.prelocfrac = min(1.0, indiv.prelocfrac * (1 / pscal_day));
 				/*indiv.nrelocfrac = min(1.0, 0.5 * (1 / nscal));
 				indiv.prelocfrac = min(1.0, 0.5 * (1 / pscal));*/
 			}
 
 			// Choose more limiting factor between nitrogen and phosphorus
-			double npscal = min(nscal, pscal);
+			double npscal_day = (min(nscal, pscal) - 1.0) / 365.0 + 1.0;
+
+			double wscal_day = ((indiv.wscal_mean() - 1.0) / 365.0 + 1.0);
 
 			// Set leaf:root mass ratio based on water stress parameter,
 			// nitrogen or phosphorus stress scalar
 			// Added dynamic ltor switch
 			if (!ifdynltor)
-				indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
+				indiv.ltor = min(wscal_day, npscal_day) * indiv.pft.ltor_max;
 			else
 				// In the future, add influence of water stress on ltor, when root mass has an impact on water uptake.
 				if (indiv.wstress)
-					indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.ltor;
+					indiv.ltor = min(wscal_day, npscal_day) * indiv.ltor;
 				else
-					indiv.ltor = npscal * indiv.ltor;
+					indiv.ltor = npscal_day * indiv.ltor;
 		}
+
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 		// Move leftover compartment nitrogen storage to longterm storage
 		indiv.nstore_longterm += indiv.nstore_labile;
