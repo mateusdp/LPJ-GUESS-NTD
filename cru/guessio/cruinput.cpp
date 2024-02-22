@@ -325,6 +325,13 @@ bool CRUInput::getclimate(Gridcell& gridcell) {
 		if(date.day == 0 && date.year == 0)
 			get_monthly_pdep(gridcell.get_lat(), gridcell.get_lon(), climate.mpdep);
 
+		// Phosphorus weathering
+		if (param["file_pwtr"].str != "") {
+			if (date.day == 0 && date.year == 0)
+				get_yearly_pwtr_params(gridcell.get_lat(), gridcell.get_lon(), gridcell.climate.pwtr_bi,
+					gridcell.climate.pwtr_pcont, gridcell.climate.pwtr_shield, gridcell.climate.pwtr_ea);
+		}
+
 		// Divide pdep into dry and wet
 		double mpdrydep[12], mpwetdep[12];
 

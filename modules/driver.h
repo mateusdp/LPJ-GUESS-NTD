@@ -39,5 +39,6 @@ void daylengthinsoleet(Climate& climate);
 double get_local_temp(Gridcell& gridcell, double gridcell_temp, double gridcell_elevation, double local_elevation);
 void climate_seasonality(Gridcell& gridcell);
 void get_monthly_pdep(double gridlat, double gridlong, double mpdep[12]);
+void get_yearly_pwtr_params(double gridlat, double gridlong, double& bi, double& pcont, double& shield, double& ea);
 
 #endif // LPJ_GUESS_DRIVER_H

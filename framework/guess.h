@@ -970,6 +970,23 @@ public:
 	/// daily phosphorus deposition per month (kgP/m2/d)
 	double mpdep[12];
 
+	/// Phosphorus weathering parameters (Hartmann et al. 2012)
+
+	/// yearly phosphorus weathering rate (kgP/m2/y)
+	double pwtr;
+
+	/// bi factor, sum of bcarbonate and bsilicate for the lithological class
+	double pwtr_bi;
+
+	/// p content in % for the lithological class
+	double pwtr_pcont;
+
+	/// Whether the lithological class is shielded (1 - no shielding, 0.1 - shielding)
+	double pwtr_shield;
+
+	/// Activation energy for calculating the temperature effect in the lithological class
+	double pwtr_ea;
+
 	/// Type of insolation
 	/** This decides how to interpret the variable insol,
 	 *  see also documentation for the insoltype enum.
