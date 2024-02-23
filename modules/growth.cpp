@@ -2261,17 +2261,19 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			// Set leaf:root mass ratio based on water stress parameter,
 			// nitrogen or phosphorus stress scalar
 			// Added dynamic ltor switch
-			if (!ifdynltor)
+			if (!ifdynltor) {
 				indiv.ltor = min(wscal_day, npscal_day) * indiv.pft.ltor_max;
-			else
+			}
+			else {
 				// In the future, add influence of water stress on ltor, when root mass has an impact on water uptake.
 				if (indiv.wstress)
 					indiv.ltor = min(wscal_day, npscal_day) * indiv.ltor;
 				else
 					indiv.ltor = npscal_day * indiv.ltor;
 
-			if (indiv.ltor > 10.0)
-				indiv.ltor = 10.0;
+				/*if (indiv.ltor > 10.0)
+					indiv.ltor = 10.0;*/
+			}
 		}
 
 
