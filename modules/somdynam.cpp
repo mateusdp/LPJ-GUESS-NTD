@@ -1579,7 +1579,7 @@ void soilpadd(Patch& patch) {
 		p_temp_effect = exp(-ea / R_gas_constant * (1 / (soiltemp + 273.0) - 1 / 284.15));
 		daily_pwtr = bi * (pcont / 100.0) * patch.soil.runoff * p_temp_effect * shield / 1000.0;
 	}
-	else {
+	else { 
 		daily_pwtr = soil.soiltype.pwtr / date.year_length();
 	}
 

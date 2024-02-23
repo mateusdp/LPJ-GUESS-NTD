@@ -2269,6 +2269,9 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 					indiv.ltor = min(wscal_day, npscal_day) * indiv.ltor;
 				else
 					indiv.ltor = npscal_day * indiv.ltor;
+
+			if (indiv.ltor > 10.0)
+				indiv.ltor = 10.0;
 		}
 
 
