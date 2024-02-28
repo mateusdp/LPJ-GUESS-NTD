@@ -389,7 +389,7 @@ void CommonOutput::define_output_tables() {
 	// PFLUX
 	ColumnDescriptors pflux_columns;
 	pflux_columns += ColumnDescriptor("PO4dep", 8, 2);
-	pflux_columns += ColumnDescriptor("wtr", 8, 2);
+	pflux_columns += ColumnDescriptor("wtr", 8, 4);
 	pflux_columns += ColumnDescriptor("fert", 8, 2);
 	pflux_columns += ColumnDescriptor("flux", 13, 4);
 	pflux_columns += ColumnDescriptor("leach", 13, 4);
