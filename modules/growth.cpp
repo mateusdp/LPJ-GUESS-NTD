@@ -2400,11 +2400,11 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						turnover_sap = indiv.pft.turnover_sap / 365.0;
 					//}
 
-						if (indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN) {
+						/*if (indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN) {
 							turnover_leaf *= 1 - indiv.phen;
 							turnover_root *= 1 - indiv.phen;
 							turnover_sap *= 1 - indiv.phen;
-						}
+						}*/
 
 					// Tissue turnover with both nitrogen and phosphorus and associated litter production
 					//turnover_np(indiv.pft.turnover_leaf, indiv.pft.turnover_root,
