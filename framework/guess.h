@@ -602,8 +602,8 @@ struct PhotosynthesisResult : public Serializable {
 		je          = 0;
 		nactive_opt = 0.0;
 		pactive_opt = 0.0;
-		vmaxnlim    = 1.0;
-		vmaxplim	= 1.0;
+		vmaxnlim    = 0.0;
+		vmaxplim	= 0.0;
 	}
 
 	/// RuBisCO capacity (gC/m2/day)
@@ -1310,6 +1310,12 @@ public:
 		MT_TRIC,
 		MT_TBOC,
 		MT_OTHR,
+		/// GPP (kgC/m2) with no stress
+		GPPno,
+		/// GPP (kgC/m2) with N stress
+		GPPns,
+		/// GPP (kgC/m2) with P stress
+		GPPps,
 		/// Number of types, must be last
 		NPERPFTFLUXTYPES
 	};
@@ -3042,6 +3048,18 @@ public:
 	bool alive;
 	/// NPP this day
 	double dnpp;
+	/// GPP this day without any stresses
+	double dgpp_no;
+	/// GPP this day with only nitrogen stresses
+	double dgpp_ns;
+	/// GPP this day with only phosphorus stresses
+	double dgpp_ps;
+	/// Annual GPP without any stresses
+	double agpp_no;
+	/// Annual GPP with only N stress
+	double agpp_ns;
+	/// Annual GPP with only P stress
+	double agpp_ps;
 
 	// bvoc
 

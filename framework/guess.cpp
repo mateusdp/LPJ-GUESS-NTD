@@ -1366,6 +1366,12 @@ Individual::Individual(int i,Pft& p,Vegetation& v):pft(p),vegetation(v),id(i) {
 	}
 
 	dnpp              = 0.0;
+	dgpp_no			  = 0.0;
+	dgpp_ns			  = 0.0;
+	dgpp_ps			  = 0.0;
+	agpp_no			  = 0.0;
+	agpp_ns			  = 0.0;
+	agpp_ps			  = 0.0;
 	cropindiv         = NULL;
 	last_turnover_day = -1;
 

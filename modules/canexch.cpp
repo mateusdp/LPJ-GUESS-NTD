@@ -534,11 +534,11 @@ void vmax(double b, double c1, double c2, double apar, double tscal,
 	nactive_opt = M * vm * CN * tfac;
 
 	if (vm > vm_max && ifnlimvmax) {
-		vmaxnlim = vm_max / vm;	// Save vmax nitrogen limitation
+		vmaxnlim = 1.0 - vm_max / vm;	// Save vmax nitrogen limitation
 		vm = vm_max;
 	}
 	else {
-		vmaxnlim = 1.0;
+		vmaxnlim = 0.0;
 	}
 }
 
@@ -573,11 +573,11 @@ void vmax_p(double b, double c1, double c2, double apar, double tscal,
 
 	///////////////////////////////////////////	
 	if (vm > vm_max && ifplimvmax) {
-		vmaxplim = vm_max / vm;	// Save vmax phosphorus limitation
+		vmaxplim = 1 - vm_max / vm;	// Save vmax phosphorus limitation
 		vm = vm_max;
 	}
 	else {
-		vmaxplim = 1.0;
+		vmaxplim = 0.0;
 	}
 }
 
@@ -1064,6 +1064,12 @@ void photosynthesis_nostress(Patch& patch, Climate& climate) {
 		               indiv.photosynthesis);
 
 		indiv.gpterm = gpterm(indiv.photosynthesis.adtmm, pftco2, pft.lambda_max, climate.daylength);
+
+		// Save GPP without any stresses
+		indiv.dgpp_no = max(0.0, indiv.photosynthesis.net_assimilation());
+		indiv.agpp_no += indiv.dgpp_no;
+		indiv.report_flux(Fluxes::GPPno, indiv.dgpp_no);
+
 
 		if (date.diurnal()) {
 
@@ -1732,6 +1738,10 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 
 			indiv.gpterm = gpterm(indiv.photosynthesis.adtmm, pftco2, pft.lambda_max, climate.daylength);
 
+			// Save GPP with nutrient stress
+			indiv.dgpp_ns = max(0.0, indiv.photosynthesis.net_assimilation());
+			indiv.dgpp_ps = max(0.0, indiv.photosynthesis.net_assimilation());
+
 			if (date.diurnal()) {
 				for (int i=0; i<date.subdaily; i++) {
 					PhotosynthesisResult& ps_result = indiv.phots[i];
@@ -1753,26 +1763,33 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 				}
 			}
 		}
+		else {
+				// Save GPP with nutrient stress
+				indiv.dgpp_ns = indiv.dgpp_no;
+				indiv.photosynthesis.vmaxnlim = 0.0;	
+				indiv.dgpp_ps = indiv.dgpp_no;
+				indiv.photosynthesis.vmaxplim = 0.0;
+		}
+
+		indiv.agpp_ns += indiv.dgpp_ns;
+		indiv.report_flux(Fluxes::GPPns, indiv.dgpp_ns);
+		indiv.agpp_ps += indiv.dgpp_ps;
+		indiv.report_flux(Fluxes::GPPps, indiv.dgpp_ps);
+		
 
 		// Sum annual average nitrogen and/or phosphorus limitation on vmax
 		if (indiv.phen) {
-			indiv.avmaxnlim += indiv.photosynthesis.vmaxnlim;
-			indiv.avmaxplim += indiv.photosynthesis.vmaxplim;
+			indiv.avmaxnlim += indiv.photosynthesis.vmaxnlim * indiv.dgpp_no;
+			indiv.avmaxplim += indiv.photosynthesis.vmaxplim * indiv.dgpp_no;
 		}
 
 		// On last day of year determined average nitrogen and/or phosphorus limitation
 		// based on days with leaf on
 		if (date.islastday && date.islastmonth) {
 
-			if (!negligible(indiv.nday_leafon)) {
-				//if (ifnlim && ifplim)
-					/*indiv.nday_leafon /= 2.0;
-				indiv.avmaxnlim /= (double)indiv.nday_leafon;
-				indiv.avmaxplim /= (double)indiv.nday_leafon;*/
-				double nday_leafon_double = static_cast<double>(indiv.nday_leafon + 2);
-				nday_leafon_double /= 2.0;
-				indiv.avmaxnlim /= nday_leafon_double;
-				indiv.avmaxplim /= nday_leafon_double;
+			if (!negligible(indiv.agpp_no)) {
+				indiv.avmaxnlim /= indiv.agpp_no;
+				indiv.avmaxplim /= indiv.agpp_no;
 			}
 			else {
 				indiv.avmaxnlim = 0.0;
@@ -3252,6 +3269,9 @@ void init_canexch(Patch& patch, Climate& climate, Vegetation& vegetation) {
 			Individual& indiv = vegetation.getobj();
 
 			indiv.anpp           = 0.0;
+			indiv.agpp_no		 = 0.0;
+			indiv.agpp_ns		 = 0.0;
+			indiv.agpp_ps		 = 0.0;
 
 			indiv.leafndemand    = 0.0;
 			indiv.rootndemand    = 0.0;
@@ -3266,9 +3286,9 @@ void init_canexch(Patch& patch, Climate& climate, Vegetation& vegetation) {
 			indiv.hopdemand = 0.0;
 
 			indiv.nday_leafon    = 0;
-			indiv.avmaxnlim      = 1.0;
+			indiv.avmaxnlim      = 0.0;
 			indiv.cton_leaf_aavr = 0.0;
-			indiv.avmaxplim = 1.0;
+			indiv.avmaxplim		 = 0.0;
 			indiv.ctop_leaf_aavr = 0.0;
 
 			if (!negligible(indiv.cmass_leaf) && !negligible(indiv.nmass_leaf))
