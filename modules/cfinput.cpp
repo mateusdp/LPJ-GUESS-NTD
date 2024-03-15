@@ -1114,7 +1114,7 @@ void CFInput::populate_daily_arrays(Gridcell& gridcell) {
 	for (int i = 0; i < date.year_length(); ++i) {
 		
 		//is daily check for monthly outputs, avoid twice conversion
-		if (is_daily(cf_temp)) {
+		if (is_daily(cf_temp) || weathergenerator == INTERP) {
 			dtemp[i] -= K2degC;
 			if (cf_min_temp) {
 				dmin_temp[i] -= K2degC;

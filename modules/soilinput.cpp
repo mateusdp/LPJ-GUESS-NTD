@@ -433,10 +433,10 @@ void SoilInput::get_soil_mineral(double lon, double lat, Gridcell& gridcell) {
 	soiltype.mineral_frac = 1.0 - soiltype.organic_frac - soiltype.porosity;
 
 	// Phosphorus soil data
-	// FIXED FOR AMAZON FACE AT THE MOMENT
-	soiltype.kplab = soilprop.kplab;
-	soiltype.spmax = soilprop.spmax;
-	soiltype.pwtr = soilprop.pwtr;
+	// CHECK THIS TO SEE IF CHANGES THAN 0!
+	soiltype.kplab = data[soiltype.soilcode][12];
+	soiltype.spmax = data[soiltype.soilcode][13];
+	soiltype.pwtr = data[soiltype.soilcode][14];
 
 	if (!ifcentury) {
 		// override the default SOM years with 70-80% of the spin-up period
