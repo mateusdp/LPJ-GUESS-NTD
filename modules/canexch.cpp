@@ -1328,6 +1328,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 	// soil available mineral nitrogen (kgN/m2)
 	const double nmin_avail_NH4 = soil.nmass_avail(NH4);
 	const double nmin_avail_NO3 = soil.nmass_avail(NO3);
+	const double nmin_avail_N = soil.nmass_avail(NO);
 	double norg_avail_myco = soil.sompool[SOILSTRUCT].nmass + soil.sompool[SOILMETA].nmass;
 
 	if (date.year < freenyears)
@@ -1455,6 +1456,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_no3 / 1.28));
 		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.28));*/
 
+		double nmin_scale_N = kNmin + nmin_avail_N / (nmin_avail_N + indiv.pft.km_volume_no3);
+
 		double nmin_scale_NO3 = nmin_avail_NO3 < 6.3e-6 ? kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3) :
 														  kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + 1.48e-5);
 		double nmin_scale_NH4 = nmin_avail_NH4 < 6.3e-6 ? kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + indiv.pft.km_volume_nh4) : 
@@ -1476,6 +1479,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		// This is considered to be related to FPC which is proportional to crown area which is approx
 		// 4 times smaller than the root area
 		// Added root projective cover	
+		double max_indiv_avail = 0.0;
 		double max_indiv_avail_NH4 = 0.0;
 		double max_indiv_avail_NO3 = 0.0;
 		double max_indiv_avail_NH4_myco = 0.0;
@@ -1498,13 +1502,13 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
 		}
 		else {
-			double max_indiv_avail = min(1.0, indiv.fpc * 4.0) * (nmin_avail_NH4 + nmin_avail_NO3);
+			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * nmin_avail_N;
 		}
 
 		// Maximum nitrogen uptake due to all scalars (times 2 because considering both NO3- and NH4+ uptake)
 		// and soil available nitrogen within individual projectived coverage
 		//double maxnup = min(2.0 * indiv.pft.nuptoroot * nmin_scale * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
-		double maxnup = min(1.0 * indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4 + max_indiv_avail_NO3);
+		double maxnup = min(1.0 * indiv.pft.nh4uptoroot * nmin_scale_N * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail);
 
 		double maxnup_NH4 = nmin_avail_NH4 < 6.3e-6 ? min(indiv.pft.nh4uptoroot * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4) :
 													  min(3.4e-3 * nmin_scale_NH4 * temp_scale * indiv.cton_status * indiv.cmass_root_today(), max_indiv_avail_NH4);
@@ -1548,6 +1552,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		}
 		else {
 			fractomax = ndemand_tot > 0.0 ? min(maxnup / ndemand_tot, 1.0) : 0.0;
+			// If srl does not vary, there is no myco uptake. Maybe correct this in the future.
+			fractomax_myco = 0.0;
 		}
 				
 		// Fraction of uptake taken by organic sources in EcM
@@ -1791,6 +1797,8 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		}
 		else {
 			fractomax = pdemand_tot > 0.0 ? min(maxpup / pdemand_tot, 1.0) : 0.0;
+			// If srl does not vary, there is no myco uptake. Maybe correct this in the future.
+			fractomax_myco = 0.0;
 		}
 
 		// Fraction of uptake taken by organic sources in EcM
