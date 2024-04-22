@@ -3140,6 +3140,9 @@ public:
 	/// specific root length (m/kgC)
 	double srl;
 
+	/// Leaf area to Sapwood area
+	double k_latosa;
+
 	/// root diameter (m)
 	double d_root;
 	/// mycorrhiza colonization rate (-)
@@ -3733,6 +3736,8 @@ public:
 		srl = 0.0;
 		myco_col = 0.0;
 
+		k_latosa = pft.k_latosa;
+
 		if (ifdynltor)
 			ltor = pft.ltor_max;
 
@@ -3787,6 +3792,8 @@ public:
 		//ctop_sap_min = ctop_sap_max * frac_maxtomin;
 		ctop_stem_avr = pft.ctop_stem_avr;
 		ctop_stem_max = pft.ctop_stem_max;
+
+		k_latosa = 1 / pow(10, -1.93 * log10(sla * 5)); // SLA - klatosa tradeoff Mencuccini et al. 2019
 
 	}
 

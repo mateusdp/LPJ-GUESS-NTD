@@ -590,6 +590,7 @@ void establishment_guess(Stand& stand,Patch& patch) {
 							//indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, wsg_width, stand.seed);
 							indiv.srl = 100000.0;
 							indiv.srl_tradeoffs();
+							//indiv.myco_col = 0.0;
 						}
 
 						if (ifdaily)

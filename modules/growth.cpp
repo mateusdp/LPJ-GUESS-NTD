@@ -1004,7 +1004,8 @@ void allocation_init(double bminit, double ltor, Individual& indiv) {
 
 	//allocation(bminit, 0.0, 0.0, 0.0, 0.0, 0.0, ltor, 0.0, indiv.pft.sla, indiv.pft.wooddens,
 	allocation(bminit, 0.0, 0.0, 0.0, 0.0, 0.0, ltor, 0.0, indiv.sla, indiv.wooddens,
-		indiv.pft.lifeform, indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
+		//indiv.pft.lifeform, indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
+		indiv.pft.lifeform, indiv.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
 		cmass_leaf_ind, cmass_root_ind, cmass_sap_ind, dval, dval, dval, dval, dval);
 
 	indiv.cmass_leaf = cmass_leaf_ind * indiv.densindiv;
@@ -1096,7 +1097,7 @@ bool allometry(Individual& indiv) {
 		if (!negligible(indiv.cmass_leaf)) {
 
 			//indiv.height = indiv.cmass_sap / indiv.cmass_leaf / indiv.pft.sla * indiv.pft.k_latosa / indiv.pft.wooddens;
-			indiv.height = indiv.cmass_sap / indiv.cmass_leaf / indiv.sla * indiv.pft.k_latosa / indiv.wooddens;
+			indiv.height = indiv.cmass_sap / indiv.cmass_leaf / indiv.sla * indiv.k_latosa / indiv.wooddens;
 
 			// Stem diameter (Eqn 5)
 			indiv.diam = pow(indiv.height / indiv.pft.k_allom2, 1.0 / indiv.pft.k_allom3);
@@ -1647,7 +1648,8 @@ void growth(Stand& stand, Patch& patch) {
 						indiv.cmass_heart / indiv.densindiv, indiv.ltor,
 						//indiv.height, indiv.pft.sla, indiv.pft.wooddens, TREE,
 						indiv.height, indiv.sla, indiv.wooddens, TREE,
-						indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
+						//indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
+						indiv.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
 						cmass_leaf_inc, cmass_root_inc, cmass_sap_inc, cmass_debt_inc,
 						cmass_heart_inc,
 						litter_leaf_inc, litter_root_inc, exceeds_cmass);
@@ -2141,18 +2143,18 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			double ctop_leaf_aopt = max(indiv.ctop_leaf_aopt, indiv.ctop_leaf_avr);
 
 			if (ifnlim)
-				if (ifdynltor || ifdynreloc)
+				//if (ifdynltor || ifdynreloc)
 					nscal = cton_leaf_aopt / indiv.cton_leaf_aavr;
-				else
-					nscal = min(1.0, cton_leaf_aopt / indiv.cton_leaf_aavr);
+				/*else
+					nscal = min(1.0, cton_leaf_aopt / indiv.cton_leaf_aavr);*/
 			else
 				nscal = 1.0;
 
 			if (ifplim)
-				if (ifdynltor || ifdynreloc)
+				//if (ifdynltor || ifdynreloc)
 					pscal = ctop_leaf_aopt / indiv.ctop_leaf_aavr;
-				else
-					pscal = min(1.0, ctop_leaf_aopt / indiv.ctop_leaf_aavr);
+				/*else
+					pscal = min(1.0, ctop_leaf_aopt / indiv.ctop_leaf_aavr);*/
 			else
 				pscal = 1.0;
 
@@ -2171,7 +2173,10 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			// nitrogen or phosphorus stress scalar
 			// Added dynamic ltor switch
 			if (!ifdynltor)
-				indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
+				if (indiv.wscal_mean() < 1.0)
+					indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
+				else
+					indiv.ltor = npscal * indiv.pft.ltor_max;
 			else
 				// In the future, add influence of water stress on ltor, when root mass has an impact on water uptake.
 				if (indiv.wstress)
@@ -2397,7 +2402,8 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 							turnover_leaf = indiv.pft.turnover_leaf / 365.0;
 							turnover_root = indiv.pft.turnover_root / 365.0;
 						}
-						turnover_sap = indiv.pft.turnover_sap / 365.0;
+						//turnover_sap = indiv.pft.turnover_sap / 365.0;
+						turnover_sap = 0.1 * pow((indiv.wooddens * 2.0) / 608.0 , -1.25) / 365.0; // Falster et al. 2018 PNAS
 					//}
 
 						/*if ((indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN)) {
@@ -2466,7 +2472,8 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						indiv.cmass_heart / indiv.densindiv, indiv.ltor,
 						//indiv.height, indiv.pft.sla, indiv.pft.wooddens, TREE,
 						indiv.height, indiv.sla, indiv.wooddens, TREE,
-						indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
+						//indiv.pft.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
+						indiv.k_latosa, indiv.pft.k_allom2, indiv.pft.k_allom3,
 						cmass_leaf_inc, cmass_root_inc, cmass_sap_inc, cmass_debt_inc,
 						cmass_heart_inc,
 						litter_leaf_inc, litter_root_inc, exceeds_cmass);
