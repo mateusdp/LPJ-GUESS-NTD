@@ -2402,8 +2402,8 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 							turnover_leaf = indiv.pft.turnover_leaf / 365.0;
 							turnover_root = indiv.pft.turnover_root / 365.0;
 						}
-						turnover_sap = indiv.pft.turnover_sap / 365.0;
-						//turnover_sap = 0.1 * pow((indiv.wooddens * 2.0) / 608.0 , -1.25) / 365.0; // Falster et al. 2018 PNAS
+						//turnover_sap = indiv.pft.turnover_sap / 365.0;
+						turnover_sap = 0.1 * pow((indiv.wooddens * 2.0) / 608.0 , -1.25) / 365.0; // Falster et al. 2018 PNAS
 					//}
 
 						/*if ((indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN)) {
