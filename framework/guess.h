@@ -3793,7 +3793,7 @@ public:
 		ctop_stem_avr = pft.ctop_stem_avr;
 		ctop_stem_max = pft.ctop_stem_max;
 
-		k_latosa = 1 / pow(10, -1.93 * log10(sla * 5)); // SLA - klatosa tradeoff Mencuccini et al. 2019
+		//k_latosa = 1 / pow(10, -1.93 * log10(sla * 5)); // SLA - klatosa tradeoff Mencuccini et al. 2019
 
 	}
 
