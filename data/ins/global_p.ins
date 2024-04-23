@@ -20,6 +20,9 @@ outputdirectory "./"
 file_cmass "cmass.out"
 file_anpp "anpp.out"
 file_agpp "agpp.out"
+file_agpp_no "agpp_no.out"
+file_agpp_ns "agpp_ns.out"
+file_agpp_ps "agpp_ps.out"
 file_fpc "fpc.out"
 file_aaet "aaet.out"
 file_lai "lai.out"
@@ -29,7 +32,7 @@ file_dens "dens.out"
 file_runoff "tot_runoff.out"
 file_cpool "cpool.out"
 !file_clitter "clitter.out"
-!file_aburned_area_out "annual_burned_area.out"
+file_aburned_area_out "annual_burned_area.out"
 !file_simfireanalysis_out "simfireanalysis.out"
 !file_firert "firert.out"
 !file_aiso "aiso.out"
@@ -43,13 +46,17 @@ file_cton_leaf "cton_leaf.out"
 file_ngases "ngases.out"
 file_nsources "nsources.out"
 file_npool "npool.out"
-!file_nlitter "nlitter.out"
-!file_nuptake "nuptake.out"
+file_nlitter "nlitter.out"
+file_nuptake "nuptake.out"
 file_nflux "nflux.out"
 file_vmaxnlim "vmaxnlim.out"
 
 file_pmass "pmass.out"
 file_ctop_leaf "ctop_leaf.out"
+file_psources "psources.out"
+file_ppool "ppool.out"
+file_plitter "plitter.out"
+file_puptake "puptake.out"
 file_pflux "pflux.out"
 file_soil_ppool "soil_ppool.out"
 file_vmaxplim "vmaxplim.out"
@@ -57,9 +64,9 @@ file_vmaxplim "vmaxplim.out"
 ! Monthly outputs
 !file_mnpp "mnpp.out"
 !file_mlai "mlai.out"
-!file_mrh "mrh.out"
+file_mrh "mrh.out"
 !file_mgpp "mgpp.out"
-!file_mra "mra.out"
+file_mra "mra.out"
 !file_mnee "mnee.out"
 !file_maet "maet.out"
 !file_mpet "mpet.out"
@@ -96,14 +103,14 @@ file_vmaxplim "vmaxplim.out"
 title 'LPJ-GUESS cohort mode - global pfts'
 
 vegmode "cohort"		! "cohort", "individual" or "population"
-nyear_spinup 500		! Number of years to spin up the simulation for
+nyear_spinup 200		! Number of years to spin up the simulation for
 ifcalcsla 1			! Whether to calculate SLA from leaf longevity
 				! (PFT-specific value can be specified in this file instead)
 ifcalccton 1			! Whether to calculate leaf C:N min from leaf longevity
 				! (PFT-specific value can be specified in this file instead)
-firemodel "NOFIRE"		! BLAZE, GLOBFIRM, NOFIRE
+firemodel "GLOBFIRM"		! BLAZE, GLOBFIRM, NOFIRE
 weathergenerator "GWGEN"	! GWGEN, INTERP
-npatch 15			! Number of replicate patches to simulate
+npatch 1			! Number of replicate patches to simulate
 patcharea 1000			! Patch area (m2)
 estinterval 5			! Years between establishment events in cohort mode
 ifdisturb 1			! Whether generic patch-destroying disturbances enabled
@@ -125,7 +132,7 @@ ifdroughtlimitedestab 0		! Whether establishment is limited by growing season dr
 				! guess2008 - species version has 1
 ifrainonwetdaysonly 1		! Whether to rain on wet days only (1), or to rain a bit every day (0)
 ifbvoc 0                     	! Whether to include BVOC calculations (1) or not (0)
-acclimated_respiration 1	! Activation of acclimated respiration, function substituting the respcoeff values.
+acclimated_respiration 0		! Activation of acclimated respiration, function substituting the respcoeff values.
 
 
 !///////////////////////////////////////////////////////////////////////////////
@@ -135,6 +142,7 @@ acclimated_respiration 1	! Activation of acclimated respiration, function substi
 ifcentury 1			! Whether to use CENTURY SOM dynamics (mandatory for N cycling)
 ifnlim 1			! Whether plant growth limited by available N
 ifplim 1			! Whether plant growth limited by available P
+ifwalkernplim 0		! Walker et al. 2014 Vcmax limitation for ifnlim and/or ifplim. 
 freenyears 100			! Number of years to spin up without N limitation (needed to build up a N pool)
 nfix_a 0.234			! First term in N fixation eqn (Conservative 0.102, Central 0.234, Upper 0.367)
 nfix_b -0.172			! Second term in N fixation eqn (Conservative 0.524, Central -0.172, Upper -0.754)
@@ -253,10 +261,14 @@ group "tree" (
 	wooddens 200
 	cton_root 29
 	cton_sap 330
-	nuptoroot 0.0028
-	puptoroot 0.00148
-	km_volume 0.000001477
-	kmp_volume 0.000000215
+	!nuptoroot 0.0028
+	nuptoroot 0.0089 !Rothstein AVG for NH4, ambient CO2
+	!puptoroot 0.00148
+	puptoroot 0.00277 !Kavka AVG PO4 (*2)
+	!km_volume 0.000001477
+	km_volume  0.00000203  !Rothstein AVG ambient CO2
+	!kmp_volume 0.000000215
+	kmp_volume  0.0000021 !PO4 Kavka AVG
 	pathway "c3"
 	respcoeff 1.0
 	kest_repr 200
@@ -326,10 +338,14 @@ group "grass" (
 	turnover_root 0.7
 	!cton_leaf_min 16
 	cton_root 29
-	nuptoroot 0.00551
-	puptoroot 0.00148
-	km_volume 0.000001876
-	kmp_volume 0.000000215
+	!nuptoroot 0.00551
+	nuptoroot 0.0089 !Rothstein AVG for NH4, ambient CO2
+	!puptoroot 0.00148
+	puptoroot 0.00277 !Kavka AVG PO4 (*2)
+	km_volume  0.00000203  !Rothstein AVG ambient CO2
+	!km_volume 0.000001876
+	kmp_volume  0.0000021 !PO4 Kavka AVG
+	!kmp_volume 0.000000215
 	fnstorage 0.3
 	fpstorage 0.3
 	litterme 0.2
@@ -419,6 +435,8 @@ group "tropical" (
 
 	tcmin_surv 15.5
 	tcmin_est 15.5
+	!tcmin_surv 2
+	!tcmin_est 2
 	tcmax_est 1000   	! no limit
 	twmin_est -1000  	! no limit
 	gdd5min_est 0    	! no limit
