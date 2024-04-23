@@ -2183,6 +2183,9 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 					indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.ltor;
 				else
 					indiv.ltor = npscal * indiv.ltor;
+
+			if (indiv.ltor > 10.0)
+				indiv.ltor = 10.0;
 		}
 
 
@@ -2313,7 +2316,11 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 
 				//// Allocation to mycorrhiza
 				if (bminc > 0.0) {
-					cmass_myco_inc = bminc * max_ctomyco_rate * indiv.myco_col;
+					if(!indiv.myco_type)
+						cmass_myco_inc = bminc * max_ctomyco_rate * indiv.myco_col;
+					else
+						//cmass_myco_inc = bminc * max_ctomyco_rate * pow(indiv.myco_col, 3);
+						cmass_myco_inc = bminc * 1.0 * indiv.myco_col;
 					bminc -= cmass_myco_inc;
 				}
 				else {
