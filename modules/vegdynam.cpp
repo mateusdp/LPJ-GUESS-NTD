@@ -767,8 +767,11 @@ void establishment_guess(Stand& stand,Patch& patch) {
 						if (ifsrlvary) {
 							indiv.srl = randomize_trait(pft.srl_min, pft.srl_max, srl_width, stand.seed);
 							indiv.srl_tradeoffs();
-							if (ifmycovary)
-								indiv.myco_type = 2 * randomize_trait(0, 1, 2, stand.seed);
+							if (ifmycovary) {
+								indiv.myco_type = randomize_trait(0, 3, 3, stand.seed);
+								if (indiv.myco_type == 2.0)
+									indiv.myco_col = 0.0;
+							}
 							if (ifno3fracvary)
 								indiv.no3_fndemand = randomize_trait(0.0, 1.0, 100, stand.seed);
 						}
