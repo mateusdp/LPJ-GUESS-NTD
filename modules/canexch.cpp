@@ -1557,7 +1557,8 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		}
 				
 		// Fraction of uptake taken by organic sources in EcM
-		indiv.fractomax_nmyco = fractomax_myco;
+		if (indiv.myco_type)
+			indiv.fractomax_nmyco = fractomax_myco;
 
 		// Root and leaf demand from storage pools
 		indiv.leafndemand_store = indiv.leafndemand * (1.0 - fractomax);
@@ -1802,7 +1803,8 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		}
 
 		// Fraction of uptake taken by organic sources in EcM
-		indiv.fractomax_pmyco = fractomax_myco;
+		if (indiv.myco_type)
+			indiv.fractomax_pmyco = fractomax_myco;
 
 		// Root and leaf demand from storage pools
 		indiv.leafpdemand_store = indiv.leafpdemand * (1.0 - fractomax);
@@ -3367,6 +3369,11 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 
 		// Update accumulated annual NPP and daily vegetation-atmosphere flux
 		indiv.dnpp = assim - resp;
+
+		// C investment in enzimes to break down organic matter for EM uptake, 50% C content of enzimes, Allen et al. 2020 FUN model
+		/*if (indiv.myco_type)
+			indiv.dnpp -= (indiv.fractomax_nmyco + indiv.fractomax_pmyco) * 0.0;*/
+
 		indiv.anpp += indiv.dnpp;
 
 		indiv.report_flux(Fluxes::NPP, indiv.dnpp);
