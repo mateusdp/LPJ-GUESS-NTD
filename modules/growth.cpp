@@ -1152,10 +1152,10 @@ bool allometry(Individual& indiv) {
 
 			// Root projective cover calculation, if SRL variation is activated.
 			if (ifsrlvary) {
-				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;*/
-				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
+				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
+				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;*/
 				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
 				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
 				// root surface area divided by soil surface area. This is calculated by ssa = 50 m2/g * soil dens = 1.5e6 g/m3 * soil depth = 2.5 m. 
@@ -1210,10 +1210,10 @@ bool allometry(Individual& indiv) {
 
 				// Root projective cover calculation, if SRL variation is activated.
 				if (ifsrlvary) {
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
-					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;*/
+					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;*/
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
 					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / (3.75e6 * 50.0);
@@ -2409,8 +2409,8 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 							turnover_leaf = indiv.pft.turnover_leaf / 365.0;
 							turnover_root = indiv.pft.turnover_root / 365.0;
 						}
-						//turnover_sap = indiv.pft.turnover_sap / 365.0;
-						turnover_sap = 0.1 * pow((indiv.wooddens * 2.0) / 608.0 , -1.25) / 365.0; // Falster et al. 2018 PNAS
+						turnover_sap = indiv.pft.turnover_sap / 365.0;
+						//turnover_sap = 0.1 * pow((indiv.wooddens * 2.0) / 608.0 , -1.25) / 365.0; // Falster et al. 2018 PNAS
 					//}
 
 						/*if ((indiv.pft.phenology == RAINGREEN || indiv.pft.phenology == SUMMERGREEN)) {
