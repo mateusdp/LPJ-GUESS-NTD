@@ -1164,8 +1164,8 @@ bool allometry(Individual& indiv) {
 				// root surface area divided by soil surface area. This is calculated by ssa = 50 m2/g * soil dens, planar = 1.5e4 g/m2 / patcharea  = 1000 m. 
 				/*indiv.rpc = (indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.densindiv) / (15 * 50.0);
 				indiv.rpc_myco = (indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.densindiv) / (15 * 50.0); */
-				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.vegetation.patch.soil.soiltype.wtot;
-				indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.vegetation.patch.soil.soiltype.wtot;
+				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.densindiv / indiv.vegetation.patch.soil.soiltype.wtot;
+				indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.densindiv / indiv.vegetation.patch.soil.soiltype.wtot;
 
 				/*indiv.rpc /= 2.0;
 				indiv.rpc_myco /= 2.0;*/
@@ -1220,8 +1220,8 @@ bool allometry(Individual& indiv) {
 					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.densindiv / (3.75e6 * 50.0);*/
 					/*indiv.rpc = (indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.densindiv) / (15 * 50.0);
 					indiv.rpc_myco = (indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.densindiv) / (15 * 50.0);*/
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.vegetation.patch.soil.soiltype.wtot;
-					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.vegetation.patch.soil.soiltype.wtot;
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.densindiv / indiv.vegetation.patch.soil.soiltype.wtot;
+					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.densindiv / indiv.vegetation.patch.soil.soiltype.wtot;
 
 					/*indiv.rpc /= 2.0;
 					indiv.rpc_myco /= 2.0;*/
@@ -2169,7 +2169,7 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			// Choose more limiting factor between nitrogen and phosphorus
 			double npscal = min(nscal, pscal);
 
-			indiv.myco_col = min(1.0, indiv.myco_col * (1 / npscal));
+			//indiv.myco_col = min(1.0, indiv.myco_col * (1 / npscal));
 
 			// Set leaf:root mass ratio based on water stress parameter,
 			// nitrogen or phosphorus stress scalar
