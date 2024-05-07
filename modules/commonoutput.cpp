@@ -492,7 +492,7 @@ void CommonOutput::define_output_tables() {
 	inventory_columns += ColumnDescriptor("SRL", 15, 2);
 	inventory_columns += ColumnDescriptor("My_Col", 13, 2);
 	inventory_columns += ColumnDescriptor("cmyco", 13, 4);
-	inventory_columns += ColumnDescriptor("myco_type", 9, 1);
+	inventory_columns += ColumnDescriptor("myco_typ", 9, 1);
 	inventory_columns += ColumnDescriptor("WSG", 13, 2);
 	inventory_columns += ColumnDescriptor("N", 8, 3);
 	inventory_columns += ColumnDescriptor("AET", 8, 1);
