@@ -1453,8 +1453,11 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double nmin_scale_NO3_myco = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + (gridcell.pft[indiv.pft.id].Km_no3 / 1.66));
 		double nmin_scale_NH4_myco = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.66));
 
-		double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_no3 / 1.28));
-		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.28));
+		double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_no3 / 1.66));
+		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.66));
+
+		/*double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_no3 / 1.28));
+		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.28));*/
 
 		/*double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3);
 		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + indiv.pft.km_volume_nh4);
@@ -1531,22 +1534,22 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double maxnup_myco_NH4;
 		double fractomax, fractomax_myco;
 
-		if (!indiv.myco_type) {
+		//if (!indiv.myco_type) {
 			/*maxnup_myco_NH4 = nmin_avail_NH4 < 6.3e-6 ? min(1.66 * indiv.pft.nh4uptoroot * nmin_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco) :
 				                                        min(1.66 * 3.4e-3 * nmin_scale_NH4_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_NH4_myco);
 			maxnup_myco_NO3 = nmin_avail_NO3 < 6.3e-6 ? min(1.66 * indiv.pft.no3uptoroot * nmin_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco):
 														min(1.66 * 2.8e-3 * nmin_scale_NO3_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_NO3_myco);*/
 			maxnup_myco_NH4 = min(1.66 * indiv.pft.nh4uptoroot * nmin_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NH4_myco);
 			maxnup_myco_NO3 = min(1.66 * indiv.pft.no3uptoroot * nmin_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_NO3_myco);
-		}
-		else {
-			/*maxnup_myco_NH4 = nmin_avail_NH4 < 6.3e-6 ? min(1.28 * indiv.pft.nh4uptoroot * norg_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco) :
-													    min(1.28 * 3.4e-3 * norg_scale_NH4_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_org_myco);
-			maxnup_myco_NO3 = nmin_avail_NO3 < 6.3e-6 ? min(1.28 * indiv.pft.no3uptoroot * norg_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco) :
-														min(1.28 * 2.8e-3 * norg_scale_NO3_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_org_myco);*/
-			maxnup_myco_NH4 = min(1.28 * indiv.pft.nh4uptoroot * norg_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
-			maxnup_myco_NO3 = min(1.28 * indiv.pft.no3uptoroot * norg_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
-		}
+		//}
+		//else {
+		//	/*maxnup_myco_NH4 = nmin_avail_NH4 < 6.3e-6 ? min(1.28 * indiv.pft.nh4uptoroot * norg_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco) :
+		//											    min(1.28 * 3.4e-3 * norg_scale_NH4_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_org_myco);
+		//	maxnup_myco_NO3 = nmin_avail_NO3 < 6.3e-6 ? min(1.28 * indiv.pft.no3uptoroot * norg_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco) :
+		//												min(1.28 * 2.8e-3 * norg_scale_NO3_myco * temp_scale * indiv.cton_status * indiv.cmass_myco, max_indiv_avail_org_myco);*/
+		//	maxnup_myco_NH4 = min(1.28 * indiv.pft.nh4uptoroot * norg_scale_NH4_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+		//	maxnup_myco_NO3 = min(1.28 * indiv.pft.no3uptoroot * norg_scale_NO3_myco * temp_scale * 1.0 * indiv.cmass_myco, max_indiv_avail_org_myco);
+		//}
 		
 		// Nitrogen demand limitation due to maximum nitrogen uptake capacity
 		if (ifsrlvary) {
@@ -3384,8 +3387,8 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 		indiv.dnpp = assim - resp;
 
 		// C investment in enzimes to break down organic matter for EM uptake, 50% C content of enzimes, Allen et al. 2020 FUN model
-		/*if (indiv.myco_type)
-			indiv.dnpp -= (indiv.fractomax_nmyco + indiv.fractomax_pmyco) * 0.0;*/
+		if (indiv.myco_type)
+			indiv.dnpp -= (indiv.fractomax_nmyco + indiv.fractomax_pmyco) * 6e-4;
 
 		indiv.anpp += indiv.dnpp;
 

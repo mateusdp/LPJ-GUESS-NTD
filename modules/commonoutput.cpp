@@ -492,6 +492,7 @@ void CommonOutput::define_output_tables() {
 	inventory_columns += ColumnDescriptor("SRL", 15, 2);
 	inventory_columns += ColumnDescriptor("My_Col", 13, 2);
 	inventory_columns += ColumnDescriptor("cmyco", 13, 4);
+	inventory_columns += ColumnDescriptor("myco_type", 9, 1);
 	inventory_columns += ColumnDescriptor("WSG", 13, 2);
 	inventory_columns += ColumnDescriptor("N", 8, 3);
 	inventory_columns += ColumnDescriptor("AET", 8, 1);
@@ -1245,6 +1246,7 @@ void CommonOutput::outannual(Gridcell& gridcell) {
 											outlimit(out, out_inventory, indiv.srl);
 											outlimit(out, out_inventory, indiv.myco_col);
 											outlimit(out, out_inventory, 1000.0 * indiv.cmass_myco / (indiv.densindiv*patcharea));
+											outlimit(out, out_inventory, indiv.myco_type);
 											//outlimit(out, out_inventory, 1000.0 * indiv.cmass_myco);
 											outlimit(out, out_inventory, indiv.wooddens);
 											outlimit(out, out_inventory, indiv.densindiv);
