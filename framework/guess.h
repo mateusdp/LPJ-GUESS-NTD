@@ -3147,6 +3147,8 @@ public:
 	double d_root;
 	/// mycorrhiza colonization rate (-)
 	double myco_col;
+	/// mycorrhiza colonization rate (-)
+	double myco_col_avg;
 	/// mycorrhiza type AMF (0) or ECM (1)
 	double myco_type;
 	
@@ -3801,7 +3803,8 @@ public:
 	void srl_tradeoffs() {
 
 		d_root = 0.19587 * pow(srl, -0.57465); // Data from Ecuador, Pierick et al. 2021, R² = 0.87
-		myco_col = 1.0 / (1.0 + exp(-3.0 * (log(d_root) + 7.68))); //Data from GROOT database, custom logistic
+		myco_col_avg = 1.0 / (1.0 + exp(-3.0 * (log(d_root) + 7.68))); //Data from GROOT database, custom logistic
+		myco_col = myco_col_avg;
 
 		if (myco_col < 0.0)
 			myco_col = 0.0;

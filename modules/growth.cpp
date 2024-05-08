@@ -2169,7 +2169,8 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			// Choose more limiting factor between nitrogen and phosphorus
 			double npscal = min(nscal, pscal);
 
-			//indiv.myco_col = min(1.0, indiv.myco_col * (1 / npscal));
+			if(indiv.myco_type != 2)
+				indiv.myco_col = min(1.0, indiv.myco_col_avg * (1 / npscal));
 
 			// Set leaf:root mass ratio based on water stress parameter,
 			// nitrogen or phosphorus stress scalar
