@@ -1751,15 +1751,15 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		// Scale to maximum phosphorus concentrations
 		indiv.ctop_status = max(0.0, (ptoc - 1.0 / indiv.ctop_leaf_min) / (1.0 / indiv.ctop_leaf_avr - 1.0 / indiv.ctop_leaf_min));
 
-		////// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
+		//////// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
 		double pmin_scale =  max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + gridcell.pft[indiv.pft.id].Kmp);
 		double pmin_scale_myco = max(0.0,  max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));
 		double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));
 		
-		// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
-		/*double pmin_scale = max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + indiv.pft.kmp_volume);
-		double pmin_scale_myco = max(0.0, max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
-		double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));*/
+		//// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
+		//double pmin_scale = max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + indiv.pft.kmp_volume);
+		//double pmin_scale_myco = max(0.0, max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
+		//double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
 
 		// Maximum available soil mineral phosphorus for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
