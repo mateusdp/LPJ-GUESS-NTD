@@ -1164,8 +1164,9 @@ bool allometry(Individual& indiv) {
 				// root surface area divided by soil surface area. This is calculated by ssa = 50 m2/g * soil dens, planar = 1.5e4 g/m2 / patcharea  = 1000 m. 
 				/*indiv.rpc = (indiv.srl * indiv.d_root * indiv.cmass_root * PI * patcharea) / (15 * 50.0);
 				indiv.rpc_myco = (indiv.cmass_myco * 2.6e9 * 2e-6 * PI  * patcharea) / (15 * 50.0);*/
-				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * 61.56 / 180;
-				indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * 61.56 / 180;
+				// Water uptake based on root surface area (Khare 2022) (12 hs uptake), divided by soil water content
+				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot;
+				indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot;
 
 				/*indiv.rpc /= 2.0;
 				indiv.rpc_myco /= 2.0;*/
@@ -1220,8 +1221,8 @@ bool allometry(Individual& indiv) {
 					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * patcharea / (3.75e6 * 50.0);*/
 					/*indiv.rpc = (indiv.srl * indiv.d_root * indiv.cmass_root * PI * patcharea) / (15 * 50.0);
 					indiv.rpc_myco = (indiv.cmass_myco * 2.6e9 * 2e-6 * PI * patcharea) / (15 * 50.0);*/
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * 61.56 / 180;
-					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * 61.56 / 180;
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot;
+					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot;
 
 					/*indiv.rpc /= 2.0;
 					indiv.rpc_myco /= 2.0;*/
