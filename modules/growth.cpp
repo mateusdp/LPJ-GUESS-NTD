@@ -1229,8 +1229,8 @@ bool allometry(Individual& indiv) {
 					indiv.rpc_myco = (indiv.cmass_myco * 2.6e9 * 2e-6 * PI * patcharea) / (15 * 50.0);*/
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot / 1.5;
 					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot / 1.5;*/
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.vegetation.patch.soil.soiltype.wtot;
-					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.vegetation.patch.soil.soiltype.wtot;
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.vegetation.patch.soil.soiltype.wtot / patcharea;
+					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.vegetation.patch.soil.soiltype.wtot / patcharea;
 
 					/*indiv.rpc /= 2.0;
 					indiv.rpc_myco /= 2.0;*/
