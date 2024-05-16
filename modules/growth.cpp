@@ -1153,8 +1153,8 @@ bool allometry(Individual& indiv) {
 
 			// Root projective cover calculation, if SRL variation is activated.
 			if (ifsrlvary) {
-				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;
+				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
 				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.densindiv / patcharea;
 				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / indiv.densindiv / patcharea;*/
 				/*indiv.rpc = indiv.srl * indiv.d_root * PI  * indiv.cmass_root * indiv.densindiv * (1.0 - lambertbeer(indiv.srl * indiv.d_root * PI  * indiv.cmass_root));
