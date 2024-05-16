@@ -1786,8 +1786,13 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		}
 
 		if (ifsrlvary) {
-			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
+			/*max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
 			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * pmin_avail;
+			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;*/
+			for (int ly = 0; ly < NSOILLAYER; ly++) {
+				max_indiv_avail += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;
+				max_indiv_avail_myco += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;
+			}
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;
 		}
 		else {	
