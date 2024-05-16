@@ -1086,6 +1086,7 @@ bool allometry(Individual& indiv) {
 	// guess2008 - max tree height allowed (metre).
 	const double HEIGHT_MAX = 150.0;
 
+	double water_content = indiv.vegetation.patch.water_content();
 
 	if (indiv.pft.lifeform == TREE) {
 
@@ -1152,8 +1153,8 @@ bool allometry(Individual& indiv) {
 
 			// Root projective cover calculation, if SRL variation is activated.
 			if (ifsrlvary) {
-				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / 2.5;
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / 2.5;*/
+				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
 				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.densindiv / patcharea;
 				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / indiv.densindiv / patcharea;*/
 				/*indiv.rpc = indiv.srl * indiv.d_root * PI  * indiv.cmass_root * indiv.densindiv * (1.0 - lambertbeer(indiv.srl * indiv.d_root * PI  * indiv.cmass_root));
@@ -1169,8 +1170,8 @@ bool allometry(Individual& indiv) {
 				// Water uptake based on root surface area (Khare 2022) (12 hs uptake), divided by soil water content
 				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot / 1.5;
 				indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot / 1.5;*/
-				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.vegetation.patch.soil.soiltype.wtot;
-				indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.vegetation.patch.soil.soiltype.wtot;
+				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.densindiv / water_content;
+				indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.densindiv / water_content;*/
 
 				/*indiv.rpc /= 2.0;
 				indiv.rpc_myco /= 2.0;*/
@@ -1219,8 +1220,8 @@ bool allometry(Individual& indiv) {
 					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;*/
 					/*indiv.rpc = 1.0 - lambertbeer(indiv.srl * indiv.d_root * PI  * indiv.cmass_root / patcharea);
 					indiv.rpc_myco = 1.0 - lambertbeer(indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea);*/
-					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / 2.5;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / 2.5;*/
+					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
 					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * patcharea / (3.75e6 * 50.0);
@@ -1229,8 +1230,8 @@ bool allometry(Individual& indiv) {
 					indiv.rpc_myco = (indiv.cmass_myco * 2.6e9 * 2e-6 * PI * patcharea) / (15 * 50.0);*/
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot / 1.5;
 					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * 61.56 / indiv.vegetation.patch.soil.soiltype.wtot / 1.5;*/
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.vegetation.patch.soil.soiltype.wtot / patcharea;
-					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / indiv.vegetation.patch.soil.soiltype.wtot / patcharea;
+					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / water_content;
+					indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI / water_content;*/
 
 					/*indiv.rpc /= 2.0;
 					indiv.rpc_myco /= 2.0;*/
