@@ -1520,18 +1520,18 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 				max_indiv_avail_NO3 += indiv.rpc * indiv.pft.rootdist[ly] * (soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * nmin_avail_NO3;
 				max_indiv_avail_NH4_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * nmin_avail_NH4;
 				max_indiv_avail_NO3_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * nmin_avail_NO3;*/
-				/*max_indiv_avail_NH4 += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NH4;
+				max_indiv_avail_NH4 += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NH4;
 				max_indiv_avail_NO3 += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NO3;
 				max_indiv_avail_NH4_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NH4;
-				max_indiv_avail_NO3_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NO3;*/
-				max_indiv_avail_NH4 += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) / 
+				max_indiv_avail_NO3_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NO3;
+			/*	max_indiv_avail_NH4 += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) / 
 					((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NH4 * soil.Frac_water[ly];
 				max_indiv_avail_NO3 += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
 					((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NO3 * soil.Frac_water[ly];
 				max_indiv_avail_NH4_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
 					((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NH4 * soil.Frac_water[ly];
 				max_indiv_avail_NO3_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
-					((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NO3 * soil.Frac_water[ly];
+					((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NO3 * soil.Frac_water[ly];*/
 			}
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
 
@@ -1804,12 +1804,12 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 			for (int ly = 0; ly < NSOILLAYER; ly++) {
 				/*max_indiv_avail += indiv.rpc * indiv.pft.rootdist[ly] * (soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * pmin_avail;
 				max_indiv_avail_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * pmin_avail;*/
-				/*max_indiv_avail += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;
-				max_indiv_avail_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;*/
-				max_indiv_avail += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
-					((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
-				max_indiv_avail_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
-					((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
+				max_indiv_avail += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;
+				max_indiv_avail_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;
+				//max_indiv_avail += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
+				//	((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
+				//max_indiv_avail_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
+				//	((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
 			}
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;
 		}
