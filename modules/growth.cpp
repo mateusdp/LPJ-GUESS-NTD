@@ -1157,10 +1157,10 @@ bool allometry(Individual& indiv) {
 				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;*/
 				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / indiv.densindiv / patcharea;
 				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / indiv.densindiv / patcharea;*/
-				/*indiv.rpc = indiv.srl * indiv.d_root * PI  * indiv.cmass_root * (1.0 - lambertbeer(indiv.srl * indiv.d_root * PI  * indiv.cmass_root));
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * (1.0 - lambertbeer(indiv.cmass_myco * 2.0e-6 * PI * 2.55e9));*/
-				indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
-				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;
+				indiv.rpc = indiv.srl * indiv.d_root * PI  * indiv.cmass_root * (1.0 - lambertbeer(indiv.srl * indiv.d_root * PI  * indiv.cmass_root));
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * (1.0 - lambertbeer(indiv.cmass_myco * 2.0e-6 * PI * 2.55e9));
+				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
+				indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 * indiv.densindiv;*/
 				// root surface area divided by soil surface area. This is calculated by ssa = 50 m2/g * soil dens = 1.5e6 g/m3 * soil depth = 2.5 m. 
 				/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * patcharea / (3.75e6 * 50.0);
 				indiv.rpc_myco = indiv.cmass_myco * 2.6e9 * 2e-6 * PI * patcharea / (3.75e6 * 50.0);*/
@@ -1216,10 +1216,10 @@ bool allometry(Individual& indiv) {
 
 				// Root projective cover calculation, if SRL variation is activated.
 				if (ifsrlvary) {
-					indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
-					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;
-					/*indiv.rpc = 1.0 - lambertbeer(indiv.srl * indiv.d_root * PI  * indiv.cmass_root);
-					indiv.rpc_myco = 1.0 - lambertbeer(indiv.cmass_myco * 2.0e-6 * PI * 2.55e9);*/
+					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI / patcharea;
+					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9 / patcharea;*/
+					indiv.rpc = 1.0 - lambertbeer(indiv.srl * indiv.d_root * PI  * indiv.cmass_root);
+					indiv.rpc_myco = 1.0 - lambertbeer(indiv.cmass_myco * 2.0e-6 * PI * 2.55e9);
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI;
 					indiv.rpc_myco = indiv.cmass_myco * 2.0e-6 * PI * 2.55e9;*/
 					/*indiv.rpc = indiv.srl * indiv.d_root * indiv.cmass_root * PI * indiv.densindiv;
