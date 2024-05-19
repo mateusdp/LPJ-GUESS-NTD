@@ -1501,13 +1501,13 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_NO3_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		// Guarantee that rpc and rpc myco together do not exceed 1
-		if (indiv.rpc + indiv.rpc_myco > 1.0)
-		{
-			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-			indiv.rpc *= rescale;
-			indiv.rpc_myco *= rescale;
-		}
+		//// Guarantee that rpc and rpc myco together do not exceed 1
+		//if (indiv.rpc + indiv.rpc_myco > 1.0)
+		//{
+		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+		//	indiv.rpc *= rescale;
+		//	indiv.rpc_myco *= rescale;
+		//}
 
 		if (ifsrlvary) {
 			/*max_indiv_avail_NH4 = min(1.0, indiv.rpc) * nmin_avail_NH4;
@@ -1789,13 +1789,13 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		// Guarantee that rpc and rpc myco together do not exceed 1
-		if (indiv.rpc + indiv.rpc_myco > 1.0)
-		{
-			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-			indiv.rpc *= rescale;
-			indiv.rpc_myco *= rescale;
-		}
+		//// Guarantee that rpc and rpc myco together do not exceed 1
+		//if (indiv.rpc + indiv.rpc_myco > 1.0)
+		//{
+		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+		//	indiv.rpc *= rescale;
+		//	indiv.rpc_myco *= rescale;
+		//}
 
 		if (ifsrlvary) {
 			/*max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
