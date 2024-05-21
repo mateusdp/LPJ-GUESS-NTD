@@ -562,9 +562,9 @@ void vmax_p(double b, double c1, double c2, double apar, double tscal,
 	double CN = 1.0e-9 * 3600 * daylength * CMASS / c2;
 	//double CN = 1.0e-9 * 3600 * daylength * CMASS;
 
-	//double tfac = exp(-0.0693 * (temp - 25.0));
+	double tfac = exp(-0.0693 * (temp - 25.0));
 	//temperature effects already included in c2.
-	double tfac = 1.0;
+	//double tfac = 1.0;
 
 	double vm_max = (11.10 + pactive * 1.0e6 * 366.33) * CN / tfac;
 
@@ -1447,26 +1447,26 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 
 		// Nitrogen availablilty scalar due to saturating Michealis-Menten kinetics
 
-		double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + gridcell.pft[indiv.pft.id].Km_no3);
+		/*double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + gridcell.pft[indiv.pft.id].Km_no3);
 		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + gridcell.pft[indiv.pft.id].Km_nh4);
 
 		double nmin_scale_NO3_myco = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + (gridcell.pft[indiv.pft.id].Km_no3 / 1.66));
 		double nmin_scale_NH4_myco = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.66));
 
 		double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_no3 / 1.66));
-		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.66));
+		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.66));*/
 
 		/*double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_no3 / 1.28));
 		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (gridcell.pft[indiv.pft.id].Km_nh4 / 1.28));*/
 
-		/*double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3);
+		double nmin_scale_NO3 = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + indiv.pft.km_volume_no3);
 		double nmin_scale_NH4 = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + indiv.pft.km_volume_nh4);
 
 		double nmin_scale_NO3_myco = kNmin + nmin_avail_NO3 / (nmin_avail_NO3 + (indiv.pft.km_volume_no3 / 1.66));
 		double nmin_scale_NH4_myco = kNmin + nmin_avail_NH4 / (nmin_avail_NH4 + (indiv.pft.km_volume_nh4 / 1.66));
 
 		double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (indiv.pft.km_volume_no3 / 1.66));
-		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (indiv.pft.km_volume_nh4 / 1.66));*/
+		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (indiv.pft.km_volume_nh4 / 1.66));
 
 		/*double norg_scale_NO3_myco = kNmin + norg_avail_myco / (norg_avail_myco + (indiv.pft.km_volume_no3 / 1.28));
 		double norg_scale_NH4_myco = kNmin + norg_avail_myco / (norg_avail_myco + (indiv.pft.km_volume_nh4 / 1.28));*/
@@ -1772,14 +1772,14 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		indiv.ctop_status = max(0.0, (ptoc - 1.0 / indiv.ctop_leaf_min) / (1.0 / indiv.ctop_leaf_avr - 1.0 / indiv.ctop_leaf_min));
 
 		//////// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
-		double pmin_scale =  max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + gridcell.pft[indiv.pft.id].Kmp);
+		/*double pmin_scale =  max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + gridcell.pft[indiv.pft.id].Kmp);
 		double pmin_scale_myco = max(0.0,  max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));
-		double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));
+		double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (gridcell.pft[indiv.pft.id].Kmp / 1.31)));*/
 		
 		//// Phosphorus availablilty scalar due to saturating Michealis-Menten kinetics
-		//double pmin_scale = max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + indiv.pft.kmp_volume);
-		//double pmin_scale_myco = max(0.0, max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
-		//double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
+		double pmin_scale = max(0.0, pmin_avail - Pmin) / (max(0.0, pmin_avail - Pmin) + indiv.pft.kmp_volume);
+		double pmin_scale_myco = max(0.0, max(0.0, pmin_avail - Pmin_myco) / (max(0.0, pmin_avail - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
+		double porg_scale_myco = max(0.0, max(0.0, porg_avail_myco - Pmin_myco) / (max(0.0, porg_avail_myco - Pmin_myco) + (indiv.pft.kmp_volume / 1.31)));
 
 		// Maximum available soil mineral phosphorus for this individual is base on its root area.
 		// This is considered to be related to FPC which is proportional to crown area which is approx
@@ -3425,8 +3425,8 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 		indiv.dnpp = assim - resp;
 
 		// C investment in enzimes to break down organic matter for EM uptake, 50% C content of enzimes, Allen et al. 2020 FUN model
-		if (indiv.myco_type)
-			indiv.dnpp -= (indiv.fractomax_nmyco + indiv.fractomax_pmyco) * 6e-4;
+		/*if (indiv.myco_type)
+			indiv.dnpp -= (indiv.fractomax_nmyco + indiv.fractomax_pmyco) * 6e-4;*/
 
 		indiv.anpp += indiv.dnpp;
 
