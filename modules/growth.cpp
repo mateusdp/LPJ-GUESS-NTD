@@ -2182,8 +2182,8 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			double npscal = min(nscal, pscal);
 
 			if(indiv.myco_type != 2)
-				//indiv.myco_col = min(1.0, indiv.myco_col_avg * (1 / npscal));
-				indiv.myco_col = min(1.0, indiv.myco_col * (1 / npscal));
+				indiv.myco_col = min(1.0, indiv.myco_col_avg * (1 / npscal));
+				//indiv.myco_col = min(1.0, indiv.myco_col * (1 / npscal));
 
 			// Set leaf:root mass ratio based on water stress parameter,
 			// nitrogen or phosphorus stress scalar
