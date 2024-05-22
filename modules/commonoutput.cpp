@@ -437,7 +437,7 @@ void CommonOutput::define_output_tables() {
 
 	// PSOURCES
 	ColumnDescriptors psources_columns;
-	psources_columns += ColumnDescriptor("PO4dep", 8, 2);
+	psources_columns += ColumnDescriptor("PO4dep", 8, 4);
 	psources_columns += ColumnDescriptor("wtr", 8, 4);
 	psources_columns += ColumnDescriptor("fert", 8, 2);
 	psources_columns += ColumnDescriptor("input", 8, 2);
