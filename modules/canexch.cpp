@@ -1501,41 +1501,41 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_NO3_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		// Guarantee that rpc and rpc myco together do not exceed 1
-		if (indiv.rpc + indiv.rpc_myco > 1.0)
-		{
-			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-			indiv.rpc *= rescale;
-			indiv.rpc_myco *= rescale;
-		}
+		//// Guarantee that rpc and rpc myco together do not exceed 1
+		//if (indiv.rpc + indiv.rpc_myco > 1.0)
+		//{
+		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+		//	indiv.rpc *= rescale;
+		//	indiv.rpc_myco *= rescale;
+		//}
 
 		if (ifsrlvary) {
-			/*max_indiv_avail_NH4 = min(1.0, indiv.rpc) * nmin_avail_NH4;
+			max_indiv_avail_NH4 = min(1.0, indiv.rpc) * nmin_avail_NH4;
 			max_indiv_avail_NO3 = min(1.0, indiv.rpc) * nmin_avail_NO3;
 			max_indiv_avail_NH4_myco = min(1.0, indiv.rpc_myco) * nmin_avail_NH4;
 			max_indiv_avail_NO3_myco = min(1.0, indiv.rpc_myco) * nmin_avail_NO3;
-			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;*/
-			for (int ly = 0; ly < NSOILLAYER; ly++) {
-				if (patch.water_content() > 0.0) {
-					max_indiv_avail_NH4 += indiv.rpc * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * nmin_avail_NH4;
-					max_indiv_avail_NO3 += indiv.rpc * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * nmin_avail_NO3;
-					max_indiv_avail_NH4_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * nmin_avail_NH4;
-					max_indiv_avail_NO3_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * nmin_avail_NO3;
-					/*max_indiv_avail_NH4 += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NH4;
-					max_indiv_avail_NO3 += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NO3;
-					max_indiv_avail_NH4_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NH4;
-					max_indiv_avail_NO3_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NO3;*/
-					/*	max_indiv_avail_NH4 += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
-							((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NH4 * soil.Frac_water[ly];
-						max_indiv_avail_NO3 += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
-							((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NO3 * soil.Frac_water[ly];
-						max_indiv_avail_NH4_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
-							((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NH4 * soil.Frac_water[ly];
-						max_indiv_avail_NO3_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
-							((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NO3 * soil.Frac_water[ly];*/
-				}
-			}
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
+			//for (int ly = 0; ly < NSOILLAYER; ly++) {
+			//	if (patch.water_content() > 0.0) {
+			//		max_indiv_avail_NH4 += indiv.rpc * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * nmin_avail_NH4;
+			//		max_indiv_avail_NO3 += indiv.rpc * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * nmin_avail_NO3;
+			//		max_indiv_avail_NH4_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * nmin_avail_NH4;
+			//		max_indiv_avail_NO3_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * nmin_avail_NO3;
+			//		/*max_indiv_avail_NH4 += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NH4;
+			//		max_indiv_avail_NO3 += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NO3;
+			//		max_indiv_avail_NH4_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NH4;
+			//		max_indiv_avail_NO3_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * nmin_avail_NO3;*/
+			//		/*	max_indiv_avail_NH4 += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
+			//				((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NH4 * soil.Frac_water[ly];
+			//			max_indiv_avail_NO3 += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
+			//				((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NO3 * soil.Frac_water[ly];
+			//			max_indiv_avail_NH4_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
+			//				((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NH4 * soil.Frac_water[ly];
+			//			max_indiv_avail_NO3_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
+			//				((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * nmin_avail_NO3 * soil.Frac_water[ly];*/
+			//	}
+			//}
+			//max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
 
 		}
 		else {
@@ -1791,31 +1791,31 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 		double max_indiv_avail_myco = 0.0;
 		double max_indiv_avail_org_myco = 0.0;
 
-		// Guarantee that rpc and rpc myco together do not exceed 1
-		if (indiv.rpc + indiv.rpc_myco > 1.0)
-		{
-			double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
-			indiv.rpc *= rescale;
-			indiv.rpc_myco *= rescale;
-		}
+		//// Guarantee that rpc and rpc myco together do not exceed 1
+		//if (indiv.rpc + indiv.rpc_myco > 1.0)
+		//{
+		//	double rescale = 1.0 / (indiv.rpc + indiv.rpc_myco);
+		//	indiv.rpc *= rescale;
+		//	indiv.rpc_myco *= rescale;
+		//}
 
 		if (ifsrlvary) {
-			/*max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
+			max_indiv_avail = min(1.0, indiv.rpc) * pmin_avail;
 			max_indiv_avail_myco = min(1.0, indiv.rpc_myco) * pmin_avail;
-			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;*/
-			for (int ly = 0; ly < NSOILLAYER; ly++) {
-				if (patch.water_content() > 0.0) {
-					max_indiv_avail += indiv.rpc * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * pmin_avail;
-					max_indiv_avail_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * pmin_avail;
-					/*max_indiv_avail += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;
-					max_indiv_avail_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;*/
-					//max_indiv_avail += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
-					//	((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
-					//max_indiv_avail_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
-					//	((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
-				}
-			}
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;
+			//for (int ly = 0; ly < NSOILLAYER; ly++) {
+			//	if (patch.water_content() > 0.0) {
+			//		max_indiv_avail += indiv.rpc * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * pmin_avail;
+			//		max_indiv_avail_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * (((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) / patch.water_content()) * pmin_avail;
+			//		/*max_indiv_avail += indiv.rpc * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;
+			//		max_indiv_avail_myco += indiv.rpc_myco * indiv.pft.rootdist[ly] * soil.Frac_water[ly] * pmin_avail;*/
+			//		//max_indiv_avail += (indiv.rpc * 61.56 * indiv.pft.rootdist[ly]) /
+			//		//	((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
+			//		//max_indiv_avail_myco += (indiv.rpc_myco * 61.56 * indiv.pft.rootdist[ly]) /
+			//		//	((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
+			//	}
+			//}
+			//max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;
 		}
 		else {	
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
