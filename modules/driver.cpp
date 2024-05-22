@@ -1524,7 +1524,7 @@ double get_local_temp(double gridcell_temp, double gridcell_elevation, double lo
 	return local_temp;
 }
 
-void get_monthly_pdep(double gridlat, double gridlong, double mpdep[12]) {
+void get_monthly_pdep(double gridlat, double gridlong, double* mpdep) {
 
 	xtring file_pdep = param["file_pdep"].str;
 
