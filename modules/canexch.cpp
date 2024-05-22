@@ -1535,6 +1535,11 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			}
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * norg_avail_myco;
 
+			max_indiv_avail_NH4 = min(nmin_avail_NH4, max_indiv_avail_NH4);
+			max_indiv_avail_NO3 = min(nmin_avail_NO3, max_indiv_avail_NO3);
+			max_indiv_avail_NH4_myco = min(nmin_avail_NH4, max_indiv_avail_NH4_myco);
+			max_indiv_avail_NO3_myco = min(nmin_avail_NO3, max_indiv_avail_NO3_myco);
+
 		}
 		else {
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * nmin_avail_N;
@@ -1812,6 +1817,9 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 				//	((soil.Frac_ice[ly] + soil.Frac_water[ly] + soil.Fpwp_ref[ly]) * soil.Dz[ly]) * pmin_avail * soil.Frac_water[ly];
 			}
 			max_indiv_avail_org_myco = min(1.0, indiv.rpc_myco) * porg_avail_myco;
+
+			max_indiv_avail = min(pmin_avail, max_indiv_avail);
+			max_indiv_avail_myco = min(pmin_avail, max_indiv_avail_myco);
 		}
 		else {	
 			max_indiv_avail = min(1.0, indiv.fpc * 4.0) * pmin_avail;
