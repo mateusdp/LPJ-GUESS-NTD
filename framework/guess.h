@@ -1205,6 +1205,7 @@ public:
 			mpet20[m] = 0.0;
 			mpet_year[m] = 0.0;
 			mprec_pet20[m] = 0.0;
+			mpdep[m] = 0.0;
 
 			for(int y=0;y<20;y++) {
 				mtemp_20[y][m] = 0.0;
