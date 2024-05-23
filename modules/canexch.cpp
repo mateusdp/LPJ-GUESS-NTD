@@ -1329,7 +1329,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 	const double nmin_avail_NH4 = soil.nmass_avail(NH4);
 	const double nmin_avail_NO3 = soil.nmass_avail(NO3);
 	const double nmin_avail_N = soil.nmass_avail(NO);
-	double norg_avail_myco = soil.sompool[SOILSTRUCT].nmass + soil.sompool[SOILMETA].nmass;
+	double norg_avail_myco = soil.sompool[SURFSTRUCT].nmass + soil.sompool[SURFMETA].nmass;
 
 	if (date.year < freenyears)
 		norg_avail_myco = soil.nmass_avail(NO);
@@ -1622,10 +1622,13 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 
 	// soil available mineral phosphorus (kgP/m2)
 	const double pmin_avail = soil.pmass_labile;
-	const double porg_avail_myco = soil.sompool[SOILSTRUCT].pmass + soil.sompool[SOILMETA].pmass;
+	double porg_avail_myco = soil.sompool[SURFSTRUCT].pmass + soil.sompool[SURFMETA].pmass;
 	// Scalar to soil temperature (Eqn A9, Comins & McMurtrie 1993) for nitrogen uptake
 	double soilT = patch.soil.get_soil_temp_25();
 	double temp_scale = temperature_modifier(soilT);
+
+	if (date.year < freenyears)
+		porg_avail_myco = soil.pmass_labile;
 
 	/// Minimum P concentration for uptake
 	double Pmin = 1.15e-7;
