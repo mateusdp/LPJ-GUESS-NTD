@@ -2172,7 +2172,7 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 			// Set leaf:root mass ratio based on water stress parameter,
 			// nitrogen or phosphorus stress scalar
 			// Added dynamic ltor switch
-			if (!ifdynltor)
+			if (!ifdynltor || date.year < freenyears)
 				if (indiv.wscal_mean() < 1.0)
 					indiv.ltor = min(indiv.wscal_mean(), npscal) * indiv.pft.ltor_max;
 				else
