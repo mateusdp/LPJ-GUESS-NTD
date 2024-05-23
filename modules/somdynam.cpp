@@ -1680,8 +1680,10 @@ void vegetation_n_uptake(Patch& patch) {
 				//double ammonium = (nuptake_day - nuptake_day_myco - nmass_herb) * indiv.frac_nh4;  // Only no errors if ammonium frac is considered...
 				//soil.NH4_mass -= ammonium;
 				//soil.NO3_mass -= (nuptake_day - nuptake_day_myco - nmass_herb) - ammonium;
-				soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
-				soil.sompool[SOILMETA].nmass -= nuptake_day_myco * 0.82;
+				/*soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
+				soil.sompool[SOILMETA].nmass -= nuptake_day_myco * 0.82;*/
+				soil.sompool[SURFSTRUCT].nmass -= nuptake_day_myco * 0.18;
+				soil.sompool[SURFMETA].nmass -= nuptake_day_myco * 0.82;
 			}
 
 		} 
@@ -1767,8 +1769,10 @@ void vegetation_p_uptake(Patch& patch) {
 		//soil.pmass_labile_delta -= (puptake_day - puptake_day_myco - pmass_herb);
 		pmass_add(soil, -puptake_day + puptake_day_myco + pmass_herb);
 
-		soil.sompool[SOILSTRUCT].pmass -= puptake_day_myco * 0.18;
-		soil.sompool[SOILMETA].pmass -= puptake_day_myco * 0.82;
+		/*soil.sompool[SOILSTRUCT].pmass -= puptake_day_myco * 0.18;
+		soil.sompool[SOILMETA].pmass -= puptake_day_myco * 0.82;*/
+		soil.sompool[SURFSTRUCT].pmass -= puptake_day_myco * 0.18;
+		soil.sompool[SURFMETA].pmass -= puptake_day_myco * 0.82;
 				
 		if (!negligible(indiv.phen))
 			indiv.ctop_leaf_aavr += min(indiv.ctop_leaf(), indiv.ctop_leaf_max);
