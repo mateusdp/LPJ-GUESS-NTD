@@ -1329,10 +1329,10 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 	const double nmin_avail_NH4 = soil.nmass_avail(NH4);
 	const double nmin_avail_NO3 = soil.nmass_avail(NO3);
 	const double nmin_avail_N = soil.nmass_avail(NO);
-	double norg_avail_myco = soil.sompool[SURFSTRUCT].nmass + soil.sompool[SURFMETA].nmass + soil.sompool[SURFCWD].nmass + soil.sompool[SURFFWD].nmass;
+	double norg_avail_myco = soil.sompool[SURFSTRUCT].nmass + soil.sompool[SURFMETA].nmass;
 
-	if (date.year < freenyears)
-		norg_avail_myco = soil.nmass_avail(NO);
+	/*if (date.year < freenyears)
+		norg_avail_myco = soil.nmass_avail(NO);*/
 
 	// Scalar to soil temperature (Eqn A9, Comins & McMurtrie 1993) for nitrogen uptake
 	double soilT = patch.soil.get_soil_temp_25();
@@ -1546,7 +1546,7 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			fractomax = ndemand_tot > 0.0 ? min((min(maxnup_NO3, ndemand_NO3) + min(maxnup_NH4, ndemand_NH4)) / ndemand_tot, 1.0) : 0.0;
 			fractomax_myco = ndemand_tot > 0.0 ? min((maxnup_myco_NO3 + maxnup_myco_NH4) / ndemand_tot, 1.0) : 0.0; // myco do not have the same demand as roots
 																													//// Guarantee that fractomax and fractomax myco together do not exceed 1
-			if (fractomax + fractomax_myco > 1.0)
+			/*if (fractomax + fractomax_myco > 1.0)
 			{
 				double rescale = 1.0 / (fractomax + fractomax_myco);
 				fractomax *= rescale;
@@ -1555,7 +1555,9 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			}
 			else {
 				fractomax += fractomax_myco;
-			}
+			}*/
+			fractomax_myco = min(fractomax_myco, 1.0 - fractomax);
+			fractomax += fractomax_myco;
 		}
 		else {
 			fractomax = ndemand_tot > 0.0 ? min(maxnup / ndemand_tot, 1.0) : 0.0;
@@ -1622,13 +1624,13 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 
 	// soil available mineral phosphorus (kgP/m2)
 	const double pmin_avail = soil.pmass_labile;
-	double porg_avail_myco = soil.sompool[SURFSTRUCT].pmass + soil.sompool[SURFMETA].pmass + soil.sompool[SURFCWD].pmass + soil.sompool[SURFFWD].pmass;
+	double porg_avail_myco = soil.sompool[SURFSTRUCT].pmass + soil.sompool[SURFMETA].pmass;
 	// Scalar to soil temperature (Eqn A9, Comins & McMurtrie 1993) for nitrogen uptake
 	double soilT = patch.soil.get_soil_temp_25();
 	double temp_scale = temperature_modifier(soilT);
 
-	if (date.year < freenyears)
-		porg_avail_myco = soil.pmass_labile;
+	/*if (date.year < freenyears)
+		porg_avail_myco = soil.pmass_labile;*/
 
 	/// Minimum P concentration for uptake
 	double Pmin = 1.15e-7;
@@ -1795,7 +1797,7 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 			fractomax = pdemand_tot > 0.0 ? min(maxpup / pdemand_tot, 1.0) : 0.0;
 			fractomax_myco = pdemand_tot > 0.0 ? min(maxpup_myco / pdemand_tot, 1.0) : 0.0;
 			//// Guarantee that fractomax and fractomax myco together do not exceed 1
-			if (fractomax + fractomax_myco > 1.0)
+			/*if (fractomax + fractomax_myco > 1.0)
 			{
 				double rescale = 1.0 / (fractomax + fractomax_myco);
 				fractomax *= rescale;
@@ -1804,7 +1806,9 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 			}
 			else {
 				fractomax += fractomax_myco;
-			}
+			}*/
+			fractomax_myco = min(fractomax_myco, 1.0 - fractomax);
+			fractomax += fractomax_myco;
 		}
 		else {
 			fractomax = pdemand_tot > 0.0 ? min(maxpup / pdemand_tot, 1.0) : 0.0;
