@@ -3401,8 +3401,9 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 		indiv.dnpp = assim - resp;
 
 		// C investment in enzimes to break down organic matter for EM uptake, 50% C content of enzimes, Allen et al. 2020 FUN model
-		/*if (indiv.myco_type)
-		indiv.dnpp -= (indiv.fractomax_nmyco + indiv.fractomax_pmyco) * 0.0;*/
+		if (indiv.myco_type)
+			//indiv.dnpp -= (indiv.fractomax_nmyco * indiv.ndemand + indiv.fractomax_pmyco * indiv.pdemand) * 6e-4;
+			indiv.dnpp -= (indiv.fractomax_nmyco * indiv.fnuptake * indiv.ndemand + indiv.fractomax_pmyco * indiv.fpuptake * indiv.pdemand) * 1.0;
 
 		indiv.anpp += indiv.dnpp;
 

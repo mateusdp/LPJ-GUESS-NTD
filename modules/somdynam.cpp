@@ -1644,10 +1644,11 @@ void vegetation_n_uptake(Patch& patch) {
 		nuptake_day_myco = 0.0;
 
 		if (indiv.myco_type)
-			nuptake_day_myco = indiv.ndemand * indiv.fractomax_nmyco;
+			//nuptake_day_myco = indiv.ndemand * indiv.fractomax_nmyco;
+			nuptake_day_myco = indiv.ndemand * indiv.fnuptake * indiv.fractomax_nmyco;
 
-		//nuptake_day           = indiv.ndemand * indiv.fnuptake;
-		nuptake_day = indiv.ndemand * indiv.fnuptake + nuptake_day_myco;
+		nuptake_day           = indiv.ndemand * indiv.fnuptake;
+		//nuptake_day = indiv.ndemand * indiv.fnuptake + nuptake_day_myco;
 
 		if (ifherbivory)
 			nmass_herb = indiv.leaffndemand  * nuptake_day * indiv.herb_frac;
@@ -1753,9 +1754,11 @@ void vegetation_p_uptake(Patch& patch) {
 		puptake_day_myco = 0.0;
 
 		if (indiv.myco_type)
-			puptake_day_myco = indiv.pdemand * indiv.fractomax_pmyco;
+			//puptake_day_myco = indiv.pdemand * indiv.fractomax_pmyco;
+			puptake_day_myco = indiv.pdemand * indiv.fpuptake * indiv.fractomax_pmyco;
 
-		puptake_day = indiv.pdemand * indiv.fpuptake + puptake_day_myco;
+		//puptake_day = indiv.pdemand * indiv.fpuptake + puptake_day_myco;
+		puptake_day = indiv.pdemand * indiv.fpuptake;
 
 		if (ifherbivory)
 			pmass_herb = indiv.leaffndemand  * puptake_day * indiv.herb_frac;
