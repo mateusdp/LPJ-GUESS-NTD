@@ -1377,10 +1377,10 @@ void ndemand(Patch& patch, Vegetation& vegetation) {
 			// active nitrogen (Haxeltine et al. 1996 eqn 27/28)
 
 			//leafoptn = indiv.photosynthesis.nactive_opt * indiv.nextin + N0 * indiv.cmass_leaf_today();
-			if (!ifwalkernplim)
+			//if (!ifwalkernplim)
 				leafoptn = indiv.photosynthesis.nactive_opt * indiv.nextin + N0 * indiv.cmass_leaf_today();
-			else
-				leafoptn = indiv.photosynthesis.nactive_opt * indiv.nextin;
+			/*else
+				leafoptn = indiv.photosynthesis.nactive_opt * indiv.nextin;*/
 
 			// Can not have higher nitrogen concentration than minimum leaf C:N ratio
 			if (indiv.cmass_leaf_today() / leafoptn < indiv.cton_leaf_min) {
@@ -1680,10 +1680,10 @@ void pdemand(Patch& patch, Vegetation& vegetation) {
 			// active nitrogen
 
 			//leafoptp = indiv.photosynthesis.pactive_opt * indiv.pextin + P0 * indiv.cmass_leaf_today();
-			if (!ifwalkernplim)
+			//if (!ifwalkernplim)
 				leafoptp = indiv.photosynthesis.pactive_opt * indiv.pextin + P0 * indiv.cmass_leaf_today();
-			else
-				leafoptp = indiv.photosynthesis.pactive_opt * indiv.pextin;
+			/*else
+				leafoptp = indiv.photosynthesis.pactive_opt * indiv.pextin;*/
 
 
 			// Can not have higher phosphorus concentration than minimum leaf C:P ratio
@@ -1978,16 +1978,16 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 			/*photosynthesis(ps_env, ps_stress, pft,
 			pft.lambda_max, indiv.nactive / indiv.nextin, indiv.pactive / indiv.pextin, -1,
 			indiv.photosynthesis);*/
-			if (!ifwalkernplim)
+			//if (!ifwalkernplim)
 				photosynthesis(ps_env, ps_stress, pft,
 					pft.lambda_max, indiv.nactive / indiv.nextin, indiv.pactive / indiv.pextin,
 					indiv.cmass_leaf_today() / indiv.cton_leaf_min, indiv.cmass_leaf_today() / indiv.ctop_leaf_min, -1,
 					indiv.photosynthesis);
-			else
+			/*else
 				photosynthesis(ps_env, ps_stress, pft,
 					pft.lambda_max, nmass_leaf / indiv.nextin, pmass_leaf / indiv.pextin,
 					indiv.cmass_leaf_today() / indiv.cton_leaf_min, indiv.cmass_leaf_today() / indiv.ctop_leaf_min, -1,
-					indiv.photosynthesis);
+					indiv.photosynthesis);*/
 
 
 			indiv.gpterm = gpterm(indiv.photosynthesis.adtmm, pftco2, pft.lambda_max, climate.daylength);
@@ -2001,16 +2001,16 @@ void vmax_np_stress(Patch& patch, Climate& climate, Vegetation& vegetation) {
 					/*photosynthesis(ps_env, ps_stress, pft,
 					pft.lambda_max, indiv.nactive / indiv.nextin, indiv.pactive / indiv.pextin, indiv.photosynthesis.vm,
 					ps_result);*/
-					if (!ifwalkernplim)
+					//if (!ifwalkernplim)
 						photosynthesis(ps_env, ps_stress, pft,
 							pft.lambda_max, indiv.nactive / indiv.nextin, indiv.pactive / indiv.pextin,
 							indiv.cmass_leaf_today() / indiv.cton_leaf_min, indiv.cmass_leaf_today() / indiv.ctop_leaf_min,
 							indiv.photosynthesis.vm, ps_result);
-					else
+					/*else
 						photosynthesis(ps_env, ps_stress, pft,
 							pft.lambda_max, nmass_leaf / indiv.nextin, pmass_leaf / indiv.pextin,
 							indiv.cmass_leaf_today() / indiv.cton_leaf_min, indiv.cmass_leaf_today() / indiv.ctop_leaf_min,
-							indiv.photosynthesis.vm, ps_result);
+							indiv.photosynthesis.vm, ps_result);*/
 
 
 					indiv.gpterms[i] = gpterm(ps_result.adtmm, climate.co2, pft.lambda_max, 24);
@@ -3330,16 +3330,16 @@ void npp(Patch& patch, Climate& climate, Vegetation& vegetation, const Day& day)
 			/*assimilation_wstress(pft, pftco2, temp, par, hours, indiv.fpar, indiv.fpc,
 			ppft.gcbase, phot.vm, phot, lambda,
 			indiv.nactive / indiv.nextin, indiv.pactive / indiv.pextin, ifnlim, ifplim, moss_wtp_limit, graminoid_wtp_limit, inund_stress);*/
-			if (!ifwalkernplim)
+			//if (!ifwalkernplim)
 				assimilation_wstress(pft, pftco2, temp, par, hours, indiv.fpar, indiv.fpc,
 					ppft.gcbase, phot.vm, phot, lambda,
 					indiv.nactive / indiv.nextin, indiv.pactive / indiv.pextin, indiv.cmass_leaf_today() / indiv.cton_leaf_min, indiv.cmass_leaf_today() / indiv.ctop_leaf_min,
 					ifnlim, ifplim, moss_wtp_limit, graminoid_wtp_limit, inund_stress);
-			else
+			/*else
 				assimilation_wstress(pft, pftco2, temp, par, hours, indiv.fpar, indiv.fpc,
 					ppft.gcbase, phot.vm, phot, lambda, nmass_leaf / indiv.nextin, pmass_leaf / indiv.pextin,
 					indiv.cmass_leaf_today() / indiv.cton_leaf_min, indiv.cmass_leaf_today() / indiv.ctop_leaf_min, ifnlim, ifplim, moss_wtp_limit, graminoid_wtp_limit, inund_stress);
-
+*/
 		}
 
 		assim = phot.net_assimilation();
