@@ -123,6 +123,13 @@ void simulate_day(Gridcell& gridcell, InputModule* input_module) {
 			// Daily C allocation (cropland)
 			growth_daily(patch);
 
+			// Daily Tissue turnover, allocation to new biomass and reproduction,
+			// updated allometry
+			if (ifdaily) {
+				growth_natural_daily(stand, patch);
+				lai_update(patch);
+			}
+
 			// Soil organic matter and litter dynamics
 			som_dynamics(patch, gridcell.climate);
 
@@ -131,13 +138,6 @@ void simulate_day(Gridcell& gridcell, InputModule* input_module) {
 
 			// BLAZE fire model
 			blaze_driver(patch,gridcell.climate);
-
-			// Daily Tissue turnover, allocation to new biomass and reproduction,
-			// updated allometry
-			if (ifdaily) {
-				growth_natural_daily(stand, patch);
-				lai_update(patch);
-			}
 
 			if (date.islastday && date.islastmonth && !ifdaily) {
 
