@@ -2368,7 +2368,7 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 					if (ifherbivory && cmass_leaf_inc > 0.0) {
 
 						//cmass_herb = cmass_leaf_inc * indiv.herb_frac * indiv.densindiv; //remove densindiv!!!
-						cmass_herb = cmass_leaf_inc * indiv.herb_frac;
+						cmass_herb = cmass_leaf_inc * indiv.herb_frac * param["herb_factor"].num;
 						cmass_leaf_inc -= cmass_herb;
 						cmass_herb_resp = cmass_herb * 0.21;
 					}
