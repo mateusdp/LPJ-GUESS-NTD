@@ -2528,7 +2528,7 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						//herb_frac = exp(0.03251 - 0.30222 * log(indiv.ctop_leaf_avr)) * indiv.densindiv;
 						herb_frac = exp(0.03251 - 0.30222 * log(indiv.ctop_leaf_avr));
 
-						cmass_herb = cmass_leaf_inc * herb_frac;
+						cmass_herb = cmass_leaf_inc * herb_frac * param["herb_factor"].num;
 						cmass_leaf_inc -= cmass_herb;
 						cmass_herb_resp = cmass_herb * 0.21;
 					}
