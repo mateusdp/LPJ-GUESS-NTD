@@ -2376,10 +2376,16 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						cmass_herb = cmass_herb_resp = 0.0;
 					}
 
-					litter_leaf_inc += cmass_herb * 0.79;
+					if (param["herb_nosoil"].num) {
+						////herbivore c mass goes all to soil C
+						indiv.report_flux(Fluxes::SOILC, cmass_herb * indiv.densindiv);
+					}
+					else {
+						////herbivore respiration goes as heterotrophic respiration to SOILC
+						indiv.report_flux(Fluxes::SOILC, cmass_herb_resp * indiv.densindiv);
 
-					////herbivore respiration goes as heterotrophic respiration to SOILC
-					indiv.report_flux(Fluxes::SOILC, cmass_herb_resp * indiv.densindiv);
+						litter_leaf_inc += cmass_herb * 0.79;
+					}
 
 					// Report herbivory carbon flux
 					indiv.report_flux(Fluxes::C_HERB, cmass_herb * indiv.densindiv);
@@ -2537,13 +2543,16 @@ void growth_natural_daily(Stand& stand, Patch& patch) {
 						cmass_herb = cmass_herb_resp = 0.0;
 					}
 
-					litter_leaf_inc += cmass_herb * 0.79;
+					if (param["herb_nosoil"].num) {
+						////herbivore c mass goes all to soil C
+						indiv.report_flux(Fluxes::SOILC, cmass_herb * indiv.densindiv);
+					}
+					else {
+						////herbivore respiration goes as heterotrophic respiration to SOILC
+						indiv.report_flux(Fluxes::SOILC, cmass_herb_resp * indiv.densindiv);
 
-					////herbivore respiration goes as heterotrophic respiration to SOILC
-					indiv.report_flux(Fluxes::SOILC, cmass_herb_resp * indiv.densindiv);
-
-					// Report herbivory carbon flux
-					indiv.report_flux(Fluxes::C_HERB, cmass_herb * indiv.densindiv);
+						litter_leaf_inc += cmass_herb * 0.79;
+					}
 
 					////////////////////////////////////////////////////////////////////
 

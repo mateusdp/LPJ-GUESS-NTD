@@ -1636,8 +1636,10 @@ void vegetation_n_uptake(Patch& patch) {
 		else 
 			nmass_herb = 0.0;
 
+		double herbn_damage = nmass_herb;
+
 		indiv.anuptake        += nuptake_day;
-		indiv.nmass_leaf      += indiv.leaffndemand  * nuptake_day - nmass_herb;
+		indiv.nmass_leaf      += indiv.leaffndemand  * nuptake_day - herbn_damage;
 		indiv.nmass_root      += indiv.rootfndemand  * nuptake_day;
 		indiv.nmass_sap       += indiv.sapfndemand   * nuptake_day;
 		if (indiv.pft.phenology == CROPGREEN && ifnlim)
@@ -1645,6 +1647,11 @@ void vegetation_n_uptake(Patch& patch) {
 		else
 			indiv.nstore_longterm += indiv.storefndemand * nuptake_day;
 
+		if (param["herb_nosoil"].num) {
+			nmass_herb = 0.0;
+			// Report herbivory nitrogen flux
+			indiv.report_flux(Fluxes::N2_SOIL, herbn_damage);
+		}
 
 		if (ifntransform) {
 			if (!indiv.myco_type) {
@@ -1672,7 +1679,7 @@ void vegetation_n_uptake(Patch& patch) {
 		}
 
 		// Report herbivory nitrogen flux
-		indiv.report_flux(Fluxes::N_HERB, nmass_herb);
+		indiv.report_flux(Fluxes::N_HERB, herbn_damage);
 
 		/*soil.sompool[SOILSTRUCT].nmass -= nuptake_day_myco * 0.18;
 		soil.sompool[SOILMETA].nmass -= nuptake_day_myco * 0.82;*/
@@ -1737,14 +1744,22 @@ void vegetation_p_uptake(Patch& patch) {
 		else 
 			pmass_herb = 0.0;
 
+		double herbp_damage = pmass_herb;
+
 		indiv.apuptake += puptake_day;
-		indiv.pmass_leaf += indiv.leaffpdemand  * puptake_day - pmass_herb;
+		indiv.pmass_leaf += indiv.leaffpdemand  * puptake_day - herbp_damage;
 		indiv.pmass_root += indiv.rootfpdemand  * puptake_day;
 		indiv.pmass_sap += indiv.sapfpdemand   * puptake_day;
 		if (indiv.pft.phenology == CROPGREEN && ifplim)
 			indiv.cropindiv->pmass_agpool += indiv.storefpdemand * puptake_day;
 		else
 			indiv.pstore_longterm += indiv.storefpdemand * puptake_day;
+
+		if (param["herb_nosoil"].num) {
+			pmass_herb = 0.0;
+			// Report herbivory nitrogen flux
+			indiv.report_flux(Fluxes::P_SOIL, herbp_damage);
+		}
 		
 		//soil.pmass_labile_delta -= (puptake_day - puptake_day_myco - pmass_herb);
 		pmass_add(soil, -puptake_day + puptake_day_myco + pmass_herb);
@@ -1756,7 +1771,7 @@ void vegetation_p_uptake(Patch& patch) {
 			indiv.ctop_leaf_aavr += min(indiv.ctop_leaf(), indiv.ctop_leaf_max);
 
 		// Report herbivory phosphorus flux
-		indiv.report_flux(Fluxes::P_HERB, pmass_herb);
+		indiv.report_flux(Fluxes::P_HERB, herbp_damage);
 
 		vegetation.nextobj();
 	}
