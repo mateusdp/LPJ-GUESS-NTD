@@ -3720,9 +3720,12 @@ public:
 			ltor = pft.ltor_max;
 
 		if (ifherbivory)
-			herb_frac = exp(0.03251 - 0.30222 * log(ctop_leaf_avr));
+			herb_frac = exp(0.03251 - 0.30222 * log(ctop_leaf_avr)) * param["herb_factor"].num;
 		else
 			herb_frac = 0.0;
+
+		if (herb_frac > 1.0)
+			herb_frac = 1.0;
 	}
 	
 	
